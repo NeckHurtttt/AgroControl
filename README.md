@@ -14,11 +14,6 @@
 ## 🌱 El problema
 
 Una unidad agrícola administra parcelas, cabañas, cultivos, labores de campo, insumos y cosechas **con registros manuales**. Se necesita trazabilidad operativa por lote y campaña — sin sustituir la asesoría agronómica profesional.
-$ ./mvnw spring-boot:run
-
-Sembrando entidades... 🌾
-Migrando con Flyway... 🐘
-Levantando API REST... 🚀
 ## 🎯 Objetivo del MVP
 
 Sistema **web y móvil** para planificar campañas, registrar labores e insumos, controlar responsables y capturar cosechas — una bitácora completa por parcela.
