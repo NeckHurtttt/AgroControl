@@ -1,13 +1,37 @@
 package com.agrocontrol.labor.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "bitacora_campo", schema = "agrocontrol")
 public class BitacoraCampo {
-    private final Long id;
-    private final Long laborId;
-    private final Long usuarioId;
-    private final String observacion;
-    private final LocalDateTime fecha;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_bitacora")
+    private Long id;
+
+    @Column(name = "id_labor", nullable = false)
+    private Long laborId;
+
+    @Column(name = "id_usuario", nullable = false)
+    private Long usuarioId;
+
+    @Column(name = "observacion", nullable = false, columnDefinition = "text")
+    private String observacion;
+
+    @Column(name = "fecha", nullable = false, updatable = false)
+    private LocalDateTime fecha = LocalDateTime.now();
+
+    protected BitacoraCampo() {
+    }
 
     public BitacoraCampo(Long id, Long laborId, Long usuarioId, String observacion) {
         if (laborId == null) {
@@ -23,7 +47,6 @@ public class BitacoraCampo {
         this.laborId = laborId;
         this.usuarioId = usuarioId;
         this.observacion = observacion;
-        this.fecha = LocalDateTime.now();
     }
 
     public Long getId() { return id; }

@@ -1,9 +1,29 @@
 package com.agrocontrol.cultivo.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "cultivo", schema = "agrocontrol")
 public class Cultivo {
-    private final Long id;
-    private final String nombre;
-    private final Integer cicloDias;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_cultivo")
+    private Long id;
+
+    @Column(name = "nombre", nullable = false, unique = true, length = 80)
+    private String nombre;
+
+    @Column(name = "ciclo_dias")
+    private Integer cicloDias;
+
+    protected Cultivo() {
+    }
 
     public Cultivo(Long id, String nombre, Integer cicloDias) {
         if (nombre == null || nombre.isBlank()) {

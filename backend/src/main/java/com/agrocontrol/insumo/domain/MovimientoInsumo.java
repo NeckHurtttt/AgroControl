@@ -1,16 +1,47 @@
 package com.agrocontrol.insumo.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "movimiento_insumo", schema = "agrocontrol")
 public class MovimientoInsumo {
-    private final Long id;
-    private final Long insumoId;
-    private final TipoMovimiento tipo;
-    private final BigDecimal cantidad;
-    private final String motivo;
-    private final Long usuarioId;
-    private final LocalDateTime fecha;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_movimiento")
+    private Long id;
+
+    @Column(name = "id_insumo", nullable = false)
+    private Long insumoId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false, length = 10)
+    private TipoMovimiento tipo;
+
+    @Column(name = "cantidad", nullable = false, precision = 12, scale = 2)
+    private BigDecimal cantidad;
+
+    @Column(name = "motivo", length = 150)
+    private String motivo;
+
+    @Column(name = "id_usuario", nullable = false)
+    private Long usuarioId;
+
+    @Column(name = "fecha", nullable = false, updatable = false)
+    private LocalDateTime fecha = LocalDateTime.now();
+
+    protected MovimientoInsumo() {
+    }
 
     public MovimientoInsumo(Long id, Long insumoId, TipoMovimiento tipo, BigDecimal cantidad, String motivo, Long usuarioId) {
         if (insumoId == null) {
@@ -31,7 +62,6 @@ public class MovimientoInsumo {
         this.cantidad = cantidad;
         this.motivo = motivo;
         this.usuarioId = usuarioId;
-        this.fecha = LocalDateTime.now();
     }
 
     public Long getId() { return id; }

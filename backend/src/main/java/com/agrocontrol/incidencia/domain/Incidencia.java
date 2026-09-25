@@ -1,15 +1,43 @@
 package com.agrocontrol.incidencia.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "incidencia", schema = "agrocontrol")
 public class Incidencia {
-    private final Long id;
-    private final Long parcelaId;
-    private final Long campanaId;
-    private final Long laborId;
-    private final String descripcion;
-    private final Long usuarioId;
-    private final LocalDateTime fecha;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_incidencia")
+    private Long id;
+
+    @Column(name = "id_parcela")
+    private Long parcelaId;
+
+    @Column(name = "id_campana")
+    private Long campanaId;
+
+    @Column(name = "id_labor")
+    private Long laborId;
+
+    @Column(name = "descripcion", nullable = false, columnDefinition = "text")
+    private String descripcion;
+
+    @Column(name = "id_usuario", nullable = false)
+    private Long usuarioId;
+
+    @Column(name = "fecha", nullable = false, updatable = false)
+    private LocalDateTime fecha = LocalDateTime.now();
+
+    protected Incidencia() {
+    }
 
     public Incidencia(Long id, Long parcelaId, Long campanaId, Long laborId, String descripcion, Long usuarioId) {
         if (descripcion == null || descripcion.isBlank()) {
@@ -24,7 +52,6 @@ public class Incidencia {
         this.laborId = laborId;
         this.descripcion = descripcion;
         this.usuarioId = usuarioId;
-        this.fecha = LocalDateTime.now();
     }
 
     public Long getId() { return id; }

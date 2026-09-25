@@ -50,3 +50,15 @@ Clase 01: comprensión del problema, alcance, lenguaje inicial del dominio y bac
 - `docs/03-decisions/` 
 ## 9. Regla de trabajo
  Cada cambio importante debe ser comprensible, trazable y defendible. El repositorio es la fuente de verdad del proyecto
+
+## 10. Base de datos
+El backend (`backend/`) usa Spring Boot + Spring Data JPA + Flyway sobre PostgreSQL.
+
+1. Crea una base de datos local vacía llamada `agrocontrol` en PostgreSQL (Flyway crea el esquema `agrocontrol` y las 15 tablas automáticamente al arrancar, usando `backend/src/main/resources/db/migration/V1__esquema_inicial.sql`).
+2. Configura las credenciales por variables de entorno (opcional, ya tienen valores por defecto para desarrollo local):
+   - `AGROCONTROL_DB_URL` (por defecto `jdbc:postgresql://localhost:5432/agrocontrol`)
+   - `AGROCONTROL_DB_USER` (por defecto `postgres`)
+   - `AGROCONTROL_DB_PASSWORD` (por defecto `postgres`)
+3. Ejecuta la clase `com.agrocontrol.AgroControlApplication` (no `Main`, que sigue siendo solo una demo en memoria sin base de datos). Al iniciar, Flyway aplica la migración y la app imprime cuántos roles hay en la base de datos, confirmando la conexión.
+
+El script original del esquema (`database/V1__esquema_inicial.sql`, dump de `pg_dump`) se mantiene como documentación de referencia; la copia ejecutada por Flyway vive en `backend/src/main/resources/db/migration/`.

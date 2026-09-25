@@ -1,15 +1,43 @@
 package com.agrocontrol.auditoria.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "auditoria", schema = "agrocontrol")
 public class Auditoria {
-    private final Long id;
-    private final Long usuarioId;
-    private final String entidad;
-    private final Long idEntidad;
-    private final String accion;
-    private final String detalle;
-    private final LocalDateTime fecha;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_auditoria")
+    private Long id;
+
+    @Column(name = "id_usuario")
+    private Long usuarioId;
+
+    @Column(name = "entidad", nullable = false, length = 60)
+    private String entidad;
+
+    @Column(name = "id_entidad", nullable = false)
+    private Long idEntidad;
+
+    @Column(name = "accion", nullable = false, length = 30)
+    private String accion;
+
+    @Column(name = "detalle", columnDefinition = "text")
+    private String detalle;
+
+    @Column(name = "fecha", nullable = false, updatable = false)
+    private LocalDateTime fecha = LocalDateTime.now();
+
+    protected Auditoria() {
+    }
 
     public Auditoria(Long id, Long usuarioId, String entidad, Long idEntidad, String accion, String detalle) {
         if (entidad == null || entidad.isBlank()) {
@@ -27,7 +55,6 @@ public class Auditoria {
         this.idEntidad = idEntidad;
         this.accion = accion;
         this.detalle = detalle;
-        this.fecha = LocalDateTime.now();
     }
 
     public Long getId() { return id; }

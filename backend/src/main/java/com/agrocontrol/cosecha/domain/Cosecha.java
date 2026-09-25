@@ -1,15 +1,41 @@
 package com.agrocontrol.cosecha.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "cosecha", schema = "agrocontrol")
 public class Cosecha {
-    private final Long id;
-    private final Long campanaId;
-    private final BigDecimal cantidad;
-    private final String unidadMedida;
-    private final LocalDate fecha;
-    private final Long usuarioId;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_cosecha")
+    private Long id;
+
+    @Column(name = "id_campana", nullable = false)
+    private Long campanaId;
+
+    @Column(name = "cantidad", nullable = false, precision = 12, scale = 2)
+    private BigDecimal cantidad;
+
+    @Column(name = "unidad_medida", nullable = false, length = 20)
+    private String unidadMedida;
+
+    @Column(name = "fecha", nullable = false, updatable = false)
+    private LocalDate fecha = LocalDate.now();
+
+    @Column(name = "id_usuario", nullable = false)
+    private Long usuarioId;
+
+    protected Cosecha() {
+    }
 
     public Cosecha(Long id, Long campanaId, BigDecimal cantidad, String unidadMedida, Long usuarioId) {
         if (campanaId == null) {
@@ -29,7 +55,6 @@ public class Cosecha {
         this.cantidad = cantidad;
         this.unidadMedida = unidadMedida;
         this.usuarioId = usuarioId;
-        this.fecha = LocalDate.now();
     }
 
     public Long getId() { return id; }

@@ -1,17 +1,47 @@
 package com.agrocontrol.labor.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "labor", schema = "agrocontrol")
 public class Labor {
-    private final Long id;
-    private final Long campanaId;
-    private final Long parcelaId;
-    private final String tipo;
-    private final LocalDate fechaPlan;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_labor")
+    private Long id;
+
+    @Column(name = "id_campana", nullable = false)
+    private Long campanaId;
+
+    @Column(name = "id_parcela", nullable = false)
+    private Long parcelaId;
+
+    @Column(name = "tipo", nullable = false, length = 60)
+    private String tipo;
+
+    @Column(name = "fecha_plan", nullable = false)
+    private LocalDate fechaPlan;
+
+    @Column(name = "fecha_ejecucion")
     private LocalDate fechaEjecucion;
+
+    @Column(name = "estado", nullable = false, length = 20)
     private String estado;
-    private final LocalDateTime creadoEn;
+
+    @Column(name = "creado_en", nullable = false, updatable = false)
+    private LocalDateTime creadoEn = LocalDateTime.now();
+
+    protected Labor() {
+    }
 
     public Labor(Long id, Long campanaId, Long parcelaId, String tipo, LocalDate fechaPlan) {
         if (campanaId == null) {
@@ -32,7 +62,6 @@ public class Labor {
         this.tipo = tipo;
         this.fechaPlan = fechaPlan;
         this.estado = "PLANIFICADA";
-        this.creadoEn = LocalDateTime.now();
     }
 
     public void ejecutar(LocalDate fechaEjecucion) {

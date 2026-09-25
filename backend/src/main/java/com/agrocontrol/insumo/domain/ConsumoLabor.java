@@ -1,14 +1,38 @@
 package com.agrocontrol.insumo.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "consumo_labor", schema = "agrocontrol")
 public class ConsumoLabor {
-    private final Long id;
-    private final Long laborId;
-    private final Long insumoId;
-    private final BigDecimal cantidad;
-    private final LocalDateTime fecha;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_consumo")
+    private Long id;
+
+    @Column(name = "id_labor", nullable = false)
+    private Long laborId;
+
+    @Column(name = "id_insumo", nullable = false)
+    private Long insumoId;
+
+    @Column(name = "cantidad", nullable = false, precision = 12, scale = 2)
+    private BigDecimal cantidad;
+
+    @Column(name = "fecha", nullable = false, updatable = false)
+    private LocalDateTime fecha = LocalDateTime.now();
+
+    protected ConsumoLabor() {
+    }
 
     public ConsumoLabor(Long id, Long laborId, Long insumoId, BigDecimal cantidad) {
         if (laborId == null) {
@@ -24,7 +48,6 @@ public class ConsumoLabor {
         this.laborId = laborId;
         this.insumoId = insumoId;
         this.cantidad = cantidad;
-        this.fecha = LocalDateTime.now();
     }
 
     public Long getId() { return id; }
