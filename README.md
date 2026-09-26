@@ -26,9 +26,7 @@ Desarrollar un sistema web/móvil para planificar campañas, registrar labores e
 - Dashboard 
 ## 5. Fuera de alcance
  - Sensores IoT
-- Cámaras y lectura automática de placas 
-- Barreras físicas
-- Pasarela bancaria real 
+- Barreras físicas 
 - Facturación fiscal
 - GPS en tiempo real 
 - IA para autorizar reservas o calcular precios
