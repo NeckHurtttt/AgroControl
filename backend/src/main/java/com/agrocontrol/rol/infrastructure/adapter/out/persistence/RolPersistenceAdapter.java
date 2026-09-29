@@ -1,4 +1,4 @@
-package com.agrocontrol.rol.infra;
+package com.agrocontrol.rol.infrastructure.adapter.out.persistence;
 
 import com.agrocontrol.rol.domain.Rol;
 import com.agrocontrol.rol.domain.RolRepository;
@@ -8,27 +8,30 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class RolRepositoryImpl implements RolRepository {
+public class RolPersistenceAdapter implements RolRepository {
 
     private final RolJpaRepository jpaRepository;
 
-    public RolRepositoryImpl(RolJpaRepository jpaRepository) {
+    public RolPersistenceAdapter(RolJpaRepository jpaRepository) {
         this.jpaRepository = jpaRepository;
     }
 
     @Override
     public Rol guardar(Rol rol) {
-        return jpaRepository.save(rol);
+        RolJpaEntity guardado = jpaRepository.save(RolPersistenceMapper.toEntity(rol));
+        return RolPersistenceMapper.toDomain(guardado);
     }
 
     @Override
     public Optional<Rol> buscarPorId(Long id) {
-        return jpaRepository.findById(id);
+        return jpaRepository.findById(id).map(RolPersistenceMapper::toDomain);
     }
 
     @Override
     public List<Rol> listarTodos() {
-        return jpaRepository.findAll();
+        return jpaRepository.findAll().stream()
+                .map(RolPersistenceMapper::toDomain)
+                .toList();
     }
 
     @Override
