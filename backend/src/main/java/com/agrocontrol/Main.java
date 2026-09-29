@@ -34,7 +34,7 @@ public class Main {
         );
         for (RegistrarUsuarioCommand cmd : comandos) {
             Rol rol = service.obtener(cmd.rolId());
-            rol.agregarUsuario(new Usuario(null, cmd.nombreCompleto(), cmd.email(), cmd.passwordHash(), cmd.rolId()));
+            rol.agregarUsuario(new Usuario(null, cmd.nombreCompleto(), cmd.email(), "demo-sin-codificar:" + cmd.password(), cmd.rolId()));
         }
 
         System.out.println("Roles registrados: " + service.listar().size());

@@ -4,5 +4,5 @@ public record RegistrarUsuarioCommand(
         Long rolId,
         String nombreCompleto,
         String email,
-        String passwordHash
+        String password
 ) {}

@@ -8,4 +8,7 @@ public interface RolRepository {
     Optional<Rol> buscarPorId(Long id);
     List<Rol> listarTodos();
     boolean existePorNombre(String nombre);
+    boolean existePorNombreEnOtroRol(String nombre, Long idExcluido);
+    boolean tieneUsuariosAsignados(Long id);
+    void eliminar(Long id);
 }

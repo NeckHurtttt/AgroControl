@@ -1,7 +1,11 @@
 package com.agrocontrol.shared.web;
 
 import com.agrocontrol.rol.domain.exception.NombreRolDuplicadoException;
+import com.agrocontrol.rol.domain.exception.RolConUsuariosException;
 import com.agrocontrol.rol.domain.exception.RolNoEncontradoException;
+import com.agrocontrol.usuario.domain.exception.EmailUsuarioDuplicadoException;
+import com.agrocontrol.usuario.domain.exception.UsuarioNoEncontradoException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,14 +18,23 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RolNoEncontradoException.class)
-    public ProblemDetail noEncontrado(RolNoEncontradoException ex) {
+    @ExceptionHandler({RolNoEncontradoException.class, UsuarioNoEncontradoException.class})
+    public ProblemDetail noEncontrado(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(NombreRolDuplicadoException.class)
-    public ProblemDetail duplicado(NombreRolDuplicadoException ex) {
+    @ExceptionHandler({NombreRolDuplicadoException.class, EmailUsuarioDuplicadoException.class,
+            RolConUsuariosException.class})
+    public ProblemDetail conflicto(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    // Última red: PostgreSQL rechazó por UNIQUE/FK algo que las reglas del servicio no alcanzaron
+    // a detectar (p. ej. dos requests simultáneos con el mismo nombre de rol).
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail integridad(DataIntegrityViolationException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "La operación viola una restricción de integridad de la base de datos");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

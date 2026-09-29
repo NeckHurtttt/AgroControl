@@ -7,4 +7,5 @@ public interface UsuarioRepository {
     Usuario guardar(Usuario usuario);
     Optional<Usuario> buscarPorId(Long id);
     List<Usuario> listarTodos();
+    boolean existePorEmail(String email);
 }

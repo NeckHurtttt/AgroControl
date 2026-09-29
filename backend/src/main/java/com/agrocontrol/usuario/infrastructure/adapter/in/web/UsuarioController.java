@@ -1,0 +1,40 @@
+package com.agrocontrol.usuario.infrastructure.adapter.in.web;
+
+import com.agrocontrol.usuario.application.UsuarioService;
+import com.agrocontrol.usuario.application.command.RegistrarUsuarioCommand;
+import com.agrocontrol.usuario.domain.Usuario;
+import com.agrocontrol.usuario.infrastructure.adapter.in.web.dto.CrearUsuarioRequest;
+import com.agrocontrol.usuario.infrastructure.adapter.in.web.dto.UsuarioResponse;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/usuarios")
+public class UsuarioController {
+
+    private final UsuarioService service;
+
+    public UsuarioController(UsuarioService service) {
+        this.service = service;
+    }
+
+    @PostMapping
+    public ResponseEntity<UsuarioResponse> crear(@Valid @RequestBody CrearUsuarioRequest request) {
+        RegistrarUsuarioCommand command = new RegistrarUsuarioCommand(
+                request.rolId(), request.nombreCompleto(), request.email(), request.password());
+        Usuario creado = service.registrar(command);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioResponse.desde(creado));
+    }
+
+    @GetMapping("/{id}")
+    public UsuarioResponse buscarPorId(@PathVariable Long id) {
+        return UsuarioResponse.desde(service.obtener(id));
+    }
+}

@@ -59,3 +59,91 @@ Accept: application/json
 ### Buscar por id inexistente -> 404 Not Found
 GET http://localhost:8080/api/roles/999
 Accept: application/json
+
+### ==== PUT / DELETE de Rol (banco P18, P19) ====
+
+### PUT válido -> 200 (repetirlo da el mismo resultado: idempotente)
+PUT http://localhost:8080/api/roles/5
+Content-Type: application/json
+
+{
+  "nombre": "SUPERVISOR_GENERAL",
+  "descripcion": "Supervisa todos los predios"
+}
+
+### PUT con nombre de otro rol -> 409 Conflict
+PUT http://localhost:8080/api/roles/5
+Content-Type: application/json
+
+{
+  "nombre": "OPERARIO"
+}
+
+### PUT sobre id inexistente -> 404 (no crea el recurso)
+PUT http://localhost:8080/api/roles/999
+Content-Type: application/json
+
+{
+  "nombre": "FANTASMA"
+}
+
+### DELETE de rol con usuarios (OPERARIO) -> 409 Conflict
+DELETE http://localhost:8080/api/roles/3
+
+### DELETE de rol sin usuarios -> 204 No Content
+DELETE http://localhost:8080/api/roles/5
+
+### DELETE repetido -> 404
+DELETE http://localhost:8080/api/roles/5
+
+### ==== Usuario: entidad hija (banco P15) ====
+
+### POST válido -> 201 (la respuesta NO incluye la contraseña)
+POST http://localhost:8080/api/usuarios
+Content-Type: application/json
+
+{
+  "rolId": 3,
+  "nombreCompleto": "Pedro Mamani",
+  "email": "operario3@agrocontrol.com",
+  "password": "Campo2026!"
+}
+
+### POST con rol padre inexistente -> 404
+POST http://localhost:8080/api/usuarios
+Content-Type: application/json
+
+{
+  "rolId": 999,
+  "nombreCompleto": "Nadie",
+  "email": "nadie@agrocontrol.com",
+  "password": "Campo2026!"
+}
+
+### POST con email ya registrado (distinta mayúscula) -> 409
+POST http://localhost:8080/api/usuarios
+Content-Type: application/json
+
+{
+  "rolId": 3,
+  "nombreCompleto": "Otro",
+  "email": "OPERARIO3@agrocontrol.com",
+  "password": "Campo2026!"
+}
+
+### POST inválido -> 400 con errores por campo
+POST http://localhost:8080/api/usuarios
+Content-Type: application/json
+
+{
+  "rolId": 3,
+  "nombreCompleto": "",
+  "email": "no-es-email",
+  "password": "123"
+}
+
+### GET usuario existente -> 200
+GET http://localhost:8080/api/usuarios/6
+
+### GET usuario inexistente -> 404
+GET http://localhost:8080/api/usuarios/999

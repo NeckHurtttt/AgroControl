@@ -39,4 +39,9 @@ public class UsuarioPersistenceAdapter implements UsuarioRepository {
                 .map(UsuarioPersistenceMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public boolean existePorEmail(String email) {
+        return jpaRepository.existsByEmailIgnoreCase(email);
+    }
 }

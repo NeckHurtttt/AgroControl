@@ -40,4 +40,21 @@ public class RolRepositoryEnMemoria implements RolRepository {
         return datos.values().stream()
                 .anyMatch(r -> r.getNombre().equalsIgnoreCase(nombre));
     }
+
+    @Override
+    public boolean existePorNombreEnOtroRol(String nombre, Long idExcluido) {
+        return datos.values().stream()
+                .anyMatch(r -> !r.getId().equals(idExcluido) && r.getNombre().equalsIgnoreCase(nombre));
+    }
+
+    @Override
+    public boolean tieneUsuariosAsignados(Long id) {
+        Rol rol = datos.get(id);
+        return rol != null && !rol.getUsuarios().isEmpty();
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        datos.remove(id);
+    }
 }

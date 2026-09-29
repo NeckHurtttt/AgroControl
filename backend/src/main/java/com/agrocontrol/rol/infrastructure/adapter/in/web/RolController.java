@@ -2,14 +2,17 @@ package com.agrocontrol.rol.infrastructure.adapter.in.web;
 
 import com.agrocontrol.rol.application.RolService;
 import com.agrocontrol.rol.domain.Rol;
+import com.agrocontrol.rol.infrastructure.adapter.in.web.dto.ActualizarRolRequest;
 import com.agrocontrol.rol.infrastructure.adapter.in.web.dto.CrearRolRequest;
 import com.agrocontrol.rol.infrastructure.adapter.in.web.dto.RolResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,4 +49,14 @@ public class RolController {
         return ResponseEntity.ok(RolResponse.desde(service.obtener(id)));
     }
 
+    @PutMapping("/{id}")
+    public RolResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarRolRequest request) {
+        return RolResponse.desde(service.actualizar(id, request.nombre(), request.descripcion()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        service.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

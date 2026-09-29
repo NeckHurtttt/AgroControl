@@ -38,4 +38,19 @@ public class RolPersistenceAdapter implements RolRepository {
     public boolean existePorNombre(String nombre) {
         return jpaRepository.existsByNombreIgnoreCase(nombre);
     }
+
+    @Override
+    public boolean existePorNombreEnOtroRol(String nombre, Long idExcluido) {
+        return jpaRepository.existsByNombreIgnoreCaseAndIdNot(nombre, idExcluido);
+    }
+
+    @Override
+    public boolean tieneUsuariosAsignados(Long id) {
+        return jpaRepository.contarUsuarios(id) > 0;
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        jpaRepository.deleteById(id);
+    }
 }
