@@ -1,0 +1,61 @@
+### ==== Capítulo 03 ====
+
+### Health
+GET http://localhost:8080/api/health
+Accept: application/json
+
+### Demo de la entidad padre (Rol)
+GET http://localhost:8080/api/roles/demo
+Accept: application/json
+
+### ==== Capítulo 04 ====
+
+### POST válido -> 201 Created
+POST http://localhost:8080/api/roles
+Content-Type: application/json
+
+{
+  "nombre": "AUDITOR",
+  "descripcion": "Revisa la trazabilidad de labores e insumos"
+}
+
+### POST con nombre vacío -> 400 Bad Request
+POST http://localhost:8080/api/roles
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "descripcion": "Sin nombre"
+}
+
+### POST con formato inválido (minúsculas y espacios) -> 400 Bad Request
+POST http://localhost:8080/api/roles
+Content-Type: application/json
+
+{
+  "nombre": "jefe de campo"
+}
+
+### POST duplicado (repetir el POST válido) -> 409 Conflict
+POST http://localhost:8080/api/roles
+Content-Type: application/json
+
+{
+  "nombre": "AUDITOR"
+}
+
+### Listar -> 200 OK + arreglo JSON
+GET http://localhost:8080/api/roles
+Accept: application/json
+
+### Listar con filtro opcional (?nombre=) -> 200 OK filtrado
+GET http://localhost:8080/api/roles?nombre=aud
+Accept: application/json
+
+### Buscar por id existente -> 200 OK
+GET http://localhost:8080/api/roles/1
+Accept: application/json
+
+### Buscar por id inexistente -> 404 Not Found
+GET http://localhost:8080/api/roles/999
+Accept: application/json
