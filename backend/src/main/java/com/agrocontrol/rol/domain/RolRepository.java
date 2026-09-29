@@ -7,4 +7,5 @@ public interface RolRepository {
     Rol guardar(Rol rol);
     Optional<Rol> buscarPorId(Long id);
     List<Rol> listarTodos();
+    boolean existePorNombre(String nombre);
 }

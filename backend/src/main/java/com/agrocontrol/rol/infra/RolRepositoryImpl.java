@@ -30,4 +30,9 @@ public class RolRepositoryImpl implements RolRepository {
     public List<Rol> listarTodos() {
         return jpaRepository.findAll();
     }
+
+    @Override
+    public boolean existePorNombre(String nombre) {
+        return jpaRepository.existsByNombreIgnoreCase(nombre);
+    }
 }
