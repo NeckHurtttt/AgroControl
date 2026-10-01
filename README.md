@@ -1,6 +1,17 @@
-# AgroControl 
+# AgroControl
 
-Sistema de gestion de lotes agricola, campañas labores insumos y cosechas 
+Sistema de gestión de lotes agrícolas: predios, parcelas, campañas, labores, insumos y cosechas.
+
+## Estructura del repositorio
+
+```
+AgroControl/
+├── backend/    API REST · Java 21 + Spring Boot + JPA + Flyway
+├── frontend/   Web · React + TypeScript + Vite
+├── database/   Scripts SQL de clase (ver database/README.md)
+└── docs/       Visión, glosario, requerimientos y decisiones
+```
+
 ## 1. Problema
 Reemplazar el registro manual y disperso de la operación agrícola por un sistema digital que dé trazabilidad completa — quién hizo qué, cuándo, con qué insumos, y con qué resultado — a nivel de parcela y campaña, sin tomar decisiones agronómicas por el usuario.
 ## 2. Objetivo del MVP 
@@ -40,11 +51,15 @@ Desarrollar un sistema web/móvil para planificar campañas, registrar labores e
 - Versionado: Git + GitHub 
 - CI: GitHub Actions - IA: Spring AI, únicamente como capacidad complementaria
  ## 7. Estado actual 
-Clase 01: comprensión del problema, alcance, lenguaje inicial del dominio y backlog v0.1. Todavía no existe código de aplicación.
+- Documentación de visión, glosario, backlog y modelo relacional v0.1.
+- Base de datos PostgreSQL versionada con Flyway.
+- Backend con API REST de predios y parcelas (listar, obtener por id, crear), validación y Swagger.
+- Frontend web conectado a la API: listado y alta de predios y parcelas.
  ## 8. Documentación 
 - `docs/01-vision/vision-v0.1.md` 
 - `docs/01-vision/glossary-v0.1.md` 
-- `docs/02-requirements/backlog-v0.1.md` 
+- `docs/02-requirements/backlog-v0.1.md`
+- `docs/02-requirements/model-relational-v0.1.md`
 - `docs/03-decisions/` 
 ## 9. Regla de trabajo
  Cada cambio importante debe ser comprensible, trazable y defendible. El repositorio es la fuente de verdad del proyecto
@@ -59,7 +74,7 @@ El backend (`backend/`) usa Spring Boot + Spring Data JPA + Flyway sobre Postgre
    - `AGROCONTROL_DB_PASSWORD` (por defecto `postgres`)
 3. Ejecuta la clase `com.agrocontrol.AgroControlApplication` (no `Main`, que sigue siendo solo una demo en memoria sin base de datos). Al iniciar, Flyway aplica la migración y la app imprime cuántos roles hay en la base de datos, confirmando la conexión.
 
-El script original del esquema (`database/V1__esquema_inicial.sql`, dump de `pg_dump`) se mantiene como documentación de referencia; la copia ejecutada por Flyway vive en `backend/src/main/resources/db/migration/`.
+El script original del esquema (`database/V1__esquema_inicial.sql`, dump de `pg_dump`) se mantiene como documentación de referencia; la copia ejecutada por Flyway vive en `backend/src/main/resources/db/migration/`. Los demás scripts de `database/` (creación manual, semilla y pruebas) se describen en [`database/README.md`](database/README.md).
 
 ## 11. API REST
 Con el backend en marcha (`http://localhost:8080`):

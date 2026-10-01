@@ -1,1 +1,17 @@
+# IDE
 .idea/
+*.iml
+.vscode/
+
+# Build / dependencias
+target/
+node_modules/
+dist/
+
+# Variables locales (pueden contener credenciales)
+.env.local
+.env.*.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
