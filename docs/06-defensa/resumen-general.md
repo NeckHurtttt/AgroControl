@@ -20,10 +20,10 @@ Par 1:N asignado: **Rol → Usuario** (`usuario.id_rol → rol.id_rol`). Package
 ## Pendientes / cosas que conviene saber antes de la defensa
 
 - [ ] **Flyway aplicará V2 en tu BD local** la próxima vez que arranques la app (hoy está en v1). Es lo esperado.
-- [ ] Las **13 entidades restantes** siguen como `@Entity` en `domain/` (justificación en notas 05).
+- [ ] Las **13 entidades restantes** siguen como `@Entity` en `domain/` (justificación en notas 05). Ahora predio, parcela, cultivo, campaña, labor, insumo y cosecha ya tienen puerto en `domain/`, servicio en `application/` y adaptadores en `infrastructure/adapter/{in/web,out/persistence}`, igual que Rol/Usuario. Solo falta separar `*JpaEntity` + mapper.
 - [ ] **No hay tests automatizados** en `src/test` (P49, pendiente por decisión). La verificación fue manual: `Main`, curl contra todos los endpoints con SQL de Hibernate visible, y un test temporal de persistencia que se borró porque requiere PostgreSQL.
 - [ ] Ids `Long` en Java vs `integer` en PostgreSQL: funciona, pero `ddl-auto=validate` lo marcaría.
-- [ ] El README (sección "Estado actual") todavía dice "Clase 01… no existe código". Conviene actualizarlo.
+- [x] README actualizado (estado actual, tabla de endpoints y arquitectura por módulo).
 - [x] Commits por capítulo en la rama `defensa/cierre-gaps` (cada uno compila por sí solo):
   1. `feat(java): aplicar interfaces colecciones optional y excepciones al dominio` (cap. 02)
   2. `feat: bootstrap Spring Boot backend and first REST endpoints` (cap. 03)
@@ -33,7 +33,7 @@ Par 1:N asignado: **Rol → Usuario** (`usuario.id_rol → rol.id_rol`). Package
   6. `feat: PUT/DELETE de rol, alta de usuario, mappedBy y límites transaccionales` (banco)
   7. `docs(defensa): notas de estudio por capítulo y checklist contra el banco`
   8. `chore(config): mostrar el SQL de Hibernate en consola para la defensa`
-- [ ] Mergear `defensa/cierre-gaps` a `main` y hacer push (no se hizo automáticamente).
+- [x] `defensa/cierre-gaps` mergeada a `main` junto con el frontend y los módulos nuevos.
 
 ## Checklist contra el banco oficial de 50 preguntas
 
@@ -95,7 +95,7 @@ Par 1:N asignado: **Rol → Usuario** (`usuario.id_rol → rol.id_rol`). Package
 | **P11 CRÍTICA** | Recorrido exacto HTTP → PostgreSQL → HTTP | ✅ | `RolController.crear` → `RolService.registrar` → `RolRepository` → `RolPersistenceAdapter` → `RolPersistenceMapper` → `RolJpaRepository.save` → INSERT. JSON→Java: Jackson, al resolver `@RequestBody`. Java→JSON: Jackson, al escribir el `ResponseEntity`. Flujo en `notas-capitulo-03.md` y `-04.md`. Para la demo en vivo, `spring.jpa.show-sql=true` ya está en `…/resources/application.properties`: cada request muestra su SQL en la consola. |
 | P12 | @Controller vs @RestController | ✅ | `…/rol/infrastructure/adapter/in/web/RolController.java`. Rutas: `/api/roles`, `/api/roles/{id}`, `/api/roles/demo`, `/api/health`. |
 | P13 | PathVariable / RequestParam / RequestBody | ✅ | Los tres están en `RolController` (`/{id}`, `?nombre=`, `CrearRolRequest`). **Repregunta** (hijos por estado): `GET /api/roles/{id}/usuarios?estado=ACTIVO`. El padre va en el path y el filtro en la query. |
-| P14 | Swagger vs Postman vs navegador | 🟡 | Se responde con teoría (son todos clientes HTTP y pasan por el mismo camino). **No hay Swagger/springdoc** en el `pom.xml`; la evidencia es `requests.http`. |
+| P14 | Swagger vs Postman vs navegador | ✅ | `springdoc-openapi-starter-webmvc-ui` en `backend/pom.xml` → Swagger UI en `http://localhost:8080/swagger-ui.html`; `requests.http` como cliente alternativo; el frontend React como tercer cliente. Los tres entran por el mismo `DispatcherServlet` → controller → service. |
 | **P15 CRÍTICA** | POST línea por línea, ManyToOne al asignar padre, padre inexistente | ✅ | Hijo: `…/usuario/infrastructure/adapter/in/web/UsuarioController.java` → `…/usuario/application/UsuarioService.java` → `…/usuario/infrastructure/adapter/out/persistence/UsuarioPersistenceAdapter.java` (`getReferenceById` asigna el padre en el `@ManyToOne` sin SELECT) → INSERT → 201. **Repregunta** (padre inexistente): se detecta en `UsuarioService.registrar` **antes** del INSERT → `RolNoEncontradoException` → **404** (probado). Persist vs merge: POST sin id = persist (INSERT); PUT con id = merge + dirty checking. SQL real en `notas-capitulo-04.md`. |
 | **P16 CRÍTICA** | GET por id, incluido el no existe | ✅ | `RolController.buscarPorId` → `RolService.obtener` (`orElseThrow`) → `…/rol/domain/exception/RolNoEncontradoException.java` → `GlobalExceptionHandler` → 404. También `GET /api/usuarios/{id}` → `UsuarioNoEncontradoException` → 404. Probados 200 y 404. ¿Se carga la relación? `RolJpaEntity.usuarios` es `@OneToMany` **LAZY** y no se toca al mapear, así que no se consulta la tabla `usuario`. **Repregunta** (`.get()` vs `orElseThrow`): `.get()` lanza `NoSuchElementException`, que termina en 500; `orElseThrow` expresa el caso de negocio y da 404. |
 | P17 | GET de listado y riesgos | 🟡 | `RolController.listar` → `findAll()` **sin paginación**. Hay que reconocer el riesgo. N+1: evidencia LAZY en `notas-capitulo-05.md`. |
@@ -105,7 +105,7 @@ Par 1:N asignado: **Rol → Usuario** (`usuario.id_rol → rol.id_rol`). Package
 | P21 | @Valid y momento de validación | ✅ | `…/rol/infrastructure/adapter/in/web/dto/CrearRolRequest.java`, `…/usuario/infrastructure/adapter/in/web/dto/CrearUsuarioRequest.java` (`@NotNull` en `rolId` vs `@NotBlank` en textos). **Repregunta** (correo duplicado): `@Email` valida el formato y `UsuarioService.registrar` la unicidad → 409 (probado con el mismo email en MAYÚSCULAS). |
 | P22 | @RestControllerAdvice | ✅ | `…/shared/web/GlobalExceptionHandler.java` (`ProblemDetail`: type, title, status, detail, instance y `errores` por campo). |
 | P23 | @Transactional y límite de transacción | ✅ | `…/rol/application/RolService.java` y `…/usuario/application/UsuarioService.java`: escrituras con `@Transactional`, lecturas con `readOnly = true`. El límite es el **caso de uso**: "verificar + escribir" es una unidad. Rollback ante `RuntimeException`. Evidencia del persistence context compartido (merge sin SELECT extra): `notas-capitulo-05.md`. |
-| P24 | CORS | ❌ | No hay configuración CORS. Solo teoría (origen = esquema + host + puerto; `:8080` ≠ `:5173`). |
+| P24 | CORS | ✅ | `…/shared/web/CorsConfig.java` (`WebMvcConfigurer.addCorsMappings` sobre `/api/**`, origen tomado de `agrocontrol.cors.allowed-origins`, por defecto `http://localhost:5173`). Probado: preflight `OPTIONS` desde `:5173` → 200 con `Access-Control-Allow-Origin`; desde otro origen → 403. Postman no sufre CORS porque no es un navegador. |
 
 ### Bloque C — JPA, Hibernate, cardinalidad y PostgreSQL
 

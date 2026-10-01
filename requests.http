@@ -147,3 +147,138 @@ GET http://localhost:8080/api/usuarios/6
 
 ### GET usuario inexistente -> 404
 GET http://localhost:8080/api/usuarios/999
+
+### ==== Predios y parcelas (CRUD completo) ====
+
+### Listar predios
+GET http://localhost:8080/api/predios
+
+### PUT predio -> 200 (dirty checking: UPDATE solo si cambió algo)
+PUT http://localhost:8080/api/predios/3
+Content-Type: application/json
+
+{
+  "nombre": "Predio El Retiro",
+  "ubicacion": "Cotoca, Santa Cruz",
+  "areaHa": 40,
+  "activo": false
+}
+
+### DELETE predio con parcelas -> 409
+DELETE http://localhost:8080/api/predios/1
+
+### Parcelas de un predio
+GET http://localhost:8080/api/parcelas?predioId=1
+
+### POST parcela con predio inexistente -> 404
+POST http://localhost:8080/api/parcelas
+Content-Type: application/json
+
+{
+  "predioId": 999,
+  "codigo": "X-01",
+  "areaHa": 10
+}
+
+### PUT parcela con estado inválido -> 400
+PUT http://localhost:8080/api/parcelas/2
+Content-Type: application/json
+
+{
+  "codigo": "P-02",
+  "areaHa": 30,
+  "estado": "ROTA"
+}
+
+### ==== Campañas ====
+
+### Listar campañas
+GET http://localhost:8080/api/campanas
+
+### Nueva campaña en parcela con otra abierta -> 409
+POST http://localhost:8080/api/campanas
+Content-Type: application/json
+
+{
+  "parcelaId": 1,
+  "cultivoId": 1,
+  "fechaInicio": "2026-10-01"
+}
+
+### Iniciar campaña PLANIFICADA -> 200 (EN_CURSO); repetirlo -> 409
+POST http://localhost:8080/api/campanas/2/iniciar
+
+### Finalizar con fecha anterior al inicio -> 400
+POST http://localhost:8080/api/campanas/2/finalizar
+Content-Type: application/json
+
+{
+  "fechaFin": "2025-01-01"
+}
+
+### ==== Labores e insumos ====
+
+### Planificar labor (la parcela la toma de la campaña)
+POST http://localhost:8080/api/labores
+Content-Type: application/json
+
+{
+  "campanaId": 2,
+  "tipo": "fumigacion",
+  "fechaPlan": "2026-10-15"
+}
+
+### Ejecutar labor
+POST http://localhost:8080/api/labores/3/ejecutar
+Content-Type: application/json
+
+{
+  "fechaEjecucion": "2026-10-16"
+}
+
+### Consumo de insumo en una labor (descuenta stock + movimiento SALIDA)
+POST http://localhost:8080/api/labores/3/consumos
+Content-Type: application/json
+
+{
+  "insumoId": 2,
+  "cantidad": 10,
+  "usuarioId": 3
+}
+
+### Consumo mayor al stock -> 409 (rollback: no se guarda nada)
+POST http://localhost:8080/api/labores/3/consumos
+Content-Type: application/json
+
+{
+  "insumoId": 2,
+  "cantidad": 99999,
+  "usuarioId": 3
+}
+
+### Entrada de stock
+POST http://localhost:8080/api/insumos/2/movimientos
+Content-Type: application/json
+
+{
+  "tipo": "ENTRADA",
+  "cantidad": 200,
+  "motivo": "Compra",
+  "usuarioId": 4
+}
+
+### Historial de movimientos
+GET http://localhost:8080/api/insumos/2/movimientos
+
+### ==== Cosechas ====
+
+### Cosecha de campaña PLANIFICADA -> 409
+POST http://localhost:8080/api/cosechas
+Content-Type: application/json
+
+{
+  "campanaId": 3,
+  "cantidad": 10,
+  "unidadMedida": "t",
+  "usuarioId": 2
+}
