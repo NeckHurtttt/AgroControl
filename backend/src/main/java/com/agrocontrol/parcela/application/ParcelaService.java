@@ -1,25 +1,27 @@
 package com.agrocontrol.parcela.application;
 
+import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.parcela.domain.Parcela;
 import com.agrocontrol.parcela.domain.ParcelaRepository;
 import com.agrocontrol.predio.domain.PredioRepository;
 import com.agrocontrol.shared.domain.ConflictoException;
 import com.agrocontrol.shared.domain.RecursoNoEncontradoException;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Service
 public class ParcelaService {
 
     private final ParcelaRepository parcelaRepository;
     private final PredioRepository predioRepository;
+    private final CampanaRepository campanaRepository;
 
-    public ParcelaService(ParcelaRepository parcelaRepository, PredioRepository predioRepository) {
+    public ParcelaService(ParcelaRepository parcelaRepository, PredioRepository predioRepository,
+                          CampanaRepository campanaRepository) {
         this.parcelaRepository = parcelaRepository;
         this.predioRepository = predioRepository;
+        this.campanaRepository = campanaRepository;
     }
 
     @Transactional(readOnly = true)
@@ -33,18 +35,51 @@ public class ParcelaService {
     @Transactional(readOnly = true)
     public Parcela obtener(Long id) {
         return parcelaRepository.buscarPorId(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("No existe la parcela con id " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe la parcela con id: " + id));
     }
 
     @Transactional
     public Parcela crear(Long predioId, String codigo, BigDecimal areaHa) {
+        // El padre debe existir antes de crear el hijo: 404 aquí, no un error de FK
         if (!predioRepository.existePorId(predioId)) {
-            throw new RecursoNoEncontradoException("No existe el predio con id " + predioId);
+            throw new RecursoNoEncontradoException("No existe el predio con id: " + predioId);
         }
-        String codigoNormalizado = codigo.trim().toUpperCase();
+        String codigoNormalizado = normalizar(codigo);
         if (parcelaRepository.existeCodigoEnPredio(predioId, codigoNormalizado)) {
-            throw new ConflictoException("Ya existe una parcela con el código " + codigoNormalizado + " en este predio.");
+            throw codigoDuplicado(codigoNormalizado);
         }
         return parcelaRepository.guardar(new Parcela(null, predioId, codigoNormalizado, areaHa));
+    }
+
+    @Transactional
+    public Parcela actualizar(Long id, String codigo, BigDecimal areaHa, String estado) {
+        Parcela parcela = obtener(id);
+        String codigoNormalizado = normalizar(codigo);
+        if (parcelaRepository.existeCodigoEnPredioEnOtraParcela(parcela.getPredioId(), codigoNormalizado, id)) {
+            throw codigoDuplicado(codigoNormalizado);
+        }
+        parcela.cambiarCodigo(codigoNormalizado);
+        parcela.actualizarArea(areaHa);
+        if (estado != null) {
+            parcela.cambiarEstado(estado);
+        }
+        return parcela;
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+        obtener(id);
+        if (campanaRepository.existePorParcela(id)) {
+            throw new ConflictoException("No se puede eliminar la parcela " + id + " porque tiene campañas registradas");
+        }
+        parcelaRepository.eliminar(id);
+    }
+
+    private static String normalizar(String codigo) {
+        return codigo.trim().toUpperCase();
+    }
+
+    private static ConflictoException codigoDuplicado(String codigo) {
+        return new ConflictoException("Ya existe una parcela con el código " + codigo + " en este predio");
     }
 }

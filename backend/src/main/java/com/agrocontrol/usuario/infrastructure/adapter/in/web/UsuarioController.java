@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -31,6 +33,11 @@ public class UsuarioController {
                 request.rolId(), request.nombreCompleto(), request.email(), request.password());
         Usuario creado = service.registrar(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioResponse.desde(creado));
+    }
+
+    @GetMapping
+    public List<UsuarioResponse> listar() {
+        return service.listar().stream().map(UsuarioResponse::desde).toList();
     }
 
     @GetMapping("/{id}")

@@ -65,6 +65,9 @@ public class Labor {
     }
 
     public void ejecutar(LocalDate fechaEjecucion) {
+        if ("EJECUTADA".equals(estado)) {
+            throw new IllegalStateException("La labor ya fue ejecutada");
+        }
         if (fechaEjecucion == null) {
             throw new IllegalArgumentException("La fecha de ejecución es obligatoria");
         }

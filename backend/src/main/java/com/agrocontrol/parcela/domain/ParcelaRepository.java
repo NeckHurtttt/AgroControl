@@ -8,5 +8,8 @@ public interface ParcelaRepository {
     Optional<Parcela> buscarPorId(Long id);
     List<Parcela> listarTodas();
     List<Parcela> listarPorPredio(Long predioId);
+    boolean existePorPredio(Long predioId);
     boolean existeCodigoEnPredio(Long predioId, String codigo);
+    boolean existeCodigoEnPredioEnOtraParcela(Long predioId, String codigo, Long idExcluido);
+    void eliminar(Long id);
 }

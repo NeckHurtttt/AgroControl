@@ -55,7 +55,7 @@ public class Insumo {
             throw new IllegalArgumentException("La cantidad a retirar debe ser mayor que cero");
         }
         if (this.stockActual.compareTo(cantidad) < 0) {
-            throw new IllegalArgumentException("No hay suficiente stock disponible");
+            throw new IllegalStateException("No hay suficiente stock disponible (stock actual: " + stockActual + " " + unidadMedida + ")");
         }
         this.stockActual = this.stockActual.subtract(cantidad);
     }

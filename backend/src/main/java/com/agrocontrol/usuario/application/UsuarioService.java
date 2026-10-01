@@ -10,6 +10,8 @@ import com.agrocontrol.usuario.domain.exception.EmailUsuarioDuplicadoException;
 import com.agrocontrol.usuario.domain.exception.UsuarioNoEncontradoException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
@@ -40,6 +42,11 @@ public class UsuarioService {
                 command.rolId()
         );
         return usuarioRepository.guardar(nuevo);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Usuario> listar() {
+        return usuarioRepository.listarTodos();
     }
 
     @Transactional(readOnly = true)
