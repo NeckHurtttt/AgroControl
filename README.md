@@ -60,3 +60,30 @@ El backend (`backend/`) usa Spring Boot + Spring Data JPA + Flyway sobre Postgre
 3. Ejecuta la clase `com.agrocontrol.AgroControlApplication` (no `Main`, que sigue siendo solo una demo en memoria sin base de datos). Al iniciar, Flyway aplica la migración y la app imprime cuántos roles hay en la base de datos, confirmando la conexión.
 
 El script original del esquema (`database/V1__esquema_inicial.sql`, dump de `pg_dump`) se mantiene como documentación de referencia; la copia ejecutada por Flyway vive en `backend/src/main/resources/db/migration/`.
+
+## 11. API REST
+Con el backend en marcha (`http://localhost:8080`):
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/predios` | Lista los predios |
+| GET | `/api/predios/{id}` | Obtiene un predio (404 si no existe) |
+| POST | `/api/predios` | Crea un predio → 201 |
+| GET | `/api/parcelas?predioId=` | Lista las parcelas (opcionalmente de un predio) |
+| GET | `/api/parcelas/{id}` | Obtiene una parcela (404 si no existe) |
+| POST | `/api/parcelas` | Crea una parcela → 201 (404 si el predio no existe, 409 si el código ya existe en el predio) |
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Los errores siguen un formato común (`GlobalExceptionHandler`): `{ status, error, mensaje, campos }`.
+- CORS autoriza `http://localhost:5173` por defecto; se cambia con `AGROCONTROL_CORS_ORIGINS`.
+
+## 12. Frontend web
+React + TypeScript + Vite en `frontend/` (estructura por features: `predios`, `parcelas`).
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+La URL de la API se configura en `frontend/.env.development` (`VITE_API_URL=http://localhost:8080/api`). Las variables `VITE_` terminan en el navegador: nunca guardar secretos ahí.
