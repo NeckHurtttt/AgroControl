@@ -4,6 +4,11 @@ const menuItems = [
   { to: '/', label: 'Inicio', end: true },
   { to: '/predios', label: 'Predios' },
   { to: '/parcelas', label: 'Parcelas' },
+  { to: '/cultivos', label: 'Cultivos' },
+  { to: '/campanas', label: 'Campañas' },
+  { to: '/labores', label: 'Labores' },
+  { to: '/insumos', label: 'Insumos' },
+  { to: '/cosechas', label: 'Cosechas' },
 ];
 
 export default function Sidebar() {

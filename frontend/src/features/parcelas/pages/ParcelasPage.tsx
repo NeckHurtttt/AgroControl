@@ -1,85 +1,106 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import PageHeading from '../../../components/common/PageHeading';
+import StatsGrid from '../../../components/common/StatsGrid';
+import { useCarga } from '../../../hooks/useCarga';
 import { formatArea } from '../../../utils/area';
-import type { Predio } from '../../predios/models/Predio';
 import { predioService } from '../../predios/services/predioService';
 import ParcelaForm from '../components/ParcelaForm';
 import ParcelaTable from '../components/ParcelaTable';
 import type { Parcela } from '../models/Parcela';
 import { parcelaService } from '../services/parcelaService';
 
+// Predios se necesitan para mostrar a qué fundo pertenece cada parcela y llenar el select.
+const cargarDatos = async (signal: AbortSignal) => {
+  const [parcelas, predios] = await Promise.all([
+    parcelaService.listar(signal),
+    predioService.listar(signal),
+  ]);
+  return { parcelas, predios };
+};
+
 export default function ParcelasPage() {
-  const [parcelas, setParcelas] = useState<Parcela[]>([]);
-  const [predios, setPredios] = useState<Predio[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { datos, setDatos, loading, error } = useCarga(cargarDatos, { parcelas: [], predios: [] });
+  const { parcelas, predios } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [editando, setEditando] = useState<Parcela | null>(null);
+  const [accionError, setAccionError] = useState('');
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const cargarDatos = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        // Predios se necesitan para mostrar a qué fundo pertenece cada parcela y llenar el select.
-        const [parcelasData, prediosData] = await Promise.all([
-          parcelaService.listar(controller.signal),
-          predioService.listar(controller.signal),
-        ]);
-        setParcelas(parcelasData);
-        setPredios(prediosData);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
-        setError(err instanceof Error ? err.message : 'Error inesperado');
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
-
-    void cargarDatos();
-    return () => controller.abort();
-  }, []);
+  const setParcelas = (actualizar: (prev: Parcela[]) => Parcela[]) =>
+    setDatos((prev) => ({ ...prev, parcelas: actualizar(prev.parcelas) }));
 
   const total = parcelas.length;
   const disponibles = parcelas.filter((parcela) => parcela.estado === 'DISPONIBLE').length;
   const areaTotal = parcelas.reduce((suma, parcela) => suma + (parcela.areaHa ?? 0), 0);
 
+  const cerrarFormulario = () => {
+    setMostrarFormulario(false);
+    setEditando(null);
+  };
+
+  const eliminar = async (parcela: Parcela) => {
+    if (!window.confirm(`¿Eliminar la parcela ${parcela.codigo}?`)) return;
+    try {
+      setAccionError('');
+      await parcelaService.eliminar(parcela.id);
+      setParcelas((prev) => prev.filter((item) => item.id !== parcela.id));
+    } catch (err) {
+      setAccionError(err instanceof Error ? err.message : 'No se pudo eliminar');
+    }
+  };
+
   return (
     <section className="feature-page">
-      <div className="page-heading page-heading--actions">
-        <div>
-          <p className="eyebrow">GESTIÓN DE PARCELAS</p>
-          <h1>Parcelas</h1>
-          <p>Parcelas asociadas a cada predio mediante predioId.</p>
-        </div>
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => setMostrarFormulario((prev) => !prev)}
-        >
-          {mostrarFormulario ? 'Cerrar formulario' : '+ Nueva parcela'}
-        </button>
-      </div>
+      <PageHeading
+        eyebrow="GESTIÓN DE PARCELAS"
+        titulo="Parcelas"
+        descripcion="Parcelas asociadas a cada predio mediante predioId."
+        accion={
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => (mostrarFormulario ? cerrarFormulario() : setMostrarFormulario(true))}
+          >
+            {mostrarFormulario ? 'Cerrar formulario' : '+ Nueva parcela'}
+          </button>
+        }
+      />
 
       {mostrarFormulario && (
         <ParcelaForm
+          key={editando?.id ?? 'nueva'}
           predios={predios}
-          onCreated={(nueva) => {
-            setParcelas((prev) => [...prev, nueva]);
+          parcela={editando}
+          onCancel={cerrarFormulario}
+          onSaved={(guardada) => {
+            setParcelas((prev) =>
+              editando ? prev.map((item) => (item.id === guardada.id ? guardada : item)) : [...prev, guardada],
+            );
+            if (editando) cerrarFormulario();
           }}
         />
       )}
 
+      {accionError && <div className="form-error">{accionError}</div>}
       {loading && <div className="state-card">Cargando parcelas...</div>}
       {!loading && error && <div className="state-card error">{error}</div>}
       {!loading && !error && (
         <>
-          <div className="stats-grid">
-            <article className="stat-card"><span>Total</span><strong>{total}</strong></article>
-            <article className="stat-card"><span>Disponibles</span><strong>{disponibles}</strong></article>
-            <article className="stat-card"><span>Área total</span><strong>{formatArea(areaTotal)}</strong></article>
-          </div>
-          <ParcelaTable parcelas={parcelas} predios={predios} />
+          <StatsGrid
+            stats={[
+              { etiqueta: 'Total', valor: total },
+              { etiqueta: 'Disponibles', valor: disponibles },
+              { etiqueta: 'Área total', valor: formatArea(areaTotal) },
+            ]}
+          />
+          <ParcelaTable
+            parcelas={parcelas}
+            predios={predios}
+            onEditar={(parcela) => {
+              setEditando(parcela);
+              setMostrarFormulario(true);
+            }}
+            onEliminar={eliminar}
+          />
         </>
       )}
     </section>

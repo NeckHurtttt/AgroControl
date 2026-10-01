@@ -1,74 +1,90 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import PageHeading from '../../../components/common/PageHeading';
+import StatsGrid from '../../../components/common/StatsGrid';
+import { useCarga } from '../../../hooks/useCarga';
 import PredioForm from '../components/PredioForm';
 import PredioTable from '../components/PredioTable';
 import type { Predio } from '../models/Predio';
 import { predioService } from '../services/predioService';
 
+const cargarPredios = (signal: AbortSignal) => predioService.listar(signal);
+
 export default function PrediosPage() {
-  const [predios, setPredios] = useState<Predio[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { datos: predios, setDatos: setPredios, loading, error } = useCarga<Predio[]>(cargarPredios, []);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const cargarPredios = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const data = await predioService.listar(controller.signal);
-        setPredios(data);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
-        setError(err instanceof Error ? err.message : 'Error inesperado');
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
-
-    void cargarPredios();
-    return () => controller.abort();
-  }, []);
+  const [editando, setEditando] = useState<Predio | null>(null);
+  const [accionError, setAccionError] = useState('');
 
   const total = predios.length;
   const activos = predios.filter((predio) => predio.activo).length;
 
+  const cerrarFormulario = () => {
+    setMostrarFormulario(false);
+    setEditando(null);
+  };
+
+  const eliminar = async (predio: Predio) => {
+    if (!window.confirm(`¿Eliminar el predio "${predio.nombre}"?`)) return;
+    try {
+      setAccionError('');
+      await predioService.eliminar(predio.id);
+      setPredios((prev) => prev.filter((item) => item.id !== predio.id));
+    } catch (err) {
+      setAccionError(err instanceof Error ? err.message : 'No se pudo eliminar');
+    }
+  };
+
   return (
     <section className="feature-page">
-      <div className="page-heading page-heading--actions">
-        <div>
-          <p className="eyebrow">GESTIÓN DE PREDIOS</p>
-          <h1>Predios</h1>
-          <p>Fundos y terrenos registrados en la API REST de AgroControl.</p>
-        </div>
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => setMostrarFormulario((prev) => !prev)}
-        >
-          {mostrarFormulario ? 'Cerrar formulario' : '+ Nuevo predio'}
-        </button>
-      </div>
+      <PageHeading
+        eyebrow="GESTIÓN DE PREDIOS"
+        titulo="Predios"
+        descripcion="Fundos y terrenos registrados en la API REST de AgroControl."
+        accion={
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => (mostrarFormulario ? cerrarFormulario() : setMostrarFormulario(true))}
+          >
+            {mostrarFormulario ? 'Cerrar formulario' : '+ Nuevo predio'}
+          </button>
+        }
+      />
 
       {mostrarFormulario && (
         <PredioForm
-          onCreated={(nuevo) => {
-            setPredios((prev) => [...prev, nuevo]);
+          key={editando?.id ?? 'nuevo'}
+          predio={editando}
+          onCancel={cerrarFormulario}
+          onSaved={(guardado) => {
+            setPredios((prev) =>
+              editando ? prev.map((item) => (item.id === guardado.id ? guardado : item)) : [...prev, guardado],
+            );
+            if (editando) cerrarFormulario();
           }}
         />
       )}
 
+      {accionError && <div className="form-error">{accionError}</div>}
       {loading && <div className="state-card">Cargando predios...</div>}
       {!loading && error && <div className="state-card error">{error}</div>}
       {!loading && !error && (
         <>
-          <div className="stats-grid">
-            <article className="stat-card"><span>Total</span><strong>{total}</strong></article>
-            <article className="stat-card"><span>Activos</span><strong>{activos}</strong></article>
-            <article className="stat-card"><span>Inactivos</span><strong>{total - activos}</strong></article>
-          </div>
-          <PredioTable predios={predios} />
+          <StatsGrid
+            stats={[
+              { etiqueta: 'Total', valor: total },
+              { etiqueta: 'Activos', valor: activos },
+              { etiqueta: 'Inactivos', valor: total - activos },
+            ]}
+          />
+          <PredioTable
+            predios={predios}
+            onEditar={(predio) => {
+              setEditando(predio);
+              setMostrarFormulario(true);
+            }}
+            onEliminar={eliminar}
+          />
         </>
       )}
     </section>

@@ -1,11 +1,14 @@
+import EstadoBadge from '../../../components/common/EstadoBadge';
 import { formatArea } from '../../../utils/area';
 import type { Predio } from '../models/Predio';
 
 interface PredioTableProps {
   predios: Predio[];
+  onEditar: (predio: Predio) => void;
+  onEliminar: (predio: Predio) => void;
 }
 
-export default function PredioTable({ predios }: PredioTableProps) {
+export default function PredioTable({ predios, onEditar, onEliminar }: PredioTableProps) {
   if (predios.length === 0) {
     return <div className="empty-state">No hay predios registrados.</div>;
   }
@@ -21,6 +24,7 @@ export default function PredioTable({ predios }: PredioTableProps) {
               <th>Ubicación</th>
               <th>Área</th>
               <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -30,10 +34,12 @@ export default function PredioTable({ predios }: PredioTableProps) {
                 <td>{predio.nombre}</td>
                 <td>{predio.ubicacion ?? 'Sin ubicación'}</td>
                 <td>{formatArea(predio.areaHa)}</td>
+                <td><EstadoBadge estado={predio.activo ? 'ACTIVO' : 'INACTIVO'} /></td>
                 <td>
-                  <span className={`status-badge ${predio.activo ? 'status-active' : 'status-inactive'}`}>
-                    {predio.activo ? 'Activo' : 'Inactivo'}
-                  </span>
+                  <div className="table-actions">
+                    <button type="button" className="btn-link" onClick={() => onEditar(predio)}>Editar</button>
+                    <button type="button" className="btn-link btn-link--danger" onClick={() => onEliminar(predio)}>Eliminar</button>
+                  </div>
                 </td>
               </tr>
             ))}

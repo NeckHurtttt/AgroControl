@@ -1,0 +1,22 @@
+const clasePorEstado: Record<string, string> = {
+  ACTIVO: 'status-active',
+  DISPONIBLE: 'status-active',
+  ENTRADA: 'status-active',
+  PLANIFICADA: 'status-planned',
+  EN_CURSO: 'status-progress',
+  EN_PRODUCCION: 'status-progress',
+  EJECUTADA: 'status-done',
+  FINALIZADA: 'status-done',
+  EN_DESCANSO: 'status-neutral',
+  INACTIVO: 'status-inactive',
+  SALIDA: 'status-inactive',
+};
+
+interface EstadoBadgeProps {
+  estado: string;
+}
+
+export default function EstadoBadge({ estado }: EstadoBadgeProps) {
+  const clase = clasePorEstado[estado] ?? 'status-neutral';
+  return <span className={`status-badge ${clase}`}>{estado.replace(/_/g, ' ')}</span>;
+}

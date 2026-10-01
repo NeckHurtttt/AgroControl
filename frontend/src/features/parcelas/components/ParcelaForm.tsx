@@ -2,9 +2,8 @@ import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { ApiError } from '../../../api/apiClient';
 import { parseArea } from '../../../utils/area';
 import type { Predio } from '../../predios/models/Predio';
-import type { Parcela } from '../models/Parcela';
+import { ESTADOS_PARCELA, type Parcela } from '../models/Parcela';
 import { parcelaService } from '../services/parcelaService';
-import type { ParcelaCreateRequest } from '../types/ParcelaCreateRequest';
 import type { ParcelaFormData } from '../types/ParcelaFormData';
 import { validarParcela, type ParcelaFormErrors } from '../utils/parcelaValidation';
 
@@ -12,21 +11,35 @@ const initialParcelaForm: ParcelaFormData = {
   codigo: '',
   areaHa: '',
   predioId: '',
+  estado: 'DISPONIBLE',
 };
+
+function desdeParcela(parcela: Parcela): ParcelaFormData {
+  return {
+    codigo: parcela.codigo,
+    areaHa: parcela.areaHa === null ? '' : String(parcela.areaHa),
+    predioId: String(parcela.predioId),
+    estado: parcela.estado,
+  };
+}
 
 interface ParcelaFormProps {
   predios: Predio[];
-  onCreated?: (parcela: Parcela) => void;
+  parcela?: Parcela | null;
+  onSaved?: (parcela: Parcela) => void;
+  onCancel?: () => void;
 }
 
-export default function ParcelaForm({ predios, onCreated }: ParcelaFormProps) {
-  const [formData, setFormData] = useState<ParcelaFormData>(initialParcelaForm);
+export default function ParcelaForm({ predios, parcela, onSaved, onCancel }: ParcelaFormProps) {
+  const editando = Boolean(parcela);
+  const [formData, setFormData] = useState<ParcelaFormData>(parcela ? desdeParcela(parcela) : initialParcelaForm);
   const [errors, setErrors] = useState<ParcelaFormErrors>({});
   const [mensaje, setMensaje] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState('');
 
-  const prediosActivos = predios.filter((predio) => predio.activo);
+  // Al editar se muestra el predio actual aunque esté inactivo; al crear, solo predios activos.
+  const opcionesPredio = predios.filter((predio) => predio.activo || String(predio.id) === formData.predioId);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -44,21 +57,22 @@ export default function ParcelaForm({ predios, onCreated }: ParcelaFormProps) {
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
-    const payload: ParcelaCreateRequest = {
-      predioId: Number(formData.predioId),
-      codigo: formData.codigo.trim().toUpperCase(),
-      areaHa: parseArea(formData.areaHa),
-    };
+    const codigo = formData.codigo.trim().toUpperCase();
+    const areaHa = parseArea(formData.areaHa);
 
     try {
       setSubmitting(true);
-      const creada = await parcelaService.crear(payload);
-      onCreated?.(creada);
-      setFormData(initialParcelaForm);
-      setMensaje('Parcela creada correctamente.');
+      const guardada = parcela
+        ? await parcelaService.actualizar(parcela.id, { codigo, areaHa, estado: formData.estado })
+        : await parcelaService.crear({ predioId: Number(formData.predioId), codigo, areaHa });
+      onSaved?.(guardada);
+      if (!parcela) {
+        setFormData(initialParcelaForm);
+        setMensaje('Parcela creada correctamente.');
+      }
     } catch (err) {
       if (err instanceof ApiError) setErrors(err.campos);
-      setApiError(err instanceof Error ? err.message : 'No se pudo crear');
+      setApiError(err instanceof Error ? err.message : 'No se pudo guardar');
     } finally {
       setSubmitting(false);
     }
@@ -73,12 +87,13 @@ export default function ParcelaForm({ predios, onCreated }: ParcelaFormProps) {
 
   return (
     <form className="entity-form" onSubmit={handleSubmit} noValidate>
+      {editando && <h3 className="panel-title">Editar parcela {parcela?.codigo}</h3>}
       <div className="form-grid">
         <label>
           Predio
-          <select name="predioId" value={formData.predioId} onChange={handleChange}>
+          <select name="predioId" value={formData.predioId} onChange={handleChange} disabled={editando}>
             <option value="">Seleccione un predio</option>
-            {prediosActivos.map((predio) => (
+            {opcionesPredio.map((predio) => (
               <option key={predio.id} value={predio.id}>
                 {predio.nombre}
               </option>
@@ -96,17 +111,34 @@ export default function ParcelaForm({ predios, onCreated }: ParcelaFormProps) {
           <input type="number" step="0.01" min="0" name="areaHa" value={formData.areaHa} onChange={handleChange} />
           {errors.areaHa && <small className="field-error">{errors.areaHa}</small>}
         </label>
+        {editando && (
+          <label>
+            Estado
+            <select name="estado" value={formData.estado} onChange={handleChange}>
+              {ESTADOS_PARCELA.map((estado) => (
+                <option key={estado} value={estado}>{estado.replace(/_/g, ' ')}</option>
+              ))}
+            </select>
+            {errors.estado && <small className="field-error">{errors.estado}</small>}
+          </label>
+        )}
       </div>
 
       {mensaje && <div className="form-success">{mensaje}</div>}
       {apiError && <div className="form-error">{apiError}</div>}
 
       <div className="form-actions">
-        <button type="button" className="btn-secondary" onClick={limpiar} disabled={submitting}>
-          Limpiar
-        </button>
+        {editando ? (
+          <button type="button" className="btn-secondary" onClick={onCancel} disabled={submitting}>
+            Cancelar
+          </button>
+        ) : (
+          <button type="button" className="btn-secondary" onClick={limpiar} disabled={submitting}>
+            Limpiar
+          </button>
+        )}
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? 'Guardando...' : 'Guardar parcela'}
+          {submitting ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar parcela'}
         </button>
       </div>
     </form>

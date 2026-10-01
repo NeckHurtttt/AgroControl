@@ -1,0 +1,60 @@
+import EstadoBadge from '../../../components/common/EstadoBadge';
+import { formatFecha } from '../../../utils/formato';
+import type { Campana } from '../models/Campana';
+import { etiquetaParcela, nombreCultivo, type Catalogos } from '../utils/etiquetas';
+
+interface CampanaTableProps {
+  campanas: Campana[];
+  catalogos: Catalogos;
+  onIniciar: (campana: Campana) => void;
+  onFinalizar: (campana: Campana) => void;
+}
+
+export default function CampanaTable({ campanas, catalogos, onIniciar, onFinalizar }: CampanaTableProps) {
+  if (campanas.length === 0) {
+    return <div className="empty-state">No hay campañas registradas.</div>;
+  }
+
+  return (
+    <div className="table-card">
+      <div className="table-responsive">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Parcela</th>
+              <th>Cultivo</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campanas.map((campana) => (
+              <tr key={campana.id}>
+                <td>{campana.id}</td>
+                <td>{etiquetaParcela(campana.parcelaId, catalogos)}</td>
+                <td>{nombreCultivo(campana.cultivoId, catalogos)}</td>
+                <td>{formatFecha(campana.fechaInicio)}</td>
+                <td>{formatFecha(campana.fechaFin)}</td>
+                <td><EstadoBadge estado={campana.estado} /></td>
+                <td>
+                  <div className="table-actions">
+                    {campana.estado === 'PLANIFICADA' && (
+                      <button type="button" className="btn-link" onClick={() => onIniciar(campana)}>Iniciar</button>
+                    )}
+                    {campana.estado !== 'FINALIZADA' && (
+                      <button type="button" className="btn-link" onClick={() => onFinalizar(campana)}>Finalizar</button>
+                    )}
+                    {campana.estado === 'FINALIZADA' && <span className="muted">—</span>}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

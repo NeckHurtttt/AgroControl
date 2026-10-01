@@ -3,8 +3,8 @@ import { ApiError } from '../../../api/apiClient';
 import { parseArea } from '../../../utils/area';
 import type { Predio } from '../models/Predio';
 import { predioService } from '../services/predioService';
-import type { PredioCreateRequest } from '../types/PredioCreateRequest';
 import type { PredioFormData } from '../types/PredioFormData';
+import type { PredioRequest } from '../types/PredioRequest';
 import { validarPredio, type PredioFormErrors } from '../utils/predioValidation';
 
 const initialPredioForm: PredioFormData = {
@@ -14,12 +14,24 @@ const initialPredioForm: PredioFormData = {
   activo: true,
 };
 
-interface PredioFormProps {
-  onCreated?: (predio: Predio) => void;
+function desdePredio(predio: Predio): PredioFormData {
+  return {
+    nombre: predio.nombre,
+    ubicacion: predio.ubicacion ?? '',
+    areaHa: predio.areaHa === null ? '' : String(predio.areaHa),
+    activo: predio.activo,
+  };
 }
 
-export default function PredioForm({ onCreated }: PredioFormProps) {
-  const [formData, setFormData] = useState<PredioFormData>(initialPredioForm);
+interface PredioFormProps {
+  predio?: Predio | null;
+  onSaved?: (predio: Predio) => void;
+  onCancel?: () => void;
+}
+
+export default function PredioForm({ predio, onSaved, onCancel }: PredioFormProps) {
+  const editando = Boolean(predio);
+  const [formData, setFormData] = useState<PredioFormData>(predio ? desdePredio(predio) : initialPredioForm);
   const [errors, setErrors] = useState<PredioFormErrors>({});
   const [mensaje, setMensaje] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -42,7 +54,7 @@ export default function PredioForm({ onCreated }: PredioFormProps) {
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
-    const payload: PredioCreateRequest = {
+    const payload: PredioRequest = {
       nombre: formData.nombre.trim(),
       ubicacion: formData.ubicacion.trim() || null,
       areaHa: parseArea(formData.areaHa),
@@ -51,13 +63,17 @@ export default function PredioForm({ onCreated }: PredioFormProps) {
 
     try {
       setSubmitting(true);
-      const creado = await predioService.crear(payload);
-      onCreated?.(creado);
-      setFormData(initialPredioForm);
-      setMensaje('Predio creado correctamente.');
+      const guardado = predio
+        ? await predioService.actualizar(predio.id, payload)
+        : await predioService.crear(payload);
+      onSaved?.(guardado);
+      if (!predio) {
+        setFormData(initialPredioForm);
+        setMensaje('Predio creado correctamente.');
+      }
     } catch (err) {
       if (err instanceof ApiError) setErrors(err.campos);
-      setApiError(err instanceof Error ? err.message : 'No se pudo crear');
+      setApiError(err instanceof Error ? err.message : 'No se pudo guardar');
     } finally {
       setSubmitting(false);
     }
@@ -72,6 +88,7 @@ export default function PredioForm({ onCreated }: PredioFormProps) {
 
   return (
     <form className="entity-form" onSubmit={handleSubmit} noValidate>
+      {editando && <h3 className="panel-title">Editar predio #{predio?.id}</h3>}
       <div className="form-grid">
         <label>
           Nombre
@@ -98,11 +115,17 @@ export default function PredioForm({ onCreated }: PredioFormProps) {
       {apiError && <div className="form-error">{apiError}</div>}
 
       <div className="form-actions">
-        <button type="button" className="btn-secondary" onClick={limpiar} disabled={submitting}>
-          Limpiar
-        </button>
+        {editando ? (
+          <button type="button" className="btn-secondary" onClick={onCancel} disabled={submitting}>
+            Cancelar
+          </button>
+        ) : (
+          <button type="button" className="btn-secondary" onClick={limpiar} disabled={submitting}>
+            Limpiar
+          </button>
+        )}
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? 'Guardando...' : 'Guardar predio'}
+          {submitting ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar predio'}
         </button>
       </div>
     </form>
