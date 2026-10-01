@@ -1,0 +1,149 @@
+### ==== Capítulo 03 ====
+
+### Health
+GET http://localhost:8080/api/health
+Accept: application/json
+
+### Demo de la entidad padre (Rol)
+GET http://localhost:8080/api/roles/demo
+Accept: application/json
+
+### ==== Capítulo 04 ====
+
+### POST válido -> 201 Created
+POST http://localhost:8080/api/roles
+Content-Type: application/json
+
+{
+  "nombre": "AUDITOR",
+  "descripcion": "Revisa la trazabilidad de labores e insumos"
+}
+
+### POST con nombre vacío -> 400 Bad Request
+POST http://localhost:8080/api/roles
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "descripcion": "Sin nombre"
+}
+
+### POST con formato inválido (minúsculas y espacios) -> 400 Bad Request
+POST http://localhost:8080/api/roles
+Content-Type: application/json
+
+{
+  "nombre": "jefe de campo"
+}
+
+### POST duplicado (repetir el POST válido) -> 409 Conflict
+POST http://localhost:8080/api/roles
+Content-Type: application/json
+
+{
+  "nombre": "AUDITOR"
+}
+
+### Listar -> 200 OK + arreglo JSON
+GET http://localhost:8080/api/roles
+Accept: application/json
+
+### Listar con filtro opcional (?nombre=) -> 200 OK filtrado
+GET http://localhost:8080/api/roles?nombre=aud
+Accept: application/json
+
+### Buscar por id existente -> 200 OK
+GET http://localhost:8080/api/roles/1
+Accept: application/json
+
+### Buscar por id inexistente -> 404 Not Found
+GET http://localhost:8080/api/roles/999
+Accept: application/json
+
+### ==== PUT / DELETE de Rol (banco P18, P19) ====
+
+### PUT válido -> 200 (repetirlo da el mismo resultado: idempotente)
+PUT http://localhost:8080/api/roles/5
+Content-Type: application/json
+
+{
+  "nombre": "SUPERVISOR_GENERAL",
+  "descripcion": "Supervisa todos los predios"
+}
+
+### PUT con nombre de otro rol -> 409 Conflict
+PUT http://localhost:8080/api/roles/5
+Content-Type: application/json
+
+{
+  "nombre": "OPERARIO"
+}
+
+### PUT sobre id inexistente -> 404 (no crea el recurso)
+PUT http://localhost:8080/api/roles/999
+Content-Type: application/json
+
+{
+  "nombre": "FANTASMA"
+}
+
+### DELETE de rol con usuarios (OPERARIO) -> 409 Conflict
+DELETE http://localhost:8080/api/roles/3
+
+### DELETE de rol sin usuarios -> 204 No Content
+DELETE http://localhost:8080/api/roles/5
+
+### DELETE repetido -> 404
+DELETE http://localhost:8080/api/roles/5
+
+### ==== Usuario: entidad hija (banco P15) ====
+
+### POST válido -> 201 (la respuesta NO incluye la contraseña)
+POST http://localhost:8080/api/usuarios
+Content-Type: application/json
+
+{
+  "rolId": 3,
+  "nombreCompleto": "Pedro Mamani",
+  "email": "operario3@agrocontrol.com",
+  "password": "Campo2026!"
+}
+
+### POST con rol padre inexistente -> 404
+POST http://localhost:8080/api/usuarios
+Content-Type: application/json
+
+{
+  "rolId": 999,
+  "nombreCompleto": "Nadie",
+  "email": "nadie@agrocontrol.com",
+  "password": "Campo2026!"
+}
+
+### POST con email ya registrado (distinta mayúscula) -> 409
+POST http://localhost:8080/api/usuarios
+Content-Type: application/json
+
+{
+  "rolId": 3,
+  "nombreCompleto": "Otro",
+  "email": "OPERARIO3@agrocontrol.com",
+  "password": "Campo2026!"
+}
+
+### POST inválido -> 400 con errores por campo
+POST http://localhost:8080/api/usuarios
+Content-Type: application/json
+
+{
+  "rolId": 3,
+  "nombreCompleto": "",
+  "email": "no-es-email",
+  "password": "123"
+}
+
+### GET usuario existente -> 200
+GET http://localhost:8080/api/usuarios/6
+
+### GET usuario inexistente -> 404
+GET http://localhost:8080/api/usuarios/999
