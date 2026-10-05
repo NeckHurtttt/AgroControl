@@ -8,6 +8,7 @@ Sistema de gestión de lotes agrícolas: predios, parcelas, campañas, labores, 
 AgroControl/
 ├── backend/    API REST · Java 21 + Spring Boot + JPA + Flyway
 ├── frontend/   Web · React + TypeScript + Vite
+├── mobile/     App móvil · React Native + TypeScript (Expo)
 ├── database/   Scripts SQL de clase (ver database/README.md)
 └── docs/       Visión, glosario, requerimientos y decisiones
 ```
@@ -55,12 +56,15 @@ Desarrollar un sistema web/móvil para planificar campañas, registrar labores e
 - Base de datos PostgreSQL versionada con Flyway.
 - Backend con API REST de roles, usuarios, predios, parcelas, cultivos, campañas, labores, insumos y cosechas, con validación, CORS y Swagger.
 - Frontend web conectado a la API para todo el flujo: predio → parcela → campaña → labores e insumos → cosecha.
+- App móvil (Expo) conectada a la misma API: mis labores, detalle de labor (ejecutar y registrar consumo) y parcelas con sus campañas.
 - Pendiente: incidencias, bitácora de campo, asignación de labores, auditoría, autenticación y tests automatizados.
  ## 8. Documentación 
 - `docs/01-vision/vision-v0.1.md` 
 - `docs/01-vision/glossary-v0.1.md` 
 - `docs/02-requirements/backlog-v0.1.md`
 - `docs/02-requirements/model-relational-v0.1.md`
+- `docs/02-requirements/matriz-rf-rn-parcial1.md` (18 RF y 10 RN del banco, con corte, estado y evidencia)
+- `docs/02-requirements/casos-de-uso-flujo1.md` (casos de uso del primer flujo en Given-When-Then)
 - `docs/03-decisions/` 
 ## 9. Regla de trabajo
  Cada cambio importante debe ser comprensible, trazable y defendible. El repositorio es la fuente de verdad del proyecto
@@ -93,7 +97,7 @@ Con el backend en marcha (`http://localhost:8080`). Swagger UI: `http://localhos
 | Cosechas | `GET/POST /api/cosechas?campanaId=` | Solo campañas EN_CURSO o FINALIZADA (409) |
 
 - Errores con formato `ProblemDetail` (`type`, `title`, `status`, `detail`, `instance` y `errores` por campo en los 400), desde `GlobalExceptionHandler`.
-- CORS autoriza `http://localhost:5173` por defecto; se cambia con `AGROCONTROL_CORS_ORIGINS`.
+- CORS autoriza `http://localhost:5173` (web) y `http://localhost:8081` (Expo web) por defecto; se cambia con `AGROCONTROL_CORS_ORIGINS`.
 
 ### Arquitectura por módulo
 ```
@@ -118,3 +122,29 @@ npm run dev
 ```
 
 La URL de la API se configura en `frontend/.env.development` (`VITE_API_URL=http://localhost:8080/api`). Las variables `VITE_` terminan en el navegador: nunca guardar secretos ahí.
+
+## 13. App móvil
+React Native + TypeScript con Expo en `mobile/`, orientada al operario de campo. Consume la misma API que la web.
+
+| Pantalla | Qué hace | Endpoints |
+|----------|----------|-----------|
+| Mis labores | Lista las labores (pendientes primero); se refresca al volver o deslizando | `GET /api/labores` |
+| Detalle de labor | Marca la labor como ejecutada y registra el consumo de insumos; muestra el 409 si no hay stock | `GET /api/labores/{id}`, `POST /{id}/ejecutar`, `GET/POST /{id}/consumos`, `GET /api/insumos`, `GET /api/usuarios` |
+| Parcelas | Lista las parcelas con área y estado | `GET /api/parcelas` |
+| Detalle de parcela | Campañas de la parcela y sus labores | `GET /api/campanas?parcelaId=`, `GET /api/labores` |
+
+```bash
+cd mobile
+npm install
+npx expo start --web     # en el navegador: http://localhost:8081
+npx expo start           # en el celular: escanear el QR con Expo Go
+```
+
+La URL de la API se toma de `EXPO_PUBLIC_API_URL` (por defecto `http://localhost:8080/api`; ver `mobile/.env.example`). En el celular `localhost` es el propio teléfono, así que hay que usar la IP de la PC en la misma red, por ejemplo `EXPO_PUBLIC_API_URL=http://192.168.1.50:8080/api npx expo start`. El backend ya autoriza por CORS el origen `http://localhost:8081` de Expo web.
+
+## 14. Estrategia Git
+- `main` es la rama estable: siempre compila y arranca.
+- Cada tema se trabaja en una rama propia (`feat/...`, `fix/...`, `docs/...`, `defensa/...`) y entra a `main` con un pull request revisado por otro integrante, por ejemplo `defensa/cierre-gaps`.
+- Los commits siguen Conventional Commits (`feat(api): ...`, `fix: ...`, `docs: ...`, `chore: ...`), un cambio coherente por commit.
+- Remotos del equipo: `origin` (SalinasMiguel/AgroControl) y el fork `NeckHurtttt/AgroControl`.
+
