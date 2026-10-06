@@ -1,0 +1,7 @@
+$kind: http-request
+name: Buscar por id existente -> 200 OK
+url: "{{baseUrl}}/api/roles/1"
+method: GET
+headers:
+  Accept: application/json
+order: 7000

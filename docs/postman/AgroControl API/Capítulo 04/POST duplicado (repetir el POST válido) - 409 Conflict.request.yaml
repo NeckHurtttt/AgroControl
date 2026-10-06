@@ -1,0 +1,13 @@
+$kind: http-request
+name: POST duplicado (repetir el POST válido) -> 409 Conflict
+url: "{{baseUrl}}/api/roles"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "AUDITOR"
+    }
+order: 4000

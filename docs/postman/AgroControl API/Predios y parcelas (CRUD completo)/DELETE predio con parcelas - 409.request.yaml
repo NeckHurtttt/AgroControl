@@ -1,0 +1,5 @@
+$kind: http-request
+name: DELETE predio con parcelas -> 409
+url: "{{baseUrl}}/api/predios/1"
+method: DELETE
+order: 3000

@@ -1,0 +1,15 @@
+$kind: http-request
+name: POST parcela con predio inexistente -> 404
+url: "{{baseUrl}}/api/parcelas"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "predioId": 999,
+      "codigo": "X-01",
+      "areaHa": 10
+    }
+order: 5000

@@ -1,0 +1,13 @@
+$kind: http-request
+name: POST con formato inválido (minúsculas y espacios) -> 400 Bad Request
+url: "{{baseUrl}}/api/roles"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "jefe de campo"
+    }
+order: 3000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: Listar -> 200 OK + arreglo JSON
+url: "{{baseUrl}}/api/roles"
+method: GET
+headers:
+  Accept: application/json
+order: 5000

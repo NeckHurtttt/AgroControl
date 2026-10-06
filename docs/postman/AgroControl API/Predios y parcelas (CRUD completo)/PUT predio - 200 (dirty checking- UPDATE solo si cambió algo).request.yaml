@@ -1,0 +1,16 @@
+$kind: http-request
+name: "PUT predio -> 200 (dirty checking: UPDATE solo si cambió algo)"
+url: "{{baseUrl}}/api/predios/3"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "Predio El Retiro",
+      "ubicacion": "Cotoca, Santa Cruz",
+      "areaHa": 40,
+      "activo": false
+    }
+order: 2000

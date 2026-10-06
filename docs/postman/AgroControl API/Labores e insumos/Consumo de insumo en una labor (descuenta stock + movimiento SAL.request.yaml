@@ -1,0 +1,15 @@
+$kind: http-request
+name: Consumo de insumo en una labor (descuenta stock + movimiento SALIDA)
+url: "{{baseUrl}}/api/labores/3/consumos"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "insumoId": 2,
+      "cantidad": 10,
+      "usuarioId": 3
+    }
+order: 3000

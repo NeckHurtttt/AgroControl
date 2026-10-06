@@ -1,0 +1,14 @@
+$kind: http-request
+name: POST con nombre vacío -> 400 Bad Request
+url: "{{baseUrl}}/api/roles"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "",
+      "descripcion": "Sin nombre"
+    }
+order: 2000

@@ -1,0 +1,14 @@
+$kind: http-request
+name: "PUT válido -> 200 (repetirlo da el mismo resultado: idempotente)"
+url: "{{baseUrl}}/api/roles/5"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "SUPERVISOR_GENERAL",
+      "descripcion": "Supervisa todos los predios"
+    }
+order: 1000

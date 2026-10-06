@@ -1,0 +1,13 @@
+$kind: http-request
+name: Finalizar con fecha anterior al inicio -> 400
+url: "{{baseUrl}}/api/campanas/2/finalizar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "fechaFin": "2025-01-01"
+    }
+order: 4000

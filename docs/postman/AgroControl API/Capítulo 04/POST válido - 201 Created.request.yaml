@@ -1,0 +1,14 @@
+$kind: http-request
+name: POST válido -> 201 Created
+url: "{{baseUrl}}/api/roles"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "AUDITOR",
+      "descripcion": "Revisa la trazabilidad de labores e insumos"
+    }
+order: 1000
