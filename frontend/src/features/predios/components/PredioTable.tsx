@@ -6,9 +6,10 @@ interface PredioTableProps {
   predios: Predio[];
   onEditar: (predio: Predio) => void;
   onEliminar: (predio: Predio) => void;
+  deletingId?: number | null;
 }
 
-export default function PredioTable({ predios, onEditar, onEliminar }: PredioTableProps) {
+export default function PredioTable({ predios, onEditar, onEliminar, deletingId = null }: PredioTableProps) {
   if (predios.length === 0) {
     return <div className="empty-state">No hay predios registrados.</div>;
   }
@@ -38,7 +39,14 @@ export default function PredioTable({ predios, onEditar, onEliminar }: PredioTab
                 <td>
                   <div className="table-actions">
                     <button type="button" className="btn-link" onClick={() => onEditar(predio)}>Editar</button>
-                    <button type="button" className="btn-link btn-link--danger" onClick={() => onEliminar(predio)}>Eliminar</button>
+                    <button
+                      type="button"
+                      className="btn-link btn-link--danger"
+                      onClick={() => onEliminar(predio)}
+                      disabled={deletingId === predio.id}
+                    >
+                      {deletingId === predio.id ? 'Eliminando...' : 'Eliminar'}
+                    </button>
                   </div>
                 </td>
               </tr>

@@ -7,6 +7,10 @@ export const predioService = {
     return apiFetch<Predio[]>('/predios', { signal });
   },
 
+  obtenerPorId(id: number, signal?: AbortSignal): Promise<Predio> {
+    return apiFetch<Predio>(`/predios/${id}`, { signal });
+  },
+
   crear(data: PredioRequest): Promise<Predio> {
     return apiFetch<Predio>('/predios', {
       method: 'POST',
