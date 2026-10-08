@@ -8,6 +8,10 @@ export const parcelaService = {
     return apiFetch<Parcela[]>('/parcelas', { signal });
   },
 
+  obtenerPorId(id: number, signal?: AbortSignal): Promise<Parcela> {
+    return apiFetch<Parcela>(`/parcelas/${id}`, { signal });
+  },
+
   crear(data: ParcelaCreateRequest): Promise<Parcela> {
     return apiFetch<Parcela>('/parcelas', {
       method: 'POST',

@@ -48,7 +48,8 @@ public class ParcelaController {
 
     @PutMapping("/{id}")
     public ParcelaResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarParcelaRequest request) {
-        return ParcelaResponse.desde(service.actualizar(id, request.codigo(), request.areaHa(), request.estado()));
+        return ParcelaResponse.desde(service.actualizar(
+                id, request.predioId(), request.codigo(), request.areaHa(), request.estado()));
     }
 
     @DeleteMapping("/{id}")

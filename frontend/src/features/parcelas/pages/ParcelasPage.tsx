@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PageHeading from '../../../components/common/PageHeading';
 import StatsGrid from '../../../components/common/StatsGrid';
 import { useCarga } from '../../../hooks/useCarga';
@@ -24,9 +24,21 @@ export default function ParcelasPage() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editando, setEditando] = useState<Parcela | null>(null);
   const [accionError, setAccionError] = useState('');
+  const [cargandoDetalle, setCargandoDetalle] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [predioFiltro, setPredioFiltro] = useState('');
+  const detalleRef = useRef<AbortController | null>(null);
+
+  // Si la página se desmonta con un GET de detalle en vuelo, se cancela.
+  useEffect(() => () => detalleRef.current?.abort(), []);
 
   const setParcelas = (actualizar: (prev: Parcela[]) => Parcela[]) =>
     setDatos((prev) => ({ ...prev, parcelas: actualizar(prev.parcelas) }));
+
+  // Derivado en el render: el filtro usa la lista ya cargada (GET /parcelas), sin pedir nada nuevo.
+  const parcelasVisibles = predioFiltro
+    ? parcelas.filter((parcela) => parcela.predioId === Number(predioFiltro))
+    : parcelas;
 
   const total = parcelas.length;
   const disponibles = parcelas.filter((parcela) => parcela.estado === 'DISPONIBLE').length;
@@ -37,14 +49,37 @@ export default function ParcelasPage() {
     setEditando(null);
   };
 
+  // Editar parte de los datos frescos del backend (GET /parcelas/{id}); si ya no existe, no se abre el formulario.
+  const editar = async (parcela: Parcela) => {
+    detalleRef.current?.abort();
+    const controller = new AbortController();
+    detalleRef.current = controller;
+    try {
+      setAccionError('');
+      setCargandoDetalle(true);
+      const detalle = await parcelaService.obtenerPorId(parcela.id, controller.signal);
+      setEditando(detalle);
+      setMostrarFormulario(true);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setAccionError(err instanceof Error ? err.message : 'No se pudo cargar la parcela');
+    } finally {
+      if (!controller.signal.aborted) setCargandoDetalle(false);
+    }
+  };
+
   const eliminar = async (parcela: Parcela) => {
+    if (deletingId !== null) return;
     if (!window.confirm(`¿Eliminar la parcela ${parcela.codigo}?`)) return;
     try {
       setAccionError('');
+      setDeletingId(parcela.id);
       await parcelaService.eliminar(parcela.id);
       setParcelas((prev) => prev.filter((item) => item.id !== parcela.id));
     } catch (err) {
       setAccionError(err instanceof Error ? err.message : 'No se pudo eliminar');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -80,6 +115,7 @@ export default function ParcelasPage() {
         />
       )}
 
+      {cargandoDetalle && <div className="state-card">Cargando detalle...</div>}
       {accionError && <div className="form-error">{accionError}</div>}
       {loading && <div className="state-card">Cargando parcelas...</div>}
       {!loading && error && <div className="state-card error">{error}</div>}
@@ -92,14 +128,23 @@ export default function ParcelasPage() {
               { etiqueta: 'Área total', valor: formatArea(areaTotal) },
             ]}
           />
+          <div className="toolbar">
+            <label className="toolbar__field">
+              Filtrar por predio
+              <select value={predioFiltro} onChange={(e) => setPredioFiltro(e.target.value)}>
+                <option value="">Todos los predios</option>
+                {predios.map((predio) => (
+                  <option key={predio.id} value={predio.id}>{predio.nombre}</option>
+                ))}
+              </select>
+            </label>
+          </div>
           <ParcelaTable
-            parcelas={parcelas}
+            parcelas={parcelasVisibles}
             predios={predios}
-            onEditar={(parcela) => {
-              setEditando(parcela);
-              setMostrarFormulario(true);
-            }}
+            onEditar={editar}
             onEliminar={eliminar}
+            deletingId={deletingId}
           />
         </>
       )}

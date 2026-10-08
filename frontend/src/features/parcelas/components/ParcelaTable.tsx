@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import EstadoBadge from '../../../components/common/EstadoBadge';
 import { formatArea } from '../../../utils/area';
 import type { Predio } from '../../predios/models/Predio';
@@ -8,13 +9,13 @@ interface ParcelaTableProps {
   predios: Predio[];
   onEditar: (parcela: Parcela) => void;
   onEliminar: (parcela: Parcela) => void;
+  deletingId?: number | null;
 }
 
-export default function ParcelaTable({ parcelas, predios, onEditar, onEliminar }: ParcelaTableProps) {
-  const obtenerNombrePredio = (predioId: number) => {
-    const predio = predios.find((item) => item.id === predioId);
-    return predio ? predio.nombre : 'Sin predio asociado';
-  };
+export default function ParcelaTable({ parcelas, predios, onEditar, onEliminar, deletingId = null }: ParcelaTableProps) {
+  // Un solo recorrido de predios por render de la lista, en vez de un find por fila.
+  const prediosPorId = useMemo(() => new Map(predios.map((predio) => [predio.id, predio])), [predios]);
+  const obtenerNombrePredio = (predioId: number) => prediosPorId.get(predioId)?.nombre ?? `Predio #${predioId}`;
 
   if (parcelas.length === 0) {
     return <div className="empty-state">No hay parcelas registradas.</div>;
@@ -43,7 +44,14 @@ export default function ParcelaTable({ parcelas, predios, onEditar, onEliminar }
                 <td>
                   <div className="table-actions">
                     <button type="button" className="btn-link" onClick={() => onEditar(parcela)}>Editar</button>
-                    <button type="button" className="btn-link btn-link--danger" onClick={() => onEliminar(parcela)}>Eliminar</button>
+                    <button
+                      type="button"
+                      className="btn-link btn-link--danger"
+                      onClick={() => onEliminar(parcela)}
+                      disabled={deletingId === parcela.id}
+                    >
+                      {deletingId === parcela.id ? 'Eliminando...' : 'Eliminar'}
+                    </button>
                   </div>
                 </td>
               </tr>

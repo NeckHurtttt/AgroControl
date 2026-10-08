@@ -1,4 +1,4 @@
 import type { Parcela } from '../models/Parcela';
 
-// Coincide con ActualizarParcelaRequest: el predio no se cambia al editar.
-export type ParcelaUpdateRequest = Pick<Parcela, 'codigo' | 'areaHa' | 'estado'>;
+// Coincide con ActualizarParcelaRequest: predioId permite mover la parcela a otro predio activo.
+export type ParcelaUpdateRequest = Pick<Parcela, 'predioId' | 'codigo' | 'areaHa' | 'estado'>;

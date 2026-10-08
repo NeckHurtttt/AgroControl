@@ -59,12 +59,13 @@ export default function ParcelaForm({ predios, parcela, onSaved, onCancel }: Par
 
     const codigo = formData.codigo.trim().toUpperCase();
     const areaHa = parseArea(formData.areaHa);
+    const predioId = Number(formData.predioId);
 
     try {
       setSubmitting(true);
       const guardada = parcela
-        ? await parcelaService.actualizar(parcela.id, { codigo, areaHa, estado: formData.estado })
-        : await parcelaService.crear({ predioId: Number(formData.predioId), codigo, areaHa });
+        ? await parcelaService.actualizar(parcela.id, { predioId, codigo, areaHa, estado: formData.estado })
+        : await parcelaService.crear({ predioId, codigo, areaHa });
       onSaved?.(guardada);
       if (!parcela) {
         setFormData(initialParcelaForm);
@@ -91,7 +92,7 @@ export default function ParcelaForm({ predios, parcela, onSaved, onCancel }: Par
       <div className="form-grid">
         <label>
           Predio
-          <select name="predioId" value={formData.predioId} onChange={handleChange} disabled={editando}>
+          <select name="predioId" value={formData.predioId} onChange={handleChange}>
             <option value="">Seleccione un predio</option>
             {opcionesPredio.map((predio) => (
               <option key={predio.id} value={predio.id}>

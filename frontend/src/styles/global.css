@@ -204,3 +204,4 @@ button, input, select, textarea { font: inherit; }
   .dashboard-grid { grid-template-columns: 1fr; }
 }
 .panel-form { margin-top: 18px; }
+.toolbar__field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 0.9rem; }

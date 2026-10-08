@@ -62,6 +62,13 @@ public class Parcela {
         this.codigo = codigo;
     }
 
+    public void moverAPredio(Long predioId) {
+        if (predioId == null) {
+            throw new IllegalArgumentException("La parcela debe pertenecer a un predio");
+        }
+        this.predioId = predioId;
+    }
+
     public void actualizarArea(BigDecimal areaHa) {
         if (areaHa != null && areaHa.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El área de la parcela debe ser mayor que cero");
