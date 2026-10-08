@@ -120,7 +120,7 @@ button, input, select, textarea { font: inherit; }
 .eyebrow { color: var(--color-primary) !important; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; }
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
 }
 .stat-card {
@@ -299,4 +299,23 @@ button, input, select, textarea { font: inherit; }
   .filter-field { min-width: 0; flex: 1 1 100%; }
   .pagination { justify-content: center; }
   .modal__body { padding: var(--space-4); }
+}
+
+/* ===== Guía 10 · Error Boundary ===== */
+.error-boundary {
+  max-width: 640px;
+  margin: 10vh auto;
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+.error-boundary h1 { margin-top: 0; color: var(--color-danger-text); }
+.error-boundary pre {
+  padding: var(--space-3);
+  background: var(--color-error-bg);
+  color: var(--color-danger-text);
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
 }

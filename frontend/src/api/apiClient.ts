@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../config/env';
 
 export class ApiError extends Error {
   status: number;
@@ -23,10 +23,6 @@ export async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  if (!API_URL) {
-    throw new Error('Falta VITE_API_URL');
-  }
-
   const headers = new Headers(options.headers);
   if (options.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');

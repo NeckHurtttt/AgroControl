@@ -36,6 +36,7 @@ export default function DashboardPage() {
     .filter((labor) => labor.estado === 'PLANIFICADA')
     .sort((a, b) => a.fechaPlan.localeCompare(b.fechaPlan))
     .slice(0, 5);
+  const insumosSinStock = insumos.filter((insumo) => insumo.stockActual <= 0).length;
   const stockBajo = [...insumos].sort((a, b) => a.stockActual - b.stockActual).slice(0, 5);
   const campana = (id: number) => campanas.find((item) => item.id === id);
 
@@ -58,6 +59,7 @@ export default function DashboardPage() {
               { etiqueta: 'Predios activos', valor: predios.filter((predio) => predio.activo).length },
               { etiqueta: `Parcelas (${formatArea(areaTotal)})`, valor: parcelas.length },
               { etiqueta: 'Campañas abiertas', valor: campanasAbiertas.length },
+              { etiqueta: 'Insumos sin stock', valor: insumosSinStock },
             ]}
           />
           <div className="dashboard-grid">
