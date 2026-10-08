@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import PageHeading from '../../../components/common/PageHeading';
 import StatsGrid from '../../../components/common/StatsGrid';
-import { useCarga } from '../../../hooks/useCarga';
+import { useMensajeExito } from '../../../hooks/useMensajeExito';
+import { isAbortError } from '../../../shared/utils/isAbortError';
 import PredioForm from '../components/PredioForm';
 import PredioTable from '../components/PredioTable';
+import { usePredios } from '../hooks/usePredios';
 import type { Predio } from '../models/Predio';
 import { predioService } from '../services/predioService';
 
-const cargarPredios = (signal: AbortSignal) => predioService.listar(signal);
-
 export default function PrediosPage() {
-  const { datos: predios, setDatos: setPredios, loading, error } = useCarga<Predio[]>(cargarPredios, []);
+  const { predios, setPredios, loading, error } = usePredios();
+  const { successMessage, mostrarExito } = useMensajeExito();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editando, setEditando] = useState<Predio | null>(null);
   const [accionError, setAccionError] = useState('');
@@ -41,7 +42,7 @@ export default function PrediosPage() {
       setEditando(detalle);
       setMostrarFormulario(true);
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return;
+      if (isAbortError(err)) return;
       setAccionError(err instanceof Error ? err.message : 'No se pudo cargar el predio');
     } finally {
       if (!controller.signal.aborted) setCargandoDetalle(false);
@@ -56,6 +57,7 @@ export default function PrediosPage() {
       setDeletingId(predio.id);
       await predioService.eliminar(predio.id);
       setPredios((prev) => prev.filter((item) => item.id !== predio.id));
+      mostrarExito(`Predio "${predio.nombre}" eliminado.`);
     } catch (err) {
       setAccionError(err instanceof Error ? err.message : 'No se pudo eliminar');
     } finally {
@@ -89,12 +91,14 @@ export default function PrediosPage() {
             setPredios((prev) =>
               editando ? prev.map((item) => (item.id === guardado.id ? guardado : item)) : [...prev, guardado],
             );
+            mostrarExito(editando ? 'Predio actualizado correctamente.' : 'Predio creado correctamente.');
             if (editando) cerrarFormulario();
           }}
         />
       )}
 
       {cargandoDetalle && <div className="state-card">Cargando detalle...</div>}
+      {successMessage && <div className="form-success" role="status">{successMessage}</div>}
       {accionError && <div className="form-error">{accionError}</div>}
       {loading && <div className="state-card">Cargando predios...</div>}
       {!loading && error && <div className="state-card error">{error}</div>}

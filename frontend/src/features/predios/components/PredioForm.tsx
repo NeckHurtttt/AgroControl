@@ -33,8 +33,7 @@ export default function PredioForm({ predio, onSaved, onCancel }: PredioFormProp
   const editando = Boolean(predio);
   const [formData, setFormData] = useState<PredioFormData>(predio ? desdePredio(predio) : initialPredioForm);
   const [errors, setErrors] = useState<PredioFormErrors>({});
-  const [mensaje, setMensaje] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [apiError, setApiError] = useState('');
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +46,6 @@ export default function PredioForm({ predio, onSaved, onCancel }: PredioFormProp
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setMensaje('');
     setApiError('');
 
     const validationErrors = validarPredio(formData);
@@ -62,27 +60,25 @@ export default function PredioForm({ predio, onSaved, onCancel }: PredioFormProp
     };
 
     try {
-      setSubmitting(true);
+      setSaving(true);
       const guardado = predio
         ? await predioService.actualizar(predio.id, payload)
         : await predioService.crear(payload);
       onSaved?.(guardado);
       if (!predio) {
         setFormData(initialPredioForm);
-        setMensaje('Predio creado correctamente.');
       }
     } catch (err) {
       if (err instanceof ApiError) setErrors(err.campos);
       setApiError(err instanceof Error ? err.message : 'No se pudo guardar');
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   };
 
   const limpiar = () => {
     setFormData(initialPredioForm);
     setErrors({});
-    setMensaje('');
     setApiError('');
   };
 
@@ -111,21 +107,20 @@ export default function PredioForm({ predio, onSaved, onCancel }: PredioFormProp
         </label>
       </div>
 
-      {mensaje && <div className="form-success">{mensaje}</div>}
       {apiError && <div className="form-error">{apiError}</div>}
 
       <div className="form-actions">
         {editando ? (
-          <button type="button" className="btn-secondary" onClick={onCancel} disabled={submitting}>
+          <button type="button" className="btn-secondary" onClick={onCancel} disabled={saving}>
             Cancelar
           </button>
         ) : (
-          <button type="button" className="btn-secondary" onClick={limpiar} disabled={submitting}>
+          <button type="button" className="btn-secondary" onClick={limpiar} disabled={saving}>
             Limpiar
           </button>
         )}
-        <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar predio'}
+        <button type="submit" className="btn-primary" disabled={saving}>
+          {saving ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar predio'}
         </button>
       </div>
     </form>

@@ -34,8 +34,7 @@ export default function ParcelaForm({ predios, parcela, onSaved, onCancel }: Par
   const editando = Boolean(parcela);
   const [formData, setFormData] = useState<ParcelaFormData>(parcela ? desdeParcela(parcela) : initialParcelaForm);
   const [errors, setErrors] = useState<ParcelaFormErrors>({});
-  const [mensaje, setMensaje] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [apiError, setApiError] = useState('');
 
   // Al editar se muestra el predio actual aunque esté inactivo; al crear, solo predios activos.
@@ -50,7 +49,6 @@ export default function ParcelaForm({ predios, parcela, onSaved, onCancel }: Par
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setMensaje('');
     setApiError('');
 
     const validationErrors = validarParcela(formData);
@@ -62,27 +60,25 @@ export default function ParcelaForm({ predios, parcela, onSaved, onCancel }: Par
     const predioId = Number(formData.predioId);
 
     try {
-      setSubmitting(true);
+      setSaving(true);
       const guardada = parcela
         ? await parcelaService.actualizar(parcela.id, { predioId, codigo, areaHa, estado: formData.estado })
         : await parcelaService.crear({ predioId, codigo, areaHa });
       onSaved?.(guardada);
       if (!parcela) {
         setFormData(initialParcelaForm);
-        setMensaje('Parcela creada correctamente.');
       }
     } catch (err) {
       if (err instanceof ApiError) setErrors(err.campos);
       setApiError(err instanceof Error ? err.message : 'No se pudo guardar');
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   };
 
   const limpiar = () => {
     setFormData(initialParcelaForm);
     setErrors({});
-    setMensaje('');
     setApiError('');
   };
 
@@ -125,21 +121,20 @@ export default function ParcelaForm({ predios, parcela, onSaved, onCancel }: Par
         )}
       </div>
 
-      {mensaje && <div className="form-success">{mensaje}</div>}
       {apiError && <div className="form-error">{apiError}</div>}
 
       <div className="form-actions">
         {editando ? (
-          <button type="button" className="btn-secondary" onClick={onCancel} disabled={submitting}>
+          <button type="button" className="btn-secondary" onClick={onCancel} disabled={saving}>
             Cancelar
           </button>
         ) : (
-          <button type="button" className="btn-secondary" onClick={limpiar} disabled={submitting}>
+          <button type="button" className="btn-secondary" onClick={limpiar} disabled={saving}>
             Limpiar
           </button>
         )}
-        <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar parcela'}
+        <button type="submit" className="btn-primary" disabled={saving}>
+          {saving ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar parcela'}
         </button>
       </div>
     </form>

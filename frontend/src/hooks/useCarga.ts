@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isAbortError } from '../shared/utils/isAbortError';
 
 /**
  * Patrón de la Guía 05 (useEffect + AbortController + estados loading/error) extraído
@@ -34,7 +35,7 @@ export function useCarga<T>(
         const data = await cargarRef.current(controller.signal);
         setDatos(data);
       } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (isAbortError(err)) return;
         setError(err instanceof Error ? err.message : 'Error inesperado');
       } finally {
         if (!controller.signal.aborted) setLoading(false);
