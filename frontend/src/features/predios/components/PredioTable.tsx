@@ -1,4 +1,5 @@
-import EstadoBadge from '../../../components/common/EstadoBadge';
+import Button from '../../../components/ui/Button';
+import StatusBadge from '../../../components/ui/StatusBadge';
 import { formatArea } from '../../../utils/area';
 import type { Predio } from '../models/Predio';
 
@@ -10,10 +11,6 @@ interface PredioTableProps {
 }
 
 export default function PredioTable({ predios, onEditar, onEliminar, deletingId = null }: PredioTableProps) {
-  if (predios.length === 0) {
-    return <div className="empty-state">No hay predios registrados.</div>;
-  }
-
   return (
     <div className="table-card">
       <div className="table-responsive">
@@ -35,18 +32,19 @@ export default function PredioTable({ predios, onEditar, onEliminar, deletingId 
                 <td>{predio.nombre}</td>
                 <td>{predio.ubicacion ?? 'Sin ubicación'}</td>
                 <td>{formatArea(predio.areaHa)}</td>
-                <td><EstadoBadge estado={predio.activo ? 'ACTIVO' : 'INACTIVO'} /></td>
+                <td><StatusBadge estado={predio.activo ? 'ACTIVO' : 'INACTIVO'} /></td>
                 <td>
                   <div className="table-actions">
-                    <button type="button" className="btn-link" onClick={() => onEditar(predio)}>Editar</button>
-                    <button
-                      type="button"
-                      className="btn-link btn-link--danger"
+                    <Button variant="secondary" size="sm" onClick={() => onEditar(predio)}>Editar</Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={() => onEliminar(predio)}
-                      disabled={deletingId === predio.id}
+                      loading={deletingId === predio.id}
+                      loadingText="Eliminando..."
                     >
-                      {deletingId === predio.id ? 'Eliminando...' : 'Eliminar'}
-                    </button>
+                      Eliminar
+                    </Button>
                   </div>
                 </td>
               </tr>

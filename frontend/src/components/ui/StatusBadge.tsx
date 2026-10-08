@@ -1,3 +1,4 @@
+// Genérico: recibe el texto del estado (no conoce modelos de dominio) y elige el color por nombre.
 const clasePorEstado: Record<string, string> = {
   ACTIVO: 'status-active',
   DISPONIBLE: 'status-active',
@@ -12,11 +13,11 @@ const clasePorEstado: Record<string, string> = {
   SALIDA: 'status-inactive',
 };
 
-interface EstadoBadgeProps {
+interface StatusBadgeProps {
   estado: string;
 }
 
-export default function EstadoBadge({ estado }: EstadoBadgeProps) {
+export default function StatusBadge({ estado }: StatusBadgeProps) {
   const clase = clasePorEstado[estado] ?? 'status-neutral';
   return <span className={`status-badge ${clase}`}>{estado.replace(/_/g, ' ')}</span>;
 }

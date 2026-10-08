@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import EstadoBadge from '../../../components/common/EstadoBadge';
+import StatusBadge from '../../../components/ui/StatusBadge';
 import { useCarga } from '../../../hooks/useCarga';
 import { formatCantidad, formatFecha, validarCantidadPositiva } from '../../../utils/formato';
 import type { Usuario } from '../../usuarios/models/Usuario';
@@ -109,7 +109,7 @@ export default function MovimientosPanel({ insumo, usuarios, onMovimientoRegistr
               {movimientos.map((movimiento) => (
                 <tr key={movimiento.id}>
                   <td>{formatFecha(movimiento.fecha)}</td>
-                  <td><EstadoBadge estado={movimiento.tipo} /></td>
+                  <td><StatusBadge estado={movimiento.tipo} /></td>
                   <td>{formatCantidad(movimiento.cantidad, insumo.unidadMedida)}</td>
                   <td>{movimiento.motivo ?? '—'}</td>
                   <td>{nombreUsuario(usuarios, movimiento.usuarioId)}</td>

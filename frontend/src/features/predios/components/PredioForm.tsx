@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { ApiError } from '../../../api/apiClient';
+import Button from '../../../components/ui/Button';
 import { parseArea } from '../../../utils/area';
 import type { Predio } from '../models/Predio';
 import { predioService } from '../services/predioService';
@@ -84,7 +85,6 @@ export default function PredioForm({ predio, onSaved, onCancel }: PredioFormProp
 
   return (
     <form className="entity-form" onSubmit={handleSubmit} noValidate>
-      {editando && <h3 className="panel-title">Editar predio #{predio?.id}</h3>}
       <div className="form-grid">
         <label>
           Nombre
@@ -110,18 +110,17 @@ export default function PredioForm({ predio, onSaved, onCancel }: PredioFormProp
       {apiError && <div className="form-error">{apiError}</div>}
 
       <div className="form-actions">
-        {editando ? (
-          <button type="button" className="btn-secondary" onClick={onCancel} disabled={saving}>
-            Cancelar
-          </button>
-        ) : (
-          <button type="button" className="btn-secondary" onClick={limpiar} disabled={saving}>
+        <Button variant="secondary" onClick={onCancel} disabled={saving}>
+          Cancelar
+        </Button>
+        {!editando && (
+          <Button variant="secondary" onClick={limpiar} disabled={saving}>
             Limpiar
-          </button>
+          </Button>
         )}
-        <button type="submit" className="btn-primary" disabled={saving}>
-          {saving ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar predio'}
-        </button>
+        <Button type="submit" loading={saving} loadingText="Guardando...">
+          {editando ? 'Guardar cambios' : 'Guardar predio'}
+        </Button>
       </div>
     </form>
   );

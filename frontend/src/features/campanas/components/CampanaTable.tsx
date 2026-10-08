@@ -1,4 +1,4 @@
-import EstadoBadge from '../../../components/common/EstadoBadge';
+import StatusBadge from '../../../components/ui/StatusBadge';
 import { formatFecha } from '../../../utils/formato';
 import type { Campana } from '../models/Campana';
 import { etiquetaParcela, nombreCultivo, type Catalogos } from '../utils/etiquetas';
@@ -38,7 +38,7 @@ export default function CampanaTable({ campanas, catalogos, onIniciar, onFinaliz
                 <td>{nombreCultivo(campana.cultivoId, catalogos)}</td>
                 <td>{formatFecha(campana.fechaInicio)}</td>
                 <td>{formatFecha(campana.fechaFin)}</td>
-                <td><EstadoBadge estado={campana.estado} /></td>
+                <td><StatusBadge estado={campana.estado} /></td>
                 <td>
                   <div className="table-actions">
                     {campana.estado === 'PLANIFICADA' && (

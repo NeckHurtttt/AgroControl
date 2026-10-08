@@ -1,4 +1,4 @@
-import EstadoBadge from '../../../components/common/EstadoBadge';
+import StatusBadge from '../../../components/ui/StatusBadge';
 import { formatFecha } from '../../../utils/formato';
 import type { Campana } from '../../campanas/models/Campana';
 import { etiquetaCampana, type Catalogos } from '../../campanas/utils/etiquetas';
@@ -42,7 +42,7 @@ export default function LaborTable({ labores, campanas, catalogos, onEjecutar, o
                   <td>{campanaLabor ? etiquetaCampana(campanaLabor, catalogos) : `Campaña ${labor.campanaId}`}</td>
                   <td>{formatFecha(labor.fechaPlan)}</td>
                   <td>{formatFecha(labor.fechaEjecucion)}</td>
-                  <td><EstadoBadge estado={labor.estado} /></td>
+                  <td><StatusBadge estado={labor.estado} /></td>
                   <td>
                     <div className="table-actions">
                       {labor.estado === 'PLANIFICADA' && (
