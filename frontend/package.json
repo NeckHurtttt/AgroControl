@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:jar": "tsc -b && vite build --mode jar",
     "lint": "oxlint",
     "test": "vitest",
     "test:run": "vitest run",

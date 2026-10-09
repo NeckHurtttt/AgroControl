@@ -123,6 +123,17 @@ npm run dev
 
 La URL de la API se configura en `frontend/.env.development` (`VITE_API_URL=http://localhost:8080/api`). Las variables `VITE_` terminan en el navegador: nunca guardar secretos ahí.
 
+### Una sola aplicación (entrega / despliegue)
+El perfil Maven `fullstack` compila el frontend y lo mete en el jar del backend, que sirve la web y la API desde el mismo puerto (sin CORS):
+
+```bash
+cd backend
+mvn -Pfullstack package
+java -jar target/AgroControl-1.0-SNAPSHOT.jar   # web en http://localhost:8080, API en /api, Swagger en /swagger-ui.html
+```
+
+El perfil descarga su propio Node en `backend/target/` (no hace falta tenerlo instalado) y construye con `npm run build:jar`, que usa `frontend/.env.jar` (`VITE_API_URL=/api`). Las rutas de React (`/predios`, `/parcelas`...) las resuelve `SpaConfig`, que responde `index.html`. Para desarrollar se siguen usando `mvn spring-boot:run` y `npm run dev` por separado.
+
 ## 13. App móvil
 React Native + TypeScript con Expo en `mobile/`, orientada al operario de campo. Consume la misma API que la web.
 
