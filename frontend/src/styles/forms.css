@@ -19,7 +19,8 @@
   color: var(--color-text-control);
 }
 .form-grid input,
-.form-grid select {
+.form-grid select,
+.form-grid textarea {
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--color-border-strong);
@@ -28,11 +29,13 @@
   background: var(--color-surface);
 }
 .form-grid input:focus,
-.form-grid select:focus {
+.form-grid select:focus,
+.form-grid textarea:focus {
   outline: 3px solid var(--focus-ring);
   border-color: var(--color-primary);
 }
 .form-span-2 { grid-column: 1 / -1; }
+.form-grid textarea { resize: vertical; min-height: 90px; }
 .checkbox-field { flex-direction: row !important; align-items: center; }
 .checkbox-field input { width: auto; }
 .field-error { color: var(--color-danger); font-weight: 500; }

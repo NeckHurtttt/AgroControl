@@ -9,6 +9,7 @@ const menuItems = [
   { to: '/labores', label: 'Labores' },
   { to: '/insumos', label: 'Insumos' },
   { to: '/cosechas', label: 'Cosechas' },
+  { to: '/incidencias', label: 'Incidencias' },
 ];
 
 export default function Sidebar() {

@@ -282,3 +282,38 @@ Content-Type: application/json
   "unidadMedida": "t",
   "usuarioId": 2
 }
+
+### ==== Incidencias ====
+
+### Listar (opcional ?parcelaId=1)
+GET http://localhost:8080/api/incidencias
+
+### Reportar sobre una labor: campaña y parcela se deducen -> 201
+POST http://localhost:8080/api/incidencias
+Content-Type: application/json
+
+{
+  "laborId": 1,
+  "descripcion": "La bomba de riego no enciende",
+  "usuarioId": 1
+}
+
+### Campaña que no es de esa parcela -> 409
+POST http://localhost:8080/api/incidencias
+Content-Type: application/json
+
+{
+  "parcelaId": 2,
+  "campanaId": 1,
+  "descripcion": "Helada",
+  "usuarioId": 1
+}
+
+### Sin parcela, campaña ni labor -> 400
+POST http://localhost:8080/api/incidencias
+Content-Type: application/json
+
+{
+  "descripcion": "Algo pasó",
+  "usuarioId": 1
+}

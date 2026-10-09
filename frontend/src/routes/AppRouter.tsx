@@ -9,6 +9,7 @@ import CampanasPage from '../features/campanas/pages/CampanasPage';
 import LaboresPage from '../features/labores/pages/LaboresPage';
 import InsumosPage from '../features/insumos/pages/InsumosPage';
 import CosechasPage from '../features/cosechas/pages/CosechasPage';
+import IncidenciasPage from '../features/incidencias/pages/IncidenciasPage';
 
 export default function AppRouter() {
   return (
@@ -22,6 +23,7 @@ export default function AppRouter() {
         <Route path="labores" element={<LaboresPage />} />
         <Route path="insumos" element={<InsumosPage />} />
         <Route path="cosechas" element={<CosechasPage />} />
+        <Route path="incidencias" element={<IncidenciasPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
