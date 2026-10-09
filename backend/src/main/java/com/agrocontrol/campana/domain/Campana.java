@@ -53,7 +53,21 @@ public class Campana {
         this.estado = "PLANIFICADA";
     }
 
+    public void iniciar() {
+        if (!"PLANIFICADA".equals(estado)) {
+            throw new IllegalStateException("Solo se puede iniciar una campaña PLANIFICADA (estado actual: " + estado + ")");
+        }
+        this.estado = "EN_CURSO";
+    }
+
+    public boolean estaFinalizada() {
+        return "FINALIZADA".equals(estado);
+    }
+
     public void finalizar(LocalDate fechaFin) {
+        if (estaFinalizada()) {
+            throw new IllegalStateException("La campaña ya está finalizada");
+        }
         if (fechaFin == null) {
             throw new IllegalArgumentException("La fecha de fin es obligatoria para finalizar la campaña");
         }

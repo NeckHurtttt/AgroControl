@@ -1,15 +1,16 @@
+import Button from '../../../components/ui/Button';
+import StatusBadge from '../../../components/ui/StatusBadge';
 import { formatArea } from '../../../utils/area';
 import type { Predio } from '../models/Predio';
 
 interface PredioTableProps {
   predios: Predio[];
+  onEditar: (predio: Predio) => void;
+  onEliminar: (predio: Predio) => void;
+  deletingId?: number | null;
 }
 
-export default function PredioTable({ predios }: PredioTableProps) {
-  if (predios.length === 0) {
-    return <div className="empty-state">No hay predios registrados.</div>;
-  }
-
+export default function PredioTable({ predios, onEditar, onEliminar, deletingId = null }: PredioTableProps) {
   return (
     <div className="table-card">
       <div className="table-responsive">
@@ -21,6 +22,7 @@ export default function PredioTable({ predios }: PredioTableProps) {
               <th>Ubicación</th>
               <th>Área</th>
               <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -30,10 +32,20 @@ export default function PredioTable({ predios }: PredioTableProps) {
                 <td>{predio.nombre}</td>
                 <td>{predio.ubicacion ?? 'Sin ubicación'}</td>
                 <td>{formatArea(predio.areaHa)}</td>
+                <td><StatusBadge estado={predio.activo ? 'ACTIVO' : 'INACTIVO'} /></td>
                 <td>
-                  <span className={`status-badge ${predio.activo ? 'status-active' : 'status-inactive'}`}>
-                    {predio.activo ? 'Activo' : 'Inactivo'}
-                  </span>
+                  <div className="table-actions">
+                    <Button variant="secondary" size="sm" onClick={() => onEditar(predio)}>Editar</Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => onEliminar(predio)}
+                      loading={deletingId === predio.id}
+                      loadingText="Eliminando..."
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -55,6 +55,27 @@ public class Parcela {
         this.estado = "DISPONIBLE";
     }
 
+    public void cambiarCodigo(String codigo) {
+        if (codigo == null || codigo.isBlank()) {
+            throw new IllegalArgumentException("El código de la parcela no puede estar vacío");
+        }
+        this.codigo = codigo;
+    }
+
+    public void moverAPredio(Long predioId) {
+        if (predioId == null) {
+            throw new IllegalArgumentException("La parcela debe pertenecer a un predio");
+        }
+        this.predioId = predioId;
+    }
+
+    public void actualizarArea(BigDecimal areaHa) {
+        if (areaHa != null && areaHa.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El área de la parcela debe ser mayor que cero");
+        }
+        this.areaHa = areaHa;
+    }
+
     public void cambiarEstado(String estado) {
         if (estado == null || estado.isBlank()) {
             throw new IllegalArgumentException("El estado de la parcela no puede estar vacío");

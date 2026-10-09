@@ -8,7 +8,9 @@ target/
 node_modules/
 dist/
 
-# Variables locales (pueden contener credenciales)
+# Variables locales (pueden contener credenciales). Se versionan solo .env.example,
+# .env.development y .env.production, que no llevan secretos.
+.env
 .env.local
 .env.*.local
 

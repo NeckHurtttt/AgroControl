@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET usuario inexistente -> 404
+url: "{{baseUrl}}/api/usuarios/999"
+method: GET
+order: 6000

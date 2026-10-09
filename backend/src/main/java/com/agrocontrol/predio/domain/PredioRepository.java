@@ -8,4 +8,5 @@ public interface PredioRepository {
     Optional<Predio> buscarPorId(Long id);
     List<Predio> listarTodos();
     boolean existePorId(Long id);
+    void eliminar(Long id);
 }

@@ -1,0 +1,15 @@
+$kind: http-request
+name: PUT parcela con estado inválido -> 400
+url: "{{baseUrl}}/api/parcelas/2"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "codigo": "P-02",
+      "areaHa": 30,
+      "estado": "ROTA"
+    }
+order: 6000

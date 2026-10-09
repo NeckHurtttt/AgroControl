@@ -1,0 +1,15 @@
+$kind: http-request
+name: Nueva campaña en parcela con otra abierta -> 409
+url: "{{baseUrl}}/api/campanas"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "parcelaId": 1,
+      "cultivoId": 1,
+      "fechaInicio": "2026-10-01"
+    }
+order: 2000

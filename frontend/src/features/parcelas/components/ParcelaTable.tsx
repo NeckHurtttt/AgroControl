@@ -1,21 +1,20 @@
+import Button from '../../../components/ui/Button';
+import StatusBadge from '../../../components/ui/StatusBadge';
 import { formatArea } from '../../../utils/area';
 import type { Predio } from '../../predios/models/Predio';
 import type { Parcela } from '../models/Parcela';
 
 interface ParcelaTableProps {
   parcelas: Parcela[];
-  predios: Predio[];
+  // Map construido una vez en la página (useMemo): nombre del predio sin find ni request por fila.
+  prediosPorId: Map<number, Predio>;
+  onEditar: (parcela: Parcela) => void;
+  onEliminar: (parcela: Parcela) => void;
+  deletingId?: number | null;
 }
 
-export default function ParcelaTable({ parcelas, predios }: ParcelaTableProps) {
-  const obtenerNombrePredio = (predioId: number) => {
-    const predio = predios.find((item) => item.id === predioId);
-    return predio ? predio.nombre : 'Sin predio asociado';
-  };
-
-  if (parcelas.length === 0) {
-    return <div className="empty-state">No hay parcelas registradas.</div>;
-  }
+export default function ParcelaTable({ parcelas, prediosPorId, onEditar, onEliminar, deletingId = null }: ParcelaTableProps) {
+  const obtenerNombrePredio = (predioId: number) => prediosPorId.get(predioId)?.nombre ?? `Predio #${predioId}`;
 
   return (
     <div className="table-card">
@@ -27,6 +26,7 @@ export default function ParcelaTable({ parcelas, predios }: ParcelaTableProps) {
               <th>Predio</th>
               <th>Área</th>
               <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -35,10 +35,20 @@ export default function ParcelaTable({ parcelas, predios }: ParcelaTableProps) {
                 <td className="code-cell">{parcela.codigo}</td>
                 <td>{obtenerNombrePredio(parcela.predioId)}</td>
                 <td>{formatArea(parcela.areaHa)}</td>
+                <td><StatusBadge estado={parcela.estado} /></td>
                 <td>
-                  <span className={`status-badge ${parcela.estado === 'DISPONIBLE' ? 'status-active' : 'status-neutral'}`}>
-                    {parcela.estado}
-                  </span>
+                  <div className="table-actions">
+                    <Button variant="secondary" size="sm" onClick={() => onEditar(parcela)}>Editar</Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => onEliminar(parcela)}
+                      loading={deletingId === parcela.id}
+                      loadingText="Eliminando..."
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}

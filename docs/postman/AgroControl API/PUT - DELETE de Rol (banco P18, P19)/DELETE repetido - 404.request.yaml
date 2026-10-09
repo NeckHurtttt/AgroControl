@@ -1,0 +1,5 @@
+$kind: http-request
+name: DELETE repetido -> 404
+url: "{{baseUrl}}/api/roles/5"
+method: DELETE
+order: 6000

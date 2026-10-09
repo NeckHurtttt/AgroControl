@@ -1,45 +1,23 @@
 package com.agrocontrol.usuario.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "usuario", schema = "agrocontrol")
 public class Usuario {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario")
-    private Long id;
-
-    @Column(name = "nombre", nullable = false, length = 100)
-    private String nombreCompleto;
-
-    @Column(name = "email", nullable = false, unique = true, length = 150)
-    private String email;
-
-    @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;
-
-    @Column(name = "id_rol", nullable = false)
-    private Long rolId;
-
-    @Column(name = "activo", nullable = false)
+    private final Long id;
+    private final String nombreCompleto;
+    private final String email;
+    private final String passwordHash;
+    private final Long rolId;
     private boolean activo;
-
-    @Column(name = "creado_en", nullable = false, updatable = false)
-    private LocalDateTime creadoEn = LocalDateTime.now();
-
-    protected Usuario() {
-    }
+    private final LocalDateTime creadoEn;
 
     public Usuario(Long id, String nombreCompleto, String email, String passwordHash, Long rolId) {
+        this(id, nombreCompleto, email, passwordHash, rolId, true, LocalDateTime.now());
+    }
+
+    public Usuario(Long id, String nombreCompleto, String email, String passwordHash, Long rolId,
+                   boolean activo, LocalDateTime creadoEn) {
         if (nombreCompleto == null || nombreCompleto.isBlank()) {
             throw new IllegalArgumentException("El nombre completo es obligatorio");
         }
@@ -57,7 +35,8 @@ public class Usuario {
         this.email = email;
         this.passwordHash = passwordHash;
         this.rolId = rolId;
-        this.activo = true;
+        this.activo = activo;
+        this.creadoEn = creadoEn;
     }
 
     public void desactivar() { this.activo = false; }

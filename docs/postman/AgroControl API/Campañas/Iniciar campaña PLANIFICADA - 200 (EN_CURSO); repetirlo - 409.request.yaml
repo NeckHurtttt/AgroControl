@@ -1,0 +1,5 @@
+$kind: http-request
+name: Iniciar campaña PLANIFICADA -> 200 (EN_CURSO); repetirlo -> 409
+url: "{{baseUrl}}/api/campanas/2/iniciar"
+method: POST
+order: 3000

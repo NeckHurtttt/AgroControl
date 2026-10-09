@@ -1,0 +1,16 @@
+$kind: http-request
+name: POST válido -> 201 (la respuesta NO incluye la contraseña)
+url: "{{baseUrl}}/api/usuarios"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "rolId": 3,
+      "nombreCompleto": "Pedro Mamani",
+      "email": "operario3@agrocontrol.com",
+      "password": "Campo2026!"
+    }
+order: 1000

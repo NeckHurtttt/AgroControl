@@ -1,0 +1,4 @@
+$kind: collection
+description: Generada desde requests.http. Requiere el backend en {{baseUrl}}.
+variables:
+  baseUrl: http://localhost:8080

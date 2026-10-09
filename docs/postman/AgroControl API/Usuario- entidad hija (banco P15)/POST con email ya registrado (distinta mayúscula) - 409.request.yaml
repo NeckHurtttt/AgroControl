@@ -1,0 +1,16 @@
+$kind: http-request
+name: POST con email ya registrado (distinta mayúscula) -> 409
+url: "{{baseUrl}}/api/usuarios"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "rolId": 3,
+      "nombreCompleto": "Otro",
+      "email": "OPERARIO3@agrocontrol.com",
+      "password": "Campo2026!"
+    }
+order: 3000

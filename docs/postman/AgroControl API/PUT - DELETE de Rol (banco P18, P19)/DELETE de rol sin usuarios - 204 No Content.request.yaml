@@ -1,0 +1,5 @@
+$kind: http-request
+name: DELETE de rol sin usuarios -> 204 No Content
+url: "{{baseUrl}}/api/roles/5"
+method: DELETE
+order: 5000

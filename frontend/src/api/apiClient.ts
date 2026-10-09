@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../config/env';
 
 export class ApiError extends Error {
   status: number;
@@ -12,20 +12,17 @@ export class ApiError extends Error {
   }
 }
 
-// Forma del ErrorResponse que devuelve GlobalExceptionHandler en Spring Boot.
-interface ErrorResponseBody {
-  mensaje?: string;
-  campos?: Record<string, string>;
+// Forma del ProblemDetail (RFC 9457) que devuelve GlobalExceptionHandler en Spring Boot.
+interface ProblemDetailBody {
+  title?: string;
+  detail?: string;
+  errores?: Record<string, string>;
 }
 
 export async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  if (!API_URL) {
-    throw new Error('Falta VITE_API_URL');
-  }
-
   const headers = new Headers(options.headers);
   if (options.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
@@ -38,16 +35,16 @@ export async function apiFetch<T>(
 
   if (!response.ok) {
     const detail = await response.text();
-    let body: ErrorResponseBody = {};
+    let body: ProblemDetailBody = {};
     try {
-      body = JSON.parse(detail) as ErrorResponseBody;
+      body = JSON.parse(detail) as ProblemDetailBody;
     } catch {
       // El backend respondió texto plano o nada: usamos el texto tal cual.
     }
     throw new ApiError(
       response.status,
-      body.mensaje || detail || response.statusText || 'Error HTTP',
-      body.campos,
+      body.detail || body.title || detail || response.statusText || 'Error HTTP',
+      body.errores,
     );
   }
 

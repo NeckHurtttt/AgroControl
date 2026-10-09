@@ -1,85 +1,220 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import PageHeading from '../../../components/common/PageHeading';
+import StatsGrid from '../../../components/common/StatsGrid';
+import Button from '../../../components/ui/Button';
+import ConfirmDialog from '../../../components/ui/ConfirmDialog';
+import EmptyState from '../../../components/ui/EmptyState';
+import Modal from '../../../components/ui/Modal';
+import Pagination from '../../../components/ui/Pagination';
+import SearchInput from '../../../components/ui/SearchInput';
+import SelectFilter from '../../../components/ui/SelectFilter';
+import { useMensajeExito } from '../../../hooks/useMensajeExito';
+import { isAbortError } from '../../../shared/utils/isAbortError';
+import { paginar } from '../../../shared/utils/paginar';
 import { formatArea } from '../../../utils/area';
-import type { Predio } from '../../predios/models/Predio';
-import { predioService } from '../../predios/services/predioService';
 import ParcelaForm from '../components/ParcelaForm';
 import ParcelaTable from '../components/ParcelaTable';
-import type { Parcela } from '../models/Parcela';
+import { useParcelas } from '../hooks/useParcelas';
+import { ESTADOS_PARCELA, type EstadoParcela, type Parcela } from '../models/Parcela';
 import { parcelaService } from '../services/parcelaService';
+import { filtrarParcelas } from '../utils/filtrarParcelas';
+
+const OPCIONES_ESTADO = [
+  { value: '', label: 'Todos los estados' },
+  ...ESTADOS_PARCELA.map((estado) => ({ value: estado, label: estado.replace(/_/g, ' ') })),
+];
 
 export default function ParcelasPage() {
-  const [parcelas, setParcelas] = useState<Parcela[]>([]);
-  const [predios, setPredios] = useState<Predio[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { parcelas, predios, setParcelas, loading, error } = useParcelas();
+  const { successMessage, mostrarExito } = useMensajeExito();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [editando, setEditando] = useState<Parcela | null>(null);
+  const [accionError, setAccionError] = useState('');
+  const [cargandoDetalle, setCargandoDetalle] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Parcela | null>(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [predioFiltro, setPredioFiltro] = useState('');
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoParcela | ''>('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const detalleRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    const controller = new AbortController();
+  // Si la página se desmonta con un GET de detalle en vuelo, se cancela.
+  useEffect(() => () => detalleRef.current?.abort(), []);
 
-    const cargarDatos = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        // Predios se necesitan para mostrar a qué fundo pertenece cada parcela y llenar el select.
-        const [parcelasData, prediosData] = await Promise.all([
-          parcelaService.listar(controller.signal),
-          predioService.listar(controller.signal),
-        ]);
-        setParcelas(parcelasData);
-        setPredios(prediosData);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
-        setError(err instanceof Error ? err.message : 'Error inesperado');
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
+  // Un solo Map por lista de predios: lo usan la búsqueda por nombre de predio y la tabla.
+  const prediosPorId = useMemo(() => new Map(predios.map((predio) => [predio.id, predio])), [predios]);
 
-    void cargarDatos();
-    return () => controller.abort();
-  }, []);
+  // Todo derivado en el render: primero se filtra (sin pedir nada nuevo al backend) y después se pagina.
+  const parcelasFiltradas = filtrarParcelas(parcelas, prediosPorId, {
+    busqueda,
+    predioId: predioFiltro ? Number(predioFiltro) : null,
+    estado: estadoFiltro,
+  });
+  const pagina = paginar(parcelasFiltradas, page, pageSize);
 
   const total = parcelas.length;
   const disponibles = parcelas.filter((parcela) => parcela.estado === 'DISPONIBLE').length;
   const areaTotal = parcelas.reduce((suma, parcela) => suma + (parcela.areaHa ?? 0), 0);
 
+  const opcionesPredio = [
+    { value: '', label: 'Todos los predios' },
+    ...predios.map((predio) => ({ value: String(predio.id), label: predio.nombre })),
+  ];
+
+  // Cualquier cambio de búsqueda, filtro o tamaño vuelve a la página 1.
+  const cambiarBusqueda = (valor: string) => {
+    setBusqueda(valor);
+    setPage(1);
+  };
+  const cambiarPredioFiltro = (valor: string) => {
+    setPredioFiltro(valor);
+    setPage(1);
+  };
+  const cambiarEstadoFiltro = (valor: string) => {
+    setEstadoFiltro(valor as EstadoParcela | '');
+    setPage(1);
+  };
+  const cambiarPageSize = (valor: number) => {
+    setPageSize(valor);
+    setPage(1);
+  };
+
+  const abrirNueva = () => {
+    setEditando(null);
+    setMostrarFormulario(true);
+  };
+
+  const cerrarFormulario = () => {
+    setMostrarFormulario(false);
+    setEditando(null);
+  };
+
+  // Editar parte de los datos frescos del backend (GET /parcelas/{id}); si ya no existe, no se abre el formulario.
+  const editar = async (parcela: Parcela) => {
+    detalleRef.current?.abort();
+    const controller = new AbortController();
+    detalleRef.current = controller;
+    try {
+      setAccionError('');
+      setCargandoDetalle(true);
+      const detalle = await parcelaService.obtenerPorId(parcela.id, controller.signal);
+      setEditando(detalle);
+      setMostrarFormulario(true);
+    } catch (err) {
+      if (isAbortError(err)) return;
+      setAccionError(err instanceof Error ? err.message : 'No se pudo cargar la parcela');
+    } finally {
+      if (!controller.signal.aborted) setCargandoDetalle(false);
+    }
+  };
+
+  const confirmarEliminar = async () => {
+    const parcela = pendingDelete;
+    if (!parcela || deletingId !== null) return;
+    try {
+      setAccionError('');
+      setDeletingId(parcela.id);
+      await parcelaService.eliminar(parcela.id);
+      setParcelas((prev) => prev.filter((item) => item.id !== parcela.id));
+      // Si era el último elemento de la última página, se retrocede una página.
+      const paginasRestantes = Math.max(1, Math.ceil((pagina.totalItems - 1) / pageSize));
+      setPage((prev) => Math.min(prev, paginasRestantes));
+      mostrarExito(`Parcela ${parcela.codigo} eliminada.`);
+    } catch (err) {
+      setAccionError(err instanceof Error ? err.message : 'No se pudo eliminar');
+    } finally {
+      setDeletingId(null);
+      setPendingDelete(null);
+    }
+  };
+
   return (
     <section className="feature-page">
-      <div className="page-heading page-heading--actions">
-        <div>
-          <p className="eyebrow">GESTIÓN DE PARCELAS</p>
-          <h1>Parcelas</h1>
-          <p>Parcelas asociadas a cada predio mediante predioId.</p>
-        </div>
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => setMostrarFormulario((prev) => !prev)}
-        >
-          {mostrarFormulario ? 'Cerrar formulario' : '+ Nueva parcela'}
-        </button>
-      </div>
+      <PageHeading
+        eyebrow="GESTIÓN DE PARCELAS"
+        titulo="Parcelas"
+        descripcion="Parcelas asociadas a cada predio mediante predioId."
+        accion={<Button onClick={abrirNueva}>+ Nueva parcela</Button>}
+      />
 
-      {mostrarFormulario && (
+      <Modal
+        open={mostrarFormulario}
+        title={editando ? `Editar parcela ${editando.codigo}` : 'Nueva parcela'}
+        onClose={cerrarFormulario}
+      >
         <ParcelaForm
+          key={editando?.id ?? 'nueva'}
           predios={predios}
-          onCreated={(nueva) => {
-            setParcelas((prev) => [...prev, nueva]);
+          parcela={editando}
+          onCancel={cerrarFormulario}
+          onSaved={(guardada) => {
+            setParcelas((prev) =>
+              editando ? prev.map((item) => (item.id === guardada.id ? guardada : item)) : [...prev, guardada],
+            );
+            mostrarExito(editando ? 'Parcela actualizada correctamente.' : 'Parcela creada correctamente.');
+            cerrarFormulario();
           }}
         />
-      )}
+      </Modal>
 
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Eliminar parcela"
+        message={pendingDelete ? `¿Eliminar la parcela ${pendingDelete.codigo}? Esta acción no se puede deshacer.` : ''}
+        loading={deletingId !== null}
+        onConfirm={confirmarEliminar}
+        onCancel={() => setPendingDelete(null)}
+      />
+
+      {cargandoDetalle && <div className="state-card">Cargando detalle...</div>}
+      {successMessage && <div className="form-success" role="status">{successMessage}</div>}
+      {accionError && <div className="form-error">{accionError}</div>}
       {loading && <div className="state-card">Cargando parcelas...</div>}
       {!loading && error && <div className="state-card error">{error}</div>}
       {!loading && !error && (
         <>
-          <div className="stats-grid">
-            <article className="stat-card"><span>Total</span><strong>{total}</strong></article>
-            <article className="stat-card"><span>Disponibles</span><strong>{disponibles}</strong></article>
-            <article className="stat-card"><span>Área total</span><strong>{formatArea(areaTotal)}</strong></article>
+          <StatsGrid
+            stats={[
+              { etiqueta: 'Total', valor: total },
+              { etiqueta: 'Disponibles', valor: disponibles },
+              { etiqueta: 'Área total', valor: formatArea(areaTotal) },
+            ]}
+          />
+          <div className="filter-bar">
+            <SearchInput
+              label="Buscar parcela"
+              value={busqueda}
+              onChange={cambiarBusqueda}
+              placeholder="Código o nombre del predio"
+            />
+            <SelectFilter label="Predio" value={predioFiltro} onChange={cambiarPredioFiltro} options={opcionesPredio} />
+            <SelectFilter label="Estado" value={estadoFiltro} onChange={cambiarEstadoFiltro} options={OPCIONES_ESTADO} />
           </div>
-          <ParcelaTable parcelas={parcelas} predios={predios} />
+          {total === 0 ? (
+            <EmptyState title="No hay parcelas registradas." description="Crea la primera con «+ Nueva parcela»." />
+          ) : pagina.totalItems === 0 ? (
+            <EmptyState title="Sin resultados." description="Ninguna parcela coincide con la búsqueda o los filtros." />
+          ) : (
+            <>
+              <ParcelaTable
+                parcelas={pagina.items}
+                prediosPorId={prediosPorId}
+                onEditar={editar}
+                onEliminar={setPendingDelete}
+                deletingId={deletingId}
+              />
+              <Pagination
+                page={pagina.page}
+                totalPages={pagina.totalPages}
+                totalItems={pagina.totalItems}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={cambiarPageSize}
+              />
+            </>
+          )}
         </>
       )}
     </section>

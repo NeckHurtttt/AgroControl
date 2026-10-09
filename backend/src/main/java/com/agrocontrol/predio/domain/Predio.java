@@ -50,6 +50,13 @@ public class Predio {
     public void activar() { this.activo = true; }
     public void desactivar() { this.activo = false; }
 
+    public void renombrar(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre del predio no puede estar vacío");
+        }
+        this.nombre = nombre;
+    }
+
     public void actualizarUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
 
     public void actualizarArea(BigDecimal areaHa) {
