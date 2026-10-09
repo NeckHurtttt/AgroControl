@@ -1,0 +1,9 @@
+$kind: http-request
+name: Listar con filtro opcional (?nombre=) -> 200 OK filtrado
+url: "{{baseUrl}}/api/roles?nombre=aud"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  nombre: aud
+order: 6000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: DELETE de rol con usuarios (OPERARIO) -> 409 Conflict
+url: "{{baseUrl}}/api/roles/3"
+method: DELETE
+order: 4000

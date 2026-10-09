@@ -1,0 +1,13 @@
+$kind: http-request
+name: PUT con nombre de otro rol -> 409 Conflict
+url: "{{baseUrl}}/api/roles/5"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "OPERARIO"
+    }
+order: 2000

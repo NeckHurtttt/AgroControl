@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: 38bc173c-9383-4b62-883a-c71b7f1875ea
+
+localResources:
+  collections:
+    - ../AgroControl API

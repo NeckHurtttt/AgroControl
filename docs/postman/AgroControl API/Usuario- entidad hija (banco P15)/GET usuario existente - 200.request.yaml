@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET usuario existente -> 200
+url: "{{baseUrl}}/api/usuarios/6"
+method: GET
+order: 5000

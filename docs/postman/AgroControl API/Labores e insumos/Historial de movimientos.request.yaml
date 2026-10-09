@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/insumos/2/movimientos"
+method: GET
+order: 6000

@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/labores"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "campanaId": 2,
+      "tipo": "fumigacion",
+      "fechaPlan": "2026-10-15"
+    }
+order: 1000

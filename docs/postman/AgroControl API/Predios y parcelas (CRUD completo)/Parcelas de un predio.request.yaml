@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/parcelas?predioId=1"
+method: GET
+queryParams:
+  predioId: "1"
+order: 4000

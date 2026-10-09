@@ -1,0 +1,13 @@
+$kind: http-request
+name: PUT sobre id inexistente -> 404 (no crea el recurso)
+url: "{{baseUrl}}/api/roles/999"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "FANTASMA"
+    }
+order: 3000

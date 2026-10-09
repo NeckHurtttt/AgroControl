@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/labores/3/ejecutar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "fechaEjecucion": "2026-10-16"
+    }
+order: 2000

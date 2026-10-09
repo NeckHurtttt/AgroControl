@@ -1,0 +1,15 @@
+$kind: http-request
+name: "Consumo mayor al stock -> 409 (rollback: no se guarda nada)"
+url: "{{baseUrl}}/api/labores/3/consumos"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "insumoId": 2,
+      "cantidad": 99999,
+      "usuarioId": 3
+    }
+order: 4000
