@@ -2,6 +2,16 @@
 
 Sistema de gestión de lotes agrícolas: predios, parcelas, campañas, labores, insumos y cosechas.
 
+## Capturas
+
+| Panel principal | Predios |
+|---|---|
+| ![Inicio](docs/capturas/inicio.png) | ![Predios](docs/capturas/predios.png) |
+| **Parcelas** | **Labores** |
+| ![Parcelas](docs/capturas/parcelas.png) | ![Labores](docs/capturas/labores.png) |
+| **Insumos** | **Cosechas** |
+| ![Insumos](docs/capturas/insumos.png) | ![Cosechas](docs/capturas/cosechas.png) |
+
 ## Estructura del repositorio
 
 ```
