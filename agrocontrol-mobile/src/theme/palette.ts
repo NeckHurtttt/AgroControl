@@ -9,4 +9,12 @@ export const PALETTE = {
   borde: "#D5DED6",
   inactivo: "#B3261E",
   inactivoSuave: "#FBE9E7",
+  // Estados de parcela
+  sembrada: "#2E7D32",
+  sembradaSuave: "#E3F1E4",
+  disponible: "#B26A00",
+  disponibleSuave: "#FFF1D6",
+  descanso: "#6D5A4B",
+  descansoSuave: "#EFE8E2",
+  pista: "#E6ECE6", // fondo de las barras de progreso
 } as const;

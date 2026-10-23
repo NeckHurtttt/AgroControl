@@ -18,7 +18,7 @@ export function MetricCard({ etiqueta, valor }: Props) {
 const styles = StyleSheet.create({
   tarjeta: {
     flex: 1,
-    minWidth: 120,
+    minWidth: 90,
     backgroundColor: PALETTE.superficie,
     borderRadius: 12,
     padding: 16,

@@ -4,13 +4,14 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 import type { Seccion } from "./src/models/agro";
-import { PARCELAS, PREDIOS } from "./src/data/demoData";
+import { CAMPANAS, CULTIVOS, PARCELAS, PREDIOS } from "./src/data/demoData";
 import { PALETTE } from "./src/theme/palette";
 import { MetricCard } from "./src/components/MetricCard";
 import { TabSelector } from "./src/components/TabSelector";
 import { PredioCard } from "./src/components/PredioCard";
 import { ParcelaCard } from "./src/components/ParcelaCard";
 import { EmptyState } from "./src/components/EmptyState";
+import { ResumenCampo } from "./src/components/ResumenCampo";
 
 export default function App() {
   // Único estado: qué sección se ve y qué predio está elegido.
@@ -26,6 +27,14 @@ export default function App() {
   const contarParcelas = (id: number) => PARCELAS.filter((p) => p.predioId === id).length;
   const nombreDePredio = (id: number) =>
     PREDIOS.find((p) => p.id === id)?.nombre ?? "Predio desconocido";
+  const sembradas = PARCELAS.filter((p) => p.estado === "SEMBRADA").length;
+
+  // Campaña no finalizada de la parcela, con su cultivo (si existe).
+  const siembraDe = (parcelaId: number) => {
+    const campana = CAMPANAS.find((c) => c.parcelaId === parcelaId && c.estado !== "FINALIZADA");
+    const cultivo = campana && CULTIVOS.find((c) => c.id === campana.cultivoId);
+    return { campana, cultivo };
+  };
 
   return (
     <SafeAreaProvider>
@@ -33,12 +42,15 @@ export default function App() {
         <StatusBar style="dark" />
         <ScrollView contentContainerStyle={styles.contenido}>
           <Text style={styles.titulo}>AgroControl</Text>
-          <Text style={styles.subtitulo}>Gestión de predios y parcelas</Text>
+          <Text style={styles.subtitulo}>Gestión de predios, parcelas y siembras</Text>
 
           <View style={styles.fila}>
             <MetricCard etiqueta="Predios" valor={PREDIOS.length} />
             <MetricCard etiqueta="Parcelas" valor={PARCELAS.length} />
+            <MetricCard etiqueta="Sembradas" valor={sembradas} />
           </View>
+
+          <ResumenCampo parcelas={PARCELAS} />
 
           <TabSelector seccion={seccion} alCambiar={setSeccion} />
 
@@ -68,6 +80,7 @@ export default function App() {
                     key={parcela.id}
                     parcela={parcela}
                     nombrePredio={predioElegido.nombre}
+                    {...siembraDe(parcela.id)}
                   />
                 ))
               )}
@@ -80,6 +93,7 @@ export default function App() {
                   key={parcela.id}
                   parcela={parcela}
                   nombrePredio={nombreDePredio(parcela.predioId)}
+                  {...siembraDe(parcela.id)}
                 />
               ))}
             </View>

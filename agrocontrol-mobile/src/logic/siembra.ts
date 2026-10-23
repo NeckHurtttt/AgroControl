@@ -1,0 +1,44 @@
+import type { Campana, Cultivo } from "../models/agro";
+
+const MS_POR_DIA = 24 * 60 * 60 * 1000;
+
+// "AAAA-MM-DD" como fecha local (new Date("AAAA-MM-DD") la tomaría en UTC).
+function aFecha(iso: string): Date {
+  const [anio, mes, dia] = iso.split("-").map(Number);
+  return new Date(anio, mes - 1, dia);
+}
+
+export function formatearFecha(fecha: Date): string {
+  const dd = String(fecha.getDate()).padStart(2, "0");
+  const mm = String(fecha.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${fecha.getFullYear()}`;
+}
+
+export type Etapa = Readonly<{ nombre: string; icono: string }>;
+
+// Etapa según el avance del ciclo; los cortes son aproximados.
+function etapaPorAvance(avance: number): Etapa {
+  if (avance < 0.15) return { nombre: "Germinación", icono: "🌱" };
+  if (avance < 0.6) return { nombre: "Crecimiento", icono: "🌿" };
+  if (avance < 1) return { nombre: "Maduración", icono: "🌾" };
+  return { nombre: "Lista para cosecha", icono: "🚜" };
+}
+
+export type AvanceSiembra = Readonly<{
+  dia: number; // días desde la siembra (0 si aún no empieza)
+  cicloDias: number | null;
+  avance: number; // 0..1; 0 si el cultivo no tiene ciclo cargado
+  etapa: Etapa;
+  fechaSiembra: Date;
+  fechaCosecha: Date | null;
+}>;
+
+// Todo se deriva de fechaInicio + cicloDias: el avance no se guarda.
+export function calcularAvance(campana: Campana, cultivo: Cultivo, hoy: Date = new Date()): AvanceSiembra {
+  const fechaSiembra = aFecha(campana.fechaInicio);
+  const dia = Math.max(0, Math.floor((hoy.getTime() - fechaSiembra.getTime()) / MS_POR_DIA));
+  const ciclo = cultivo.cicloDias;
+  const avance = ciclo ? Math.min(1, dia / ciclo) : 0;
+  const fechaCosecha = ciclo ? new Date(fechaSiembra.getTime() + ciclo * MS_POR_DIA) : null;
+  return { dia, cicloDias: ciclo, avance, etapa: etapaPorAvance(avance), fechaSiembra, fechaCosecha };
+}
