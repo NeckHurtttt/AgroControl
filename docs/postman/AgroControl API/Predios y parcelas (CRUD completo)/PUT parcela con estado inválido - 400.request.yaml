@@ -3,6 +3,7 @@ name: PUT parcela con estado inválido -> 400
 url: "{{baseUrl}}/api/parcelas/2"
 method: PUT
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

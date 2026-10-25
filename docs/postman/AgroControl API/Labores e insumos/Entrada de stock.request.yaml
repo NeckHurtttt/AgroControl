@@ -2,6 +2,7 @@ $kind: http-request
 url: "{{baseUrl}}/api/insumos/2/movimientos"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json
@@ -9,7 +10,6 @@ body:
     {
       "tipo": "ENTRADA",
       "cantidad": 200,
-      "motivo": "Compra",
-      "usuarioId": 4
+      "motivo": "Compra"
     }
 order: 5000

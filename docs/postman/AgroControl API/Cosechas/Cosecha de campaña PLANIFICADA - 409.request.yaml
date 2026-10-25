@@ -3,6 +3,7 @@ name: Cosecha de campaña PLANIFICADA -> 409
 url: "{{baseUrl}}/api/cosechas"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json
@@ -10,7 +11,6 @@ body:
     {
       "campanaId": 3,
       "cantidad": 10,
-      "unidadMedida": "t",
-      "usuarioId": 2
+      "unidadMedida": "t"
     }
 order: 1000

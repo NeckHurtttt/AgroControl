@@ -15,4 +15,15 @@ El backend **no** ejecuta estos archivos: Flyway usa su propia copia en
 
 ## Referencia
 
-- `V1__esquema_inicial.sql`: dump de `pg_dump` del esquema inicial (15 tablas). Es la base de la migración que ejecuta Flyway.
+- `V1__esquema_inicial.sql`: dump de `pg_dump` del esquema inicial (15 tablas). Es **idéntico** a la V1 que ejecuta Flyway (se quitaron las líneas `\restrict` que agrega `pg_dump` 17.6, que solo entiende `psql` y hacían fallar el script en DataGrip).
+
+## Cuál es la fuente de verdad
+
+El esquema que usa la aplicación es el de **Flyway** (`backend/src/main/resources/db/migration/`, V1 a V4). `V1__creacion_completa_agrocontrol.sql` es el script de la clase y crea un modelo más amplio: además de las 15 tablas tiene `historial_estado_labor`, `unidad_medida`, `usuario_rol` y la vista `vw_bitacora_parcela`, que el backend no usa. Sirve para practicar consultas, no para levantar la app.
+
+| Migración Flyway | Qué hace |
+|---|---|
+| V1 | Esquema `agrocontrol` con las 15 tablas |
+| V2 | Datos semilla (roles, usuarios, predios, parcelas, campañas, labores, insumos, cosecha) |
+| V3 | Contraseñas BCrypt reales para los usuarios semilla (`agro123`) y el supervisor |
+| V4 | `CHECK` de estado en `campana`, `labor` y `parcela` |

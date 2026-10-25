@@ -164,11 +164,15 @@ Lectura:
 - **Constructor "reconstituir" en `Usuario`**: el de 7 parámetros (con `activo` y `creadoEn`) lo usa el mapper para rearmar un usuario que ya existe en la BD. El de 5 es para crear uno nuevo (nace activo y con `creadoEn = ahora`). Los dos validan igual.
 - **Mappers como clases `final` con métodos `static`**: no tienen estado, así que no necesitan ser Beans; son funciones puras de traducción.
 
-## Lo que quedó sin refactorizar (y cómo defenderlo)
+## El mismo patrón en el resto de módulos
 
-Las otras 13 entidades (`Predio`, `Parcela`, `Cultivo`, `Campana`, `Labor`, `AsignacionLabor`, `BitacoraCampo`, `Insumo`, `MovimientoInsumo`, `ConsumoLabor`, `Cosecha`, `Incidencia`, `Auditoria`) **siguen** siendo `@Entity` dentro de `domain/` y usan FKs como `Long` plano.
+Desde el 24/10 las otras 11 entidades con casos de uso (`Predio`, `Parcela`, `Cultivo`, `Campana`, `Labor`, `AsignacionLabor`, `Insumo`, `MovimientoInsumo`, `ConsumoLabor`, `Cosecha`, `Incidencia`) también están separadas: `<X>` en `domain/` sin anotaciones de JPA, `<X>JpaEntity` + `<X>PersistenceMapper` en `infrastructure/adapter/out/persistence/`. `BitacoraCampo` y `Auditoria` se borraron porque no tenían repositorio ni uso.
 
-> "El curso trabaja el patrón completo sobre mi par 1:N asignado, Rol → Usuario, y ahí está aplicado de punta a punta: dominio puro, entidad JPA, mapper, adapter, @ManyToOne LAZY. Las demás entidades son andamiaje del modelo físico, ninguna tiene repositorio, servicio ni endpoint todavía. Cuando un módulo tenga casos de uso, se le aplica el mismo refactor; es mecánico y ya está el ejemplo."
+Diferencias con Rol/Usuario, por si preguntan:
+- Las FKs siguen como `Long` plano (no `@ManyToOne`): esos módulos nunca navegan la relación, solo guardan el id.
+- El dominio se rehidrata con un método estático `<X>.reconstruir(...)` en vez de un segundo constructor, porque varios tenían ya un constructor con la misma firma.
+- Como el dominio ya no es una entidad gestionada por Hibernate, **no hay dirty checking**: los servicios llaman `repository.guardar(x)` después de cambiar algo (`iniciar`, `ejecutar`, `actualizar`, mover stock).
+- Los estados son `enum` del dominio (`EstadoCampana`, `EstadoLabor`, `EstadoParcela`) guardados como texto con `@Enumerated(EnumType.STRING)`, y la migración V4 pone el `CHECK` en la base.
 
 Otro detalle honesto: la BD usa `integer` para los ids y Java usa `Long`. Funciona (el driver convierte), pero con `ddl-auto=validate` Hibernate lo marcaría como diferencia de tipos (`bigint` vs `integer`).
 

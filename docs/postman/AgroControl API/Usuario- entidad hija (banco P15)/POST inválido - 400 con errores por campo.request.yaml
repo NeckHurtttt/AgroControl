@@ -3,6 +3,7 @@ name: POST inválido -> 400 con errores por campo
 url: "{{baseUrl}}/api/usuarios"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

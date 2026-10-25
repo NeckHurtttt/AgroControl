@@ -3,6 +3,7 @@ name: POST duplicado (repetir el POST válido) -> 409 Conflict
 url: "{{baseUrl}}/api/roles"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

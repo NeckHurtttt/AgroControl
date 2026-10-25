@@ -1,4 +1,5 @@
 $kind: collection
-description: Generada desde requests.http. Requiere el backend en {{baseUrl}}.
+description: Generada desde requests.http. Requiere el backend en {{baseUrl}}. Primero ejecutar Login y copiar el token de la respuesta en la variable token.
 variables:
   baseUrl: http://localhost:8080
+  token: ""

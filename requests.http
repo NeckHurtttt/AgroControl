@@ -1,3 +1,21 @@
+### ==== Login ====
+# Toda la API pide token. Este request lo guarda en {{token}} para los demás (IntelliJ / WebStorm HTTP Client).
+# Usuarios de demo (contraseña agro123): sergio@ (ADMINISTRADOR), jefe@, operario1@, almacen@, supervisor@agrocontrol.com
+
+### Login -> 200 con token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "sergio@agrocontrol.com",
+  "password": "agro123"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+### Sin token -> 401
+GET http://localhost:8080/api/predios
+
 ### ==== Capítulo 03 ====
 
 ### Health
@@ -6,12 +24,14 @@ Accept: application/json
 
 ### Demo de la entidad padre (Rol)
 GET http://localhost:8080/api/roles/demo
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### ==== Capítulo 04 ====
 
 ### POST válido -> 201 Created
 POST http://localhost:8080/api/roles
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -21,6 +41,7 @@ Content-Type: application/json
 
 ### POST con nombre vacío -> 400 Bad Request
 POST http://localhost:8080/api/roles
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -30,6 +51,7 @@ Content-Type: application/json
 
 ### POST con formato inválido (minúsculas y espacios) -> 400 Bad Request
 POST http://localhost:8080/api/roles
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -38,6 +60,7 @@ Content-Type: application/json
 
 ### POST duplicado (repetir el POST válido) -> 409 Conflict
 POST http://localhost:8080/api/roles
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -46,24 +69,29 @@ Content-Type: application/json
 
 ### Listar -> 200 OK + arreglo JSON
 GET http://localhost:8080/api/roles
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Listar con filtro opcional (?nombre=) -> 200 OK filtrado
 GET http://localhost:8080/api/roles?nombre=aud
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Buscar por id existente -> 200 OK
 GET http://localhost:8080/api/roles/1
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Buscar por id inexistente -> 404 Not Found
 GET http://localhost:8080/api/roles/999
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### ==== PUT / DELETE de Rol (banco P18, P19) ====
 
 ### PUT válido -> 200 (repetirlo da el mismo resultado: idempotente)
 PUT http://localhost:8080/api/roles/5
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -73,6 +101,7 @@ Content-Type: application/json
 
 ### PUT con nombre de otro rol -> 409 Conflict
 PUT http://localhost:8080/api/roles/5
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -81,6 +110,7 @@ Content-Type: application/json
 
 ### PUT sobre id inexistente -> 404 (no crea el recurso)
 PUT http://localhost:8080/api/roles/999
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -89,17 +119,21 @@ Content-Type: application/json
 
 ### DELETE de rol con usuarios (OPERARIO) -> 409 Conflict
 DELETE http://localhost:8080/api/roles/3
+Authorization: Bearer {{token}}
 
 ### DELETE de rol sin usuarios -> 204 No Content
 DELETE http://localhost:8080/api/roles/5
+Authorization: Bearer {{token}}
 
 ### DELETE repetido -> 404
 DELETE http://localhost:8080/api/roles/5
+Authorization: Bearer {{token}}
 
 ### ==== Usuario: entidad hija (banco P15) ====
 
 ### POST válido -> 201 (la respuesta NO incluye la contraseña)
 POST http://localhost:8080/api/usuarios
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -111,6 +145,7 @@ Content-Type: application/json
 
 ### POST con rol padre inexistente -> 404
 POST http://localhost:8080/api/usuarios
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -122,6 +157,7 @@ Content-Type: application/json
 
 ### POST con email ya registrado (distinta mayúscula) -> 409
 POST http://localhost:8080/api/usuarios
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -133,6 +169,7 @@ Content-Type: application/json
 
 ### POST inválido -> 400 con errores por campo
 POST http://localhost:8080/api/usuarios
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -144,17 +181,21 @@ Content-Type: application/json
 
 ### GET usuario existente -> 200
 GET http://localhost:8080/api/usuarios/6
+Authorization: Bearer {{token}}
 
 ### GET usuario inexistente -> 404
 GET http://localhost:8080/api/usuarios/999
+Authorization: Bearer {{token}}
 
 ### ==== Predios y parcelas (CRUD completo) ====
 
 ### Listar predios
 GET http://localhost:8080/api/predios
+Authorization: Bearer {{token}}
 
 ### PUT predio -> 200 (dirty checking: UPDATE solo si cambió algo)
 PUT http://localhost:8080/api/predios/3
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -166,12 +207,15 @@ Content-Type: application/json
 
 ### DELETE predio con parcelas -> 409
 DELETE http://localhost:8080/api/predios/1
+Authorization: Bearer {{token}}
 
 ### Parcelas de un predio
 GET http://localhost:8080/api/parcelas?predioId=1
+Authorization: Bearer {{token}}
 
 ### POST parcela con predio inexistente -> 404
 POST http://localhost:8080/api/parcelas
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -182,6 +226,7 @@ Content-Type: application/json
 
 ### PUT parcela con estado inválido -> 400
 PUT http://localhost:8080/api/parcelas/2
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -194,9 +239,11 @@ Content-Type: application/json
 
 ### Listar campañas
 GET http://localhost:8080/api/campanas
+Authorization: Bearer {{token}}
 
 ### Nueva campaña en parcela con otra abierta -> 409
 POST http://localhost:8080/api/campanas
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -207,9 +254,11 @@ Content-Type: application/json
 
 ### Iniciar campaña PLANIFICADA -> 200 (EN_CURSO); repetirlo -> 409
 POST http://localhost:8080/api/campanas/2/iniciar
+Authorization: Bearer {{token}}
 
 ### Finalizar con fecha anterior al inicio -> 400
 POST http://localhost:8080/api/campanas/2/finalizar
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -220,6 +269,7 @@ Content-Type: application/json
 
 ### Planificar labor (la parcela la toma de la campaña)
 POST http://localhost:8080/api/labores
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -230,6 +280,7 @@ Content-Type: application/json
 
 ### Ejecutar labor
 POST http://localhost:8080/api/labores/3/ejecutar
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -238,82 +289,84 @@ Content-Type: application/json
 
 ### Consumo de insumo en una labor (descuenta stock + movimiento SALIDA)
 POST http://localhost:8080/api/labores/3/consumos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "insumoId": 2,
-  "cantidad": 10,
-  "usuarioId": 3
+  "cantidad": 10
 }
 
 ### Consumo mayor al stock -> 409 (rollback: no se guarda nada)
 POST http://localhost:8080/api/labores/3/consumos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "insumoId": 2,
-  "cantidad": 99999,
-  "usuarioId": 3
+  "cantidad": 99999
 }
 
 ### Entrada de stock
 POST http://localhost:8080/api/insumos/2/movimientos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "tipo": "ENTRADA",
   "cantidad": 200,
-  "motivo": "Compra",
-  "usuarioId": 4
+  "motivo": "Compra"
 }
 
 ### Historial de movimientos
 GET http://localhost:8080/api/insumos/2/movimientos
+Authorization: Bearer {{token}}
 
 ### ==== Cosechas ====
 
 ### Cosecha de campaña PLANIFICADA -> 409
 POST http://localhost:8080/api/cosechas
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "campanaId": 3,
   "cantidad": 10,
-  "unidadMedida": "t",
-  "usuarioId": 2
+  "unidadMedida": "t"
 }
 
 ### ==== Incidencias ====
 
 ### Listar (opcional ?parcelaId=1)
 GET http://localhost:8080/api/incidencias
+Authorization: Bearer {{token}}
 
 ### Reportar sobre una labor: campaña y parcela se deducen -> 201
 POST http://localhost:8080/api/incidencias
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "laborId": 1,
-  "descripcion": "La bomba de riego no enciende",
-  "usuarioId": 1
+  "descripcion": "La bomba de riego no enciende"
 }
 
 ### Campaña que no es de esa parcela -> 409
 POST http://localhost:8080/api/incidencias
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "parcelaId": 2,
   "campanaId": 1,
-  "descripcion": "Helada",
-  "usuarioId": 1
+  "descripcion": "Helada"
 }
 
 ### Sin parcela, campaña ni labor -> 400
 POST http://localhost:8080/api/incidencias
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "descripcion": "Algo pasó",
-  "usuarioId": 1
+  "descripcion": "Algo pasó"
 }

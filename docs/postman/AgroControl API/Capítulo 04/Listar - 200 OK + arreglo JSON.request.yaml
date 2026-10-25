@@ -3,5 +3,6 @@ name: Listar -> 200 OK + arreglo JSON
 url: "{{baseUrl}}/api/roles"
 method: GET
 headers:
+  Authorization: Bearer {{token}}
   Accept: application/json
 order: 5000

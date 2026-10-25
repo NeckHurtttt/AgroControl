@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/predios"
+method: GET
+headers:
+  Accept: application/json
+order: 2000

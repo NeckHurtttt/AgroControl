@@ -2,6 +2,7 @@ $kind: http-request
 url: "{{baseUrl}}/api/labores/3/ejecutar"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

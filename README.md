@@ -16,11 +16,11 @@ Sistema de gestión de lotes agrícolas: predios, parcelas, campañas, labores, 
 
 ```
 AgroControl/
-├── backend/    API REST · Java 21 + Spring Boot + JPA + Flyway
-├── frontend/   Web · React + TypeScript + Vite
-├── mobile/     App móvil · React Native + TypeScript (Expo)
-├── database/   Scripts SQL de clase (ver database/README.md)
-└── docs/       Visión, glosario, requerimientos y decisiones
+├── backend/            API REST · Java 21 + Spring Boot + JPA + Flyway
+├── frontend/           Web · React + TypeScript + Vite
+├── agrocontrol-mobile/  App móvil de las guías · React Native + TypeScript (Expo)
+├── database/           Scripts SQL de clase (ver database/README.md)
+└── docs/               Visión, glosario, requerimientos y decisiones
 ```
 
 ## 1. Problema
@@ -82,7 +82,7 @@ Desarrollar un sistema web/móvil para planificar campañas, registrar labores e
 ## 10. Base de datos
 El backend (`backend/`) usa Spring Boot + Spring Data JPA + Flyway sobre PostgreSQL.
 
-1. Crea una base de datos local vacía llamada `agrocontrol` en PostgreSQL (Flyway crea el esquema `agrocontrol` y las 15 tablas automáticamente al arrancar, usando `backend/src/main/resources/db/migration/V1__esquema_inicial.sql`).
+1. Crea una base de datos local vacía llamada `agrocontrol` en PostgreSQL (Flyway crea el esquema `agrocontrol` y las 15 tablas automáticamente al arrancar y aplica las migraciones V1 a V4: esquema, semilla, contraseñas de demo y `CHECK` de estados; ver [`database/README.md`](database/README.md)). Con Docker también sirve `docker compose up -d`, que levanta Postgres 17 en el puerto 5433.
 2. Configura las credenciales por variables de entorno (opcional, ya tienen valores por defecto para desarrollo local):
    - `AGROCONTROL_DB_URL` (por defecto `jdbc:postgresql://localhost:5432/agrocontrol`)
    - `AGROCONTROL_DB_USER` (por defecto `postgres`)
@@ -97,17 +97,20 @@ Con el backend en marcha (`http://localhost:8080`). Swagger UI: `http://localhos
 | Recurso | Endpoints | Reglas principales |
 |---------|-----------|--------------------|
 | Roles | `GET/POST /api/roles`, `GET/PUT/DELETE /api/roles/{id}` | Nombre único (409); no se borra un rol con usuarios (409) |
+| Login | `POST /api/auth/login`, `GET /api/auth/me` | Email o contraseña incorrectos dan el mismo 401; usuario inactivo no entra |
 | Usuarios | `GET/POST /api/usuarios`, `GET /api/usuarios/{id}` | Rol existente (404); email único (409); contraseña con BCrypt |
 | Predios | `GET/POST /api/predios`, `GET/PUT/DELETE /api/predios/{id}` | No se borra un predio con parcelas (409) |
 | Parcelas | `GET/POST /api/parcelas?predioId=`, `GET/PUT/DELETE /api/parcelas/{id}` | Código único por predio (409); no se borra con campañas (409) |
 | Cultivos | `GET/POST /api/cultivos` | Nombre único (409) |
 | Campañas | `GET/POST /api/campanas?parcelaId=`, `POST /{id}/iniciar`, `POST /{id}/finalizar` | Una campaña abierta por parcela (409); transiciones PLANIFICADA → EN_CURSO → FINALIZADA |
-| Labores | `GET/POST /api/labores?campanaId=`, `POST /{id}/ejecutar`, `GET/POST /{id}/consumos` | No se planifica en campaña finalizada (409); el consumo descuenta stock y registra una SALIDA en la misma transacción |
-| Insumos | `GET/POST /api/insumos`, `GET/POST /api/insumos/{id}/movimientos` | El stock solo cambia por movimientos; no puede quedar negativo (409) |
+| Labores | `GET/POST /api/labores?campanaId=`, `POST /{id}/ejecutar`, `GET/POST /{id}/consumos`, `GET /asignaciones`, `POST /{id}/asignaciones` | No se planifica, ejecuta ni consume en una campaña finalizada (409); el consumo descuenta stock y registra una SALIDA en la misma transacción; el operario solo toca sus labores asignadas (403) |
+| Insumos | `GET/POST /api/insumos`, `GET/POST /api/insumos/{id}/movimientos` | El stock solo cambia por movimientos; no puede quedar negativo (409); la fila se bloquea (`SELECT … FOR UPDATE`) para que dos movimientos simultáneos no se pisen |
 | Cosechas | `GET/POST /api/cosechas?campanaId=` | Solo campañas EN_CURSO o FINALIZADA (409) |
+| Incidencias | `GET/POST /api/incidencias?parcelaId=` | Parcela, campaña o labor (al menos una) y coherentes entre sí |
 
 - Errores con formato `ProblemDetail` (`type`, `title`, `status`, `detail`, `instance` y `errores` por campo en los 400), desde `GlobalExceptionHandler`.
 - CORS autoriza `http://localhost:5173` (web) y `http://localhost:8081` (Expo web) por defecto; se cambia con `AGROCONTROL_CORS_ORIGINS`.
+- Tests: `mvn test` corre los unitarios (Mockito y MockMvc con la seguridad real) y `PersistenciaPostgresTest`, que levanta un PostgreSQL 17 con Testcontainers para probar migraciones, mapeos y el bloqueo de stock. Sin Docker ese test se salta.
 
 ### Login y permisos por rol
 Toda la API (salvo `POST /api/auth/login`, `/api/health` y Swagger) exige `Authorization: Bearer <token>`. El token es un JWT HS256 que dura 8 h; su `sub` es el id del usuario, y el backend lo usa como "quién registra" en cosechas, consumos, movimientos e incidencias (el cliente ya no manda `usuarioId`). `SecurityConfig` aplica la matriz de permisos: **401** sin token y **403** si el rol no puede hacer la operación. La web oculta además lo que el rol no puede usar.
@@ -133,10 +136,10 @@ Contraseña de demo de todos: `agro123` (migración `V3__usuarios_login.sql`). L
         ├── in/web/               @RestController + DTOs (records)
         └── out/persistence/      JpaRepository + PersistenceAdapter (implementa el puerto)
 ```
-Rol y Usuario separan además el dominio de la entidad JPA (`*JpaEntity` + mapper); el resto de entidades siguen anotadas con `@Entity` en `domain/` (ver `docs/06-defensa/notas-capitulo-05.md`).
+El dominio no conoce JPA: cada entidad tiene su `*JpaEntity` y su `*PersistenceMapper` en `out/persistence/`, y los estados son `enum` del dominio (ver `docs/06-defensa/notas-capitulo-05.md`).
 
 ## 12. Frontend web
-React + TypeScript + Vite en `frontend/`, organizado por features: `predios`, `parcelas`, `cultivos`, `campanas`, `labores`, `insumos`, `cosechas` y `usuarios`. El panel de inicio resume la operación con datos en vivo.
+React + TypeScript + Vite en `frontend/`, organizado por features: `auth`, `predios`, `parcelas`, `cultivos`, `campanas`, `labores`, `insumos`, `cosechas`, `incidencias` y `usuarios`. Se entra con login, y el menú, las rutas y los botones dependen del rol. El panel de inicio resume la operación con datos en vivo.
 
 ```bash
 cd frontend
@@ -158,23 +161,16 @@ java -jar target/AgroControl-1.0-SNAPSHOT.jar   # web en http://localhost:8080, 
 El perfil descarga su propio Node en `backend/target/` (no hace falta tenerlo instalado) y construye con `npm run build:jar`, que usa `frontend/.env.jar` (`VITE_API_URL=/api`). Las rutas de React (`/predios`, `/parcelas`...) las resuelve `SpaConfig`, que responde `index.html`. Para desarrollar se siguen usando `mvn spring-boot:run` y `npm run dev` por separado.
 
 ## 13. App móvil
-React Native + TypeScript con Expo en `mobile/`, orientada al operario de campo. Consume la misma API que la web.
-
-| Pantalla | Qué hace | Endpoints |
-|----------|----------|-----------|
-| Mis labores | Lista las labores (pendientes primero); se refresca al volver o deslizando | `GET /api/labores` |
-| Detalle de labor | Marca la labor como ejecutada y registra el consumo de insumos; muestra el 409 si no hay stock | `GET /api/labores/{id}`, `POST /{id}/ejecutar`, `GET/POST /{id}/consumos`, `GET /api/insumos`, `GET /api/usuarios` |
-| Parcelas | Lista las parcelas con área y estado | `GET /api/parcelas` |
-| Detalle de parcela | Campañas de la parcela y sus labores | `GET /api/campanas?parcelaId=`, `GET /api/labores` |
+Expo + React Native + TypeScript en `agrocontrol-mobile/`, la app de las guías móviles (01 y 02, más la vista de siembras). Adapta ParkFlow360 Mobile al dominio de AgroControl (Predio → Parcela, 1:N) y por ahora usa datos de demo, sin API ni login. Detalle de cada guía en [`agrocontrol-mobile/README.md`](agrocontrol-mobile/README.md).
 
 ```bash
-cd mobile
+cd agrocontrol-mobile
 npm install
-npx expo start --web     # en el navegador: http://localhost:8081
-npx expo start           # en el celular: escanear el QR con Expo Go
+emulator -avd AgroControl &   # o encenderlo desde el Device Manager de Android Studio
+npm run android               # instala Expo Go en el emulador y abre la app
 ```
 
-La URL de la API se toma de `EXPO_PUBLIC_API_URL` (por defecto `http://localhost:8080/api`; ver `mobile/.env.example`). En el celular `localhost` es el propio teléfono, así que hay que usar la IP de la PC en la misma red, por ejemplo `EXPO_PUBLIC_API_URL=http://192.168.1.50:8080/api npx expo start`. El backend ya autoriza por CORS el origen `http://localhost:8081` de Expo web.
+Expo encuentra el emulador con `ANDROID_HOME` (normalmente `~/Android/Sdk`). Si dice "No Android connected device found", falta esa variable o el emulador no está encendido.
 
 ## 14. Estrategia Git
 - `main` es la rama estable: siempre compila y arranca.

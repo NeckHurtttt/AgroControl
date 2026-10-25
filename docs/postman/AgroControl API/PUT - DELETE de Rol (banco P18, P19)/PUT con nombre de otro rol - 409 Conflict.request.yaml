@@ -3,6 +3,7 @@ name: PUT con nombre de otro rol -> 409 Conflict
 url: "{{baseUrl}}/api/roles/5"
 method: PUT
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

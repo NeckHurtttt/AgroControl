@@ -3,6 +3,7 @@ name: PUT sobre id inexistente -> 404 (no crea el recurso)
 url: "{{baseUrl}}/api/roles/999"
 method: PUT
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

@@ -3,6 +3,7 @@ name: POST válido -> 201 (la respuesta NO incluye la contraseña)
 url: "{{baseUrl}}/api/usuarios"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

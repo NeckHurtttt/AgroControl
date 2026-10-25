@@ -3,13 +3,13 @@ name: Consumo de insumo en una labor (descuenta stock + movimiento SALIDA)
 url: "{{baseUrl}}/api/labores/3/consumos"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json
   content: |-
     {
       "insumoId": 2,
-      "cantidad": 10,
-      "usuarioId": 3
+      "cantidad": 10
     }
 order: 3000

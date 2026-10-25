@@ -3,5 +3,6 @@ name: Buscar por id inexistente -> 404 Not Found
 url: "{{baseUrl}}/api/roles/999"
 method: GET
 headers:
+  Authorization: Bearer {{token}}
   Accept: application/json
 order: 8000

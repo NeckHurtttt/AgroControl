@@ -3,6 +3,7 @@ name: Listar con filtro opcional (?nombre=) -> 200 OK filtrado
 url: "{{baseUrl}}/api/roles?nombre=aud"
 method: GET
 headers:
+  Authorization: Bearer {{token}}
   Accept: application/json
 queryParams:
   nombre: aud

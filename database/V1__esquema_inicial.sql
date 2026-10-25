@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict 98rIs7iuQFwJPmKDMq5j0CldgRUpvuqt7fARZwBSmOzmndouXobK6wopwwap21M
 
 -- Dumped from database version 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
 -- Dumped by pg_dump version 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
@@ -1019,5 +1018,4 @@ ALTER TABLE ONLY agrocontrol.usuario
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 98rIs7iuQFwJPmKDMq5j0CldgRUpvuqt7fARZwBSmOzmndouXobK6wopwwap21M
 

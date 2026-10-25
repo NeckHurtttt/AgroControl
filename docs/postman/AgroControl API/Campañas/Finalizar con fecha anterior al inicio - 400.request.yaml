@@ -3,6 +3,7 @@ name: Finalizar con fecha anterior al inicio -> 400
 url: "{{baseUrl}}/api/campanas/2/finalizar"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

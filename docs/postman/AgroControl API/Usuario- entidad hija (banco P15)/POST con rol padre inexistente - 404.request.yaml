@@ -3,6 +3,7 @@ name: POST con rol padre inexistente -> 404
 url: "{{baseUrl}}/api/usuarios"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json

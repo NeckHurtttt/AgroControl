@@ -3,6 +3,7 @@ name: POST parcela con predio inexistente -> 404
 url: "{{baseUrl}}/api/parcelas"
 method: POST
 headers:
+  Authorization: Bearer {{token}}
   Content-Type: application/json
 body:
   type: json
