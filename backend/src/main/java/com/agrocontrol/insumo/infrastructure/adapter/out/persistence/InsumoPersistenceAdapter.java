@@ -39,6 +39,11 @@ public class InsumoPersistenceAdapter implements InsumoRepository, MovimientoIns
     }
 
     @Override
+    public Optional<Insumo> buscarPorIdParaActualizar(Long id) {
+        return insumoJpaRepository.findByIdParaActualizar(id);
+    }
+
+    @Override
     public List<Insumo> listarTodos() {
         return insumoJpaRepository.findAll(Sort.by("nombre"));
     }

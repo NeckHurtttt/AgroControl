@@ -61,7 +61,7 @@ public class InventarioService {
     @Transactional
     public MovimientoInsumo registrarMovimiento(Long insumoId, TipoMovimiento tipo, BigDecimal cantidad,
                                                 String motivo, Long usuarioId) {
-        Insumo insumo = obtenerInsumo(insumoId);
+        Insumo insumo = obtenerInsumoParaActualizar(insumoId);
         verificarUsuario(usuarioId);
         aplicar(insumo, tipo, cantidad);
         return movimientoRepository.guardar(new MovimientoInsumo(null, insumoId, tipo, cantidad, motivo, usuarioId));
@@ -77,7 +77,7 @@ public class InventarioService {
     @Transactional
     public ConsumoLabor registrarConsumo(Long laborId, Long insumoId, BigDecimal cantidad, Long usuarioId) {
         Labor labor = obtenerLabor(laborId);
-        Insumo insumo = obtenerInsumo(insumoId);
+        Insumo insumo = obtenerInsumoParaActualizar(insumoId);
         verificarUsuario(usuarioId);
         insumo.registrarSalida(cantidad);
         String motivo = "Consumo en labor " + labor.getId() + " (" + labor.getTipo() + ")";
@@ -91,6 +91,11 @@ public class InventarioService {
         } else {
             insumo.registrarSalida(cantidad);
         }
+    }
+
+    private Insumo obtenerInsumoParaActualizar(Long id) {
+        return insumoRepository.buscarPorIdParaActualizar(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe el insumo con id: " + id));
     }
 
     private Labor obtenerLabor(Long laborId) {
