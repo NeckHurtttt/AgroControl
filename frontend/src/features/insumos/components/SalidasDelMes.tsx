@@ -1,6 +1,7 @@
 import { useCarga } from '../../../hooks/useCarga';
 import { formatCantidad } from '../../../utils/formato';
 import { CATEGORIAS, type SalidaDeAlmacen } from '../models/Insumo';
+import CategoriaIcono from './CategoriaIcono';
 import { insumoService } from '../services/insumoService';
 
 interface SalidasDelMesProps {
@@ -29,7 +30,7 @@ export default function SalidasDelMes({ version }: SalidasDelMesProps) {
         <div className="avance-grid">
           {grupos.map((grupo) => (
             <div key={grupo.valor}>
-              <strong>{grupo.icono} {grupo.nombre}</strong>
+              <strong><CategoriaIcono valor={grupo.valor} conNombre /></strong>
               <ul>
                 {grupo.salidas.map((s) => (
                   <li key={s.insumoId}>

@@ -9,7 +9,9 @@ import { useAuth } from '../../auth/context/useAuth';
 import InsumoForm from '../components/InsumoForm';
 import MovimientosPanel from '../components/MovimientosPanel';
 import SalidasDelMes from '../components/SalidasDelMes';
-import { CATEGORIAS, categoria, type CategoriaInsumo, type Insumo } from '../models/Insumo';
+import { TriangleAlert } from 'lucide-react';
+import CategoriaIcono from '../components/CategoriaIcono';
+import { CATEGORIAS, type CategoriaInsumo, type Insumo } from '../models/Insumo';
 import { insumoService } from '../services/insumoService';
 
 const cargarDatos = async (signal: AbortSignal) => {
@@ -120,12 +122,12 @@ export default function InsumosPage() {
             </button>
             {porAgotarse > 0 && (
               <button type="button" className={`chip chip--alerta${filtro === 'POR_AGOTARSE' ? ' chip--activo' : ''}`} onClick={() => setFiltro('POR_AGOTARSE')}>
-                ⚠ Por agotarse ({porAgotarse})
+                <TriangleAlert size={14} aria-hidden /> Por agotarse ({porAgotarse})
               </button>
             )}
             {categoriasConInsumos.map((c) => (
               <button key={c.valor} type="button" className={`chip${filtro === c.valor ? ' chip--activo' : ''}`} onClick={() => setFiltro(c.valor)}>
-                {c.icono} {c.nombre} ({insumos.filter((i) => i.categoria === c.valor).length})
+                <CategoriaIcono valor={c.valor} /> {c.nombre} ({insumos.filter((i) => i.categoria === c.valor).length})
               </button>
             ))}
           </div>
@@ -144,15 +146,14 @@ export default function InsumosPage() {
                   </thead>
                   <tbody>
                     {visibles.map((insumo) => {
-                      const c = categoria(insumo.categoria);
                       const alerta = insumo.stockActual <= 0 ? 'Sin stock' : insumo.porAgotarse ? 'Por agotarse' : '';
                       return (
                         <tr key={insumo.id}>
                           <td>{insumo.nombre}</td>
-                          <td>{c.icono} {c.nombre}</td>
+                          <td><CategoriaIcono valor={insumo.categoria} conNombre /></td>
                           <td className={alerta ? 'field-error' : ''}>
                             {formatCantidad(insumo.stockActual, insumo.unidadMedida)}
-                            {alerta && <small className="celda-nota">⚠ {alerta}</small>}
+                            {alerta && <small className="celda-nota icono-texto"><TriangleAlert size={13} aria-hidden /> {alerta}</small>}
                           </td>
                           <td className="muted">{insumo.stockMinimo > 0 ? formatCantidad(insumo.stockMinimo, insumo.unidadMedida) : '—'}</td>
                           {puedeVerMovimientos && (

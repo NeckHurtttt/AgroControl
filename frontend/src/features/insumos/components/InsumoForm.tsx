@@ -74,7 +74,7 @@ export default function InsumoForm({ insumo, onGuardado, onCerrar }: InsumoFormP
         <label>
           Categoría
           <select value={categoria} onChange={(e) => cambiarCategoria(e.target.value as CategoriaInsumo)}>
-            {CATEGORIAS.map((c) => <option key={c.valor} value={c.valor}>{c.icono} {c.nombre}</option>)}
+            {CATEGORIAS.map((c) => <option key={c.valor} value={c.valor}>{c.nombre}</option>)}
           </select>
         </label>
         <label>

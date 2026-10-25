@@ -93,7 +93,7 @@ export default function ConsumosPanel({ labor, insumos, puedeRegistrar, onConsum
               <option value="">Seleccione un insumo</option>
               {/* Agrupado como en el almacén: el diésel del tractor no se mezcla con la semilla */}
               {CATEGORIAS.filter((c) => insumos.some((item) => item.categoria === c.valor)).map((c) => (
-                <optgroup key={c.valor} label={`${c.icono} ${c.nombre}`}>
+                <optgroup key={c.valor} label={c.nombre}>
                   {insumos.filter((item) => item.categoria === c.valor).map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.nombre} (stock: {formatCantidad(item.stockActual, item.unidadMedida)})
