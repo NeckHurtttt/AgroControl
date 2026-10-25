@@ -31,7 +31,37 @@ export type Campana = Readonly<{
   parcelaId: number;
   cultivoId: number;
   fechaInicio: string; // ISO "AAAA-MM-DD": día de siembra
+  fechaFin: string | null; // solo las FINALIZADAS
   estado: EstadoCampana;
+}>;
+
+// Espejo de Labor del backend: el trabajo planificado dentro de una campaña.
+export type EstadoLabor = "PLANIFICADA" | "EN_CURSO" | "EJECUTADA";
+
+export type Labor = Readonly<{
+  id: number;
+  campanaId: number;
+  tipo: string;
+  fechaPlan: string;
+  fechaEjecucion: string | null;
+  estado: EstadoLabor;
+}>;
+
+export type Cosecha = Readonly<{
+  id: number;
+  campanaId: number;
+  cantidad: number;
+  unidadMedida: "t" | "kg";
+}>;
+
+export type EstadoIncidencia = "ABIERTA" | "EN_ATENCION" | "RESUELTA";
+
+export type Incidencia = Readonly<{
+  id: number;
+  parcelaId: number;
+  descripcion: string;
+  fecha: string;
+  estado: EstadoIncidencia;
 }>;
 
 export type Seccion = "predios" | "parcelas";

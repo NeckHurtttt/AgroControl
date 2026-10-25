@@ -42,3 +42,8 @@ export function calcularAvance(campana: Campana, cultivo: Cultivo, hoy: Date = n
   const fechaCosecha = ciclo ? new Date(fechaSiembra.getTime() + ciclo * MS_POR_DIA) : null;
   return { dia, cicloDias: ciclo, avance, etapa: etapaPorAvance(avance), fechaSiembra, fechaCosecha };
 }
+
+// "AAAA-MM-DD" → "DD/MM/AAAA"
+export function formatearFechaIso(iso: string): string {
+  return formatearFecha(aFecha(iso));
+}

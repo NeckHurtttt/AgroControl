@@ -54,13 +54,22 @@ const parcelasElegidas = predioElegido
 | 1 | Fundo San José (id 1) | Dos parcelas: 101 y 102 |
 | 2 | Fundo Las Palmeras (id 2) | Una parcela: 103 |
 | 3 | Predio El Retiro (id 3) | **INACTIVO** y dos parcelas: 104 y 105 |
-| 4 | Predio Nuevo Horizonte (id 4) | `EmptyState`: "Este predio no tiene parcelas." |
+| 4 | Predio Nuevo Horizonte (id 4) | `EmptyState`: "Este predio todavía no tiene parcelas." |
 | 5 | Pestaña Parcelas | Cinco tarjetas, cada una con su predio |
 | 6 | `npx tsc --noEmit` | Termina sin errores |
 
 | Inicio | San José | Sin parcelas | Todas |
 |---|---|---|---|
 | ![](docs/capturas/01-inicio.png) | ![](docs/capturas/02-san-jose.png) | ![](docs/capturas/03-sin-parcelas.png) | ![](docs/capturas/04-todas-parcelas.png) |
+
+## Detalle del predio (después de las guías)
+
+Tocar un predio abre su pantalla (`PredioDetalle`); "‹ Volver a predios" o el botón atrás de Android regresan a la lista. Muestra:
+
+- Datos del predio (ubicación, hectáreas totales y en parcelas, aviso si está inactivo), conteos y la barra de estado del campo.
+- Una ficha completa por parcela (`ParcelaDetalle`): área y % del predio, **siembra actual** con etapa y avance del ciclo, **labores** de la campaña (hechas, en curso, pendientes y la próxima), **incidencias** (sin atender, en atención, resueltas) y **campañas anteriores** con su cosecha y rendimiento en t/ha.
+
+Todo sale de `src/data/demoData.ts` (se agregaron `LABORES`, `COSECHAS`, `INCIDENCIAS` y campañas finalizadas) y se calcula en `src/logic/detalleParcela.ts`: no se guarda nada derivado. Los modelos siguen siendo espejo del backend (`Labor`, `Cosecha`, `Incidencia`), así que cuando la app consuma la API solo cambia de dónde vienen los arreglos.
 
 ## Preguntas de defensa
 
