@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/labores/5/bitacora"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "observacion": "Se regaron 2 ha con 40 m3; suelo húmedo a 20 cm"
+    }
+order: 1000

@@ -107,6 +107,8 @@ Con el backend en marcha (`http://localhost:8080`). Swagger UI: `http://localhos
 | Insumos | `GET/POST /api/insumos`, `GET/POST /api/insumos/{id}/movimientos` | El stock solo cambia por movimientos; no puede quedar negativo (409); la fila se bloquea (`SELECT … FOR UPDATE`) para que dos movimientos simultáneos no se pisen |
 | Cosechas | `GET/POST /api/cosechas?campanaId=` | Solo campañas EN_CURSO o FINALIZADA (409) |
 | Incidencias | `GET/POST /api/incidencias?parcelaId=` | Parcela, campaña o labor (al menos una) y coherentes entre sí |
+| Bitácora de campo | `GET/POST /api/labores/{id}/bitacora`, `GET /api/parcelas/{id}/bitacora` | RF-09 y RF-14. Se cierra cuando la campaña se finaliza (409); el operario solo anota en sus labores (403) |
+| Auditoría | `GET /api/auditoria?entidad=&idEntidad=` | RF-16, solo ADMINISTRADOR. Se llena sola: los casos de uso marcados con `@Auditable` (crear, editar o borrar predios y parcelas, transiciones de campaña y labor, stock, cosechas, usuarios y roles) dejan quién, qué y cuándo |
 
 - Errores con formato `ProblemDetail` (`type`, `title`, `status`, `detail`, `instance` y `errores` por campo en los 400), desde `GlobalExceptionHandler`.
 - CORS autoriza `http://localhost:5173` (web) y `http://localhost:8081` (Expo web) por defecto; se cambia con `AGROCONTROL_CORS_ORIGINS`.
@@ -117,11 +119,11 @@ Toda la API (salvo `POST /api/auth/login`, `/api/health` y Swagger) exige `Autho
 
 | Rol | Email | Ve / puede |
 | --- | --- | --- |
-| Administrador | sergio@agrocontrol.com | Todo, incluida la pantalla Usuarios; único que edita predios y parcelas |
-| Jefe de campo | jefe@agrocontrol.com | Cultivos, campañas, planificar labores y asignar operarios, cosechas, incidencias |
-| Operario | operario1@agrocontrol.com | "Mis labores" (solo las asignadas): ejecutar, registrar insumos usados y reportar incidencias |
+| Administrador | sergio@agrocontrol.com | Todo, incluidas las pantallas Usuarios y Auditoría; único que edita predios y parcelas |
+| Jefe de campo | jefe@agrocontrol.com | Cultivos, campañas, planificar labores y asignar operarios, cosechas, incidencias y bitácora |
+| Operario | operario1@agrocontrol.com | "Mis labores" (solo las asignadas): ejecutar, registrar insumos usados, anotar en la bitácora y reportar incidencias |
 | Almacenero | almacen@agrocontrol.com | Insumos y movimientos, registrar cosechas |
-| Supervisor | supervisor@agrocontrol.com | Todo en solo lectura e indicadores |
+| Supervisor | supervisor@agrocontrol.com | Todo en lectura e indicadores; además registra incidencias y observaciones de campo (RF-09, RF-12) |
 
 Contraseña de demo de todos: `agro123` (migración `V3__usuarios_login.sql`). La clave de firma se cambia con `AGROCONTROL_JWT_SECRET` (mínimo 32 caracteres) y la duración con `AGROCONTROL_JWT_HORAS`.
 

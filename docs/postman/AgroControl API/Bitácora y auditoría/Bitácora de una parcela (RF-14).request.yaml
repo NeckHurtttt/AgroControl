@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/parcelas/1/bitacora"
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+order: 3000

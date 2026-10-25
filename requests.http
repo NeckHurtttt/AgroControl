@@ -370,3 +370,30 @@ Content-Type: application/json
 {
   "descripcion": "Algo pasó"
 }
+
+### ==== Bitácora de campo y auditoría ====
+
+### Observación de campo en una labor (RF-09) -> 201
+POST http://localhost:8080/api/labores/5/bitacora
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "observacion": "Se regaron 2 ha con 40 m3; suelo húmedo a 20 cm"
+}
+
+### Bitácora de la labor
+GET http://localhost:8080/api/labores/5/bitacora
+Authorization: Bearer {{token}}
+
+### Bitácora de una parcela: observaciones de todas sus labores (RF-14)
+GET http://localhost:8080/api/parcelas/1/bitacora
+Authorization: Bearer {{token}}
+
+### Auditoría de cambios críticos (RF-16, solo ADMINISTRADOR)
+GET http://localhost:8080/api/auditoria
+Authorization: Bearer {{token}}
+
+### Auditoría filtrada por entidad
+GET http://localhost:8080/api/auditoria?entidad=CAMPANA
+Authorization: Bearer {{token}}

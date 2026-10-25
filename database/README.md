@@ -27,3 +27,4 @@ El esquema que usa la aplicación es el de **Flyway** (`backend/src/main/resourc
 | V2 | Datos semilla (roles, usuarios, predios, parcelas, campañas, labores, insumos, cosecha) |
 | V3 | Contraseñas BCrypt reales para los usuarios semilla (`agro123`) y el supervisor |
 | V4 | `CHECK` de estado en `campana`, `labor` y `parcela` |
+| V5 | Índices de `auditoria` (por entidad y por fecha) |
