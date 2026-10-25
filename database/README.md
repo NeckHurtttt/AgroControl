@@ -15,11 +15,15 @@ El backend **no** ejecuta estos archivos: Flyway usa su propia copia en
 
 ## Referencia
 
-- `V1__esquema_inicial.sql`: dump de `pg_dump` del esquema inicial (15 tablas). Es **idéntico** a la V1 que ejecuta Flyway (se quitaron las líneas `\restrict` que agrega `pg_dump` 17.6, que solo entiende `psql` y hacían fallar el script en DataGrip).
+- `esquema_actual.sql`: el esquema **completo y actual** que usa la aplicación (15 tablas), sacado con `pg_dump` después de aplicar Flyway V1 a V7. Es el archivo para mirar "cómo es la base de datos hoy". Se regenera con:
+
+  ```bash
+  docker compose exec db pg_dump -U postgres -d agrocontrol --schema-only --no-owner --no-privileges -n agrocontrol
+  ```
 
 ## Cuál es la fuente de verdad
 
-El esquema que usa la aplicación es el de **Flyway** (`backend/src/main/resources/db/migration/`, V1 a V4). `V1__creacion_completa_agrocontrol.sql` es el script de la clase y crea un modelo más amplio: además de las 15 tablas tiene `historial_estado_labor`, `unidad_medida`, `usuario_rol` y la vista `vw_bitacora_parcela`, que el backend no usa. Sirve para practicar consultas, no para levantar la app.
+El esquema que usa la aplicación es el de **Flyway** (`backend/src/main/resources/db/migration/`, V1 a V7); `esquema_actual.sql` es su foto completa. `V1__creacion_completa_agrocontrol.sql` es el script de la clase y crea un modelo más amplio: además de las 15 tablas tiene `historial_estado_labor`, `unidad_medida`, `usuario_rol` y la vista `vw_bitacora_parcela`, que el backend no usa. Sirve para practicar consultas, no para levantar la app.
 
 | Migración Flyway | Qué hace |
 |---|---|
