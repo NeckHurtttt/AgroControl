@@ -65,6 +65,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/**", "/api/roles/**").authenticated()
                         .requestMatchers("/api/usuarios/**", "/api/roles/**").hasRole(ADMINISTRADOR)
 
+                        // Bitácora por parcela (RF-14): la consultan quienes supervisan el campo
+                        .requestMatchers(HttpMethod.GET, "/api/parcelas/*/bitacora")
+                                .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, SUPERVISOR)
+
                         // Predios y parcelas: los configura el administrador
                         .requestMatchers(HttpMethod.GET, "/api/predios/**", "/api/parcelas/**").authenticated()
                         .requestMatchers("/api/predios/**", "/api/parcelas/**").hasRole(ADMINISTRADOR)
@@ -77,6 +81,9 @@ public class SecurityConfig {
                         // (solo de sus labores asignadas, RN-05, se valida en LaborController)
                         .requestMatchers(HttpMethod.POST, "/api/labores/*/ejecutar", "/api/labores/*/consumos")
                                 .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, OPERARIO)
+                        // Observaciones de campo (RF-09): también el supervisor; el operario solo en sus labores
+                        .requestMatchers(HttpMethod.POST, "/api/labores/*/bitacora")
+                                .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, OPERARIO, SUPERVISOR)
                         .requestMatchers(HttpMethod.GET, "/api/labores/**")
                                 .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, OPERARIO, SUPERVISOR, ALMACENERO)
                         .requestMatchers("/api/labores/**").hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO)
@@ -92,10 +99,12 @@ public class SecurityConfig {
                                 .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, ALMACENERO, SUPERVISOR)
                         .requestMatchers("/api/cosechas/**").hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, ALMACENERO)
 
-                        // Incidencias: las reporta quien está en el campo; el supervisor solo las revisa
-                        .requestMatchers(HttpMethod.GET, "/api/incidencias/**")
+                        // Incidencias (RF-12): las reportan quienes están o supervisan el campo
+                        .requestMatchers("/api/incidencias/**")
                                 .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, OPERARIO, SUPERVISOR)
-                        .requestMatchers("/api/incidencias/**").hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, OPERARIO)
+
+                        // Auditoría de cambios críticos (RF-16): solo la consulta el administrador
+                        .requestMatchers("/api/auditoria/**").hasRole(ADMINISTRADOR)
 
                         .requestMatchers("/api/**").authenticated()
                         // Fuera de /api: la web empaquetada en el jar (index.html, assets)

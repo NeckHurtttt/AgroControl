@@ -17,6 +17,7 @@ import type { Usuario } from '../../usuarios/models/Usuario';
 import { rolService } from '../../usuarios/services/rolService';
 import { usuarioService } from '../../usuarios/services/usuarioService';
 import AsignarPanel from '../components/AsignarPanel';
+import BitacoraLaborPanel from '../../bitacora/components/BitacoraLaborPanel';
 import ConsumosPanel from '../components/ConsumosPanel';
 import LaborForm from '../components/LaborForm';
 import LaborTable from '../components/LaborTable';
@@ -45,6 +46,7 @@ export default function LaboresPage() {
   const esOperario = sesion?.rol === 'OPERARIO';
   const puedePlanificar = puede('labores.planificar');
   const puedeEjecutar = puede('labores.ejecutar');
+  const puedeAnotar = puede('bitacora.registrar');
 
   const { datos, setDatos, loading, error, recargar } = useCarga(cargarDatos(puedePlanificar), {
     labores: [] as Labor[],
@@ -61,6 +63,7 @@ export default function LaboresPage() {
   const [ejecutando, setEjecutando] = useState<Labor | null>(null);
   const [conInsumos, setConInsumos] = useState<Labor | null>(null);
   const [asignando, setAsignando] = useState<Labor | null>(null);
+  const [conBitacora, setConBitacora] = useState<Labor | null>(null);
 
   const rolOperarioId = roles.find((rol) => rol.nombre === 'OPERARIO')?.id;
   const asignadosPorLabor = useMemo(() => {
@@ -85,10 +88,11 @@ export default function LaboresPage() {
   const visibles = filtroCampana ? labores.filter((labor) => labor.campanaId === Number(filtroCampana)) : labores;
   const pendientes = visibles.filter((labor) => labor.estado === 'PLANIFICADA').length;
 
-  const abrirPanel = (panel: 'ejecutar' | 'insumos' | 'asignar', labor: Labor) => {
+  const abrirPanel = (panel: 'ejecutar' | 'insumos' | 'asignar' | 'bitacora', labor: Labor) => {
     setEjecutando(panel === 'ejecutar' ? labor : null);
     setConInsumos(panel === 'insumos' ? labor : null);
     setAsignando(panel === 'asignar' ? labor : null);
+    setConBitacora(panel === 'bitacora' ? labor : null);
   };
 
   return (
@@ -101,7 +105,9 @@ export default function LaboresPage() {
             ? 'Labores que el jefe de campo le asignó: márquelas como ejecutadas y registre los insumos que usó.'
             : puedePlanificar
               ? 'Planifique labores por campaña, asigne operarios y controle los insumos consumidos.'
-              : 'Tareas planificadas y ejecutadas en cada campaña (solo lectura para su rol).'
+              : puedeAnotar
+                ? 'Tareas planificadas y ejecutadas en cada campaña. Puede dejar observaciones en la bitácora de cada labor.'
+                : 'Tareas planificadas y ejecutadas en cada campaña (solo lectura para su rol).'
         }
         accion={
           puedePlanificar ? (
@@ -158,6 +164,15 @@ export default function LaboresPage() {
         />
       )}
 
+      {conBitacora && (
+        <BitacoraLaborPanel
+          key={conBitacora.id}
+          labor={conBitacora}
+          puedeRegistrar={puedeAnotar}
+          onCerrar={() => setConBitacora(null)}
+        />
+      )}
+
       {loading && <div className="state-card">Cargando labores...</div>}
       {!loading && error && <div className="state-card error">{error}</div>}
       {!loading && !error && (
@@ -189,6 +204,7 @@ export default function LaboresPage() {
               onAsignar={puedePlanificar ? (labor) => abrirPanel('asignar', labor) : undefined}
               onEjecutar={puedeEjecutar ? (labor) => abrirPanel('ejecutar', labor) : undefined}
               onInsumos={(labor) => abrirPanel('insumos', labor)}
+              onBitacora={(labor) => abrirPanel('bitacora', labor)}
             />
           )}
         </>

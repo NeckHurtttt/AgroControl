@@ -17,10 +17,15 @@ describe('permisos por rol', () => {
     expect(puede('JEFE_DE_CAMPO', 'predios.editar')).toBe(false);
   });
 
-  it('el supervisor consulta incidencias pero no las reporta', () => {
-    expect(puedeVer('SUPERVISOR', 'incidencias')).toBe(true);
-    expect(puede('SUPERVISOR', 'incidencias.reportar')).toBe(false);
-    expect(puede('OPERARIO', 'incidencias.reportar')).toBe(true);
+  it('el supervisor registra incidencias y observaciones de campo (RF-12, RF-09)', () => {
+    expect(puede('SUPERVISOR', 'incidencias.reportar')).toBe(true);
+    expect(puede('SUPERVISOR', 'bitacora.registrar')).toBe(true);
+    expect(puede('ALMACENERO', 'bitacora.registrar')).toBe(false);
+  });
+
+  it('solo el administrador ve la auditoría', () => {
+    expect(puedeVer('ADMINISTRADOR', 'auditoria')).toBe(true);
+    expect(puedeVer('SUPERVISOR', 'auditoria')).toBe(false);
   });
 
   it('el almacenero mueve stock y registra cosechas', () => {

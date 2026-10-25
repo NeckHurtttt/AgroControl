@@ -1,5 +1,6 @@
 package com.agrocontrol.cosecha.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.campana.domain.EstadoCampana;
@@ -35,6 +36,7 @@ public class CosechaService {
         return cosechaRepository.listarPorCampana(campanaId);
     }
 
+    @Auditable(entidad = "COSECHA", accion = "REGISTRAR")
     @Transactional
     public Cosecha registrar(Long campanaId, BigDecimal cantidad, String unidadMedida, Long usuarioId) {
         Campana campana = campanaRepository.buscarPorId(campanaId)

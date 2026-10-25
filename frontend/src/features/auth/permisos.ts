@@ -12,10 +12,10 @@ export const NOMBRE_ROL: Record<Rol, string> = {
 };
 
 export type Seccion =
-  | 'inicio' | 'predios' | 'parcelas' | 'cultivos' | 'campanas' | 'labores' | 'insumos' | 'cosechas' | 'incidencias' | 'usuarios';
+  | 'inicio' | 'predios' | 'parcelas' | 'cultivos' | 'campanas' | 'labores' | 'insumos' | 'cosechas' | 'incidencias' | 'usuarios' | 'auditoria';
 
 const SECCIONES: Record<Rol, Seccion[]> = {
-  ADMINISTRADOR: ['inicio', 'predios', 'parcelas', 'cultivos', 'campanas', 'labores', 'insumos', 'cosechas', 'incidencias', 'usuarios'],
+  ADMINISTRADOR: ['inicio', 'predios', 'parcelas', 'cultivos', 'campanas', 'labores', 'insumos', 'cosechas', 'incidencias', 'usuarios', 'auditoria'],
   JEFE_DE_CAMPO: ['inicio', 'predios', 'parcelas', 'cultivos', 'campanas', 'labores', 'insumos', 'cosechas', 'incidencias'],
   OPERARIO: ['inicio', 'labores', 'incidencias'],
   ALMACENERO: ['inicio', 'insumos', 'cosechas'],
@@ -33,6 +33,8 @@ export type Accion =
   | 'insumos.verMovimientos'
   | 'cosechas.registrar'
   | 'incidencias.reportar'
+  | 'bitacora.registrar'
+  | 'parcelas.verBitacora'
   | 'usuarios.gestionar';
 
 const ACCIONES: Record<Accion, Rol[]> = {
@@ -45,8 +47,10 @@ const ACCIONES: Record<Accion, Rol[]> = {
   'insumos.gestionar': ['ADMINISTRADOR', 'ALMACENERO'],
   'insumos.verMovimientos': ['ADMINISTRADOR', 'ALMACENERO', 'JEFE_DE_CAMPO', 'SUPERVISOR'],
   'cosechas.registrar': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'ALMACENERO'],
-  // Las reporta quien está en el campo; el supervisor solo las revisa
-  'incidencias.reportar': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'OPERARIO'],
+  // RF-12 y RF-09: las registran quienes están o supervisan el campo
+  'incidencias.reportar': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'OPERARIO', 'SUPERVISOR'],
+  'bitacora.registrar': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'OPERARIO', 'SUPERVISOR'],
+  'parcelas.verBitacora': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'SUPERVISOR'],
   'usuarios.gestionar': ['ADMINISTRADOR'],
 };
 

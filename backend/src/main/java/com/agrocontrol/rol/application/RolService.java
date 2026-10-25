@@ -1,5 +1,6 @@
 package com.agrocontrol.rol.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.rol.domain.Rol;
 import com.agrocontrol.rol.domain.RolRepository;
 import com.agrocontrol.rol.domain.exception.NombreRolDuplicadoException;
@@ -17,6 +18,7 @@ public class RolService {
         this.repository = repository;
     }
 
+    @Auditable(entidad = "ROL", accion = "CREAR")
     @Transactional
     public Rol registrar(Rol rol) {
         if (repository.existePorNombre(rol.getNombre())) {
@@ -36,6 +38,7 @@ public class RolService {
         return repository.listarTodos();
     }
 
+    @Auditable(entidad = "ROL", accion = "ACTUALIZAR")
     @Transactional
     public Rol actualizar(Long id, String nombre, String descripcion) {
         obtener(id);
@@ -45,6 +48,7 @@ public class RolService {
         return repository.guardar(new Rol(id, nombre, descripcion));
     }
 
+    @Auditable(entidad = "ROL", accion = "ELIMINAR")
     @Transactional
     public void eliminar(Long id) {
         obtener(id);

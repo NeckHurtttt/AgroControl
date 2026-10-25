@@ -1,8 +1,9 @@
 package com.agrocontrol.labor.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
+import com.agrocontrol.auth.domain.Roles;
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
-import com.agrocontrol.auth.domain.Roles;
 import com.agrocontrol.labor.domain.AsignacionLabor;
 import com.agrocontrol.labor.domain.EstadoLabor;
 import com.agrocontrol.labor.domain.Labor;
@@ -49,6 +50,7 @@ public class LaborService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe la labor con id: " + id));
     }
 
+    @Auditable(entidad = "LABOR", accion = "PLANIFICAR")
     @Transactional
     public Labor planificar(Long campanaId, String tipo, LocalDate fechaPlan) {
         Campana campana = campanaRepository.buscarPorId(campanaId)
@@ -61,6 +63,7 @@ public class LaborService {
                 new Labor(null, campanaId, campana.getParcelaId(), tipo.trim().toUpperCase(), fechaPlan));
     }
 
+    @Auditable(entidad = "LABOR", accion = "EJECUTAR")
     @Transactional
     public Labor ejecutar(Long id, LocalDate fechaEjecucion) {
         Labor labor = obtener(id);
@@ -88,6 +91,7 @@ public class LaborService {
     }
 
     // RF-05: el jefe de campo asigna operarios activos a una labor que aún no se ejecutó
+    @Auditable(entidad = "ASIGNACION_LABOR", accion = "ASIGNAR")
     @Transactional
     public AsignacionLabor asignar(Long laborId, Long usuarioId) {
         Labor labor = obtener(laborId);

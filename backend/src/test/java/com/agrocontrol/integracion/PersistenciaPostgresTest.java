@@ -1,5 +1,8 @@
 package com.agrocontrol.integracion;
 
+import com.agrocontrol.auditoria.application.AuditoriaService;
+import com.agrocontrol.auditoria.domain.Auditoria;
+import com.agrocontrol.bitacora.application.BitacoraService;
 import com.agrocontrol.campana.application.CampanaService;
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.EstadoCampana;
@@ -45,6 +48,10 @@ class PersistenciaPostgresTest {
     @Autowired
     private InventarioService inventarioService;
     @Autowired
+    private BitacoraService bitacoraService;
+    @Autowired
+    private AuditoriaService auditoriaService;
+    @Autowired
     private JdbcTemplate jdbc;
 
     @Test
@@ -52,7 +59,7 @@ class PersistenciaPostgresTest {
         assertThat(parcelaRepository.listarTodas()).isNotEmpty();
         Integer version = jdbc.queryForObject(
                 "SELECT max(version::int) FROM flyway_schema_history WHERE success", Integer.class);
-        assertThat(version).isEqualTo(4);
+        assertThat(version).isEqualTo(5);
     }
 
     @Test
@@ -73,6 +80,25 @@ class PersistenciaPostgresTest {
         campanaService.iniciar(creada.getId());
 
         assertThat(campanaService.obtener(creada.getId()).getEstado()).isEqualTo(EstadoCampana.EN_CURSO);
+        // @Auditable deja el rastro de ambos cambios (sin sesión, el usuario queda vacío)
+        List<Auditoria> rastro = auditoriaService.listar("campana", creada.getId());
+        assertThat(rastro).extracting(Auditoria::getAccion).containsExactly("INICIAR", "CREAR");
+        assertThat(auditoriaService.listar(null, null)).isNotEmpty();
+    }
+
+    @Test
+    void laBitacoraDeUnaParcelaReuneLasObservacionesDeSusLabores() {
+        Long laborId = jdbc.queryForObject(
+                "SELECT min(l.id_labor) FROM agrocontrol.labor l JOIN agrocontrol.campana c ON c.id_campana = l.id_campana "
+                        + "WHERE c.estado <> 'FINALIZADA'", Long.class);
+        Long parcelaId = jdbc.queryForObject(
+                "SELECT id_parcela FROM agrocontrol.labor WHERE id_labor = ?", Long.class, laborId);
+        Long usuarioId = jdbc.queryForObject("SELECT min(id_usuario) FROM agrocontrol.usuario", Long.class);
+
+        bitacoraService.registrar(laborId, usuarioId, "Plántulas con buen vigor");
+
+        assertThat(bitacoraService.listarPorParcela(parcelaId))
+                .extracting(entrada -> entrada.getObservacion()).contains("Plántulas con buen vigor");
     }
 
     @Test

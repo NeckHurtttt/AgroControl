@@ -1,5 +1,6 @@
 package com.agrocontrol.usuario.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.rol.domain.RolRepository;
 import com.agrocontrol.rol.domain.exception.RolNoEncontradoException;
 import com.agrocontrol.usuario.application.command.RegistrarUsuarioCommand;
@@ -25,6 +26,7 @@ public class UsuarioService {
         this.codificadorPassword = codificadorPassword;
     }
 
+    @Auditable(entidad = "USUARIO", accion = "CREAR")
     @Transactional
     public Usuario registrar(RegistrarUsuarioCommand command) {
         // El padre debe existir antes de crear el hijo: se detecta aquí (404), no como error de FK (500)

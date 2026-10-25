@@ -11,11 +11,12 @@ interface ParcelaTableProps {
   // Sin handlers (rol de solo lectura) no se muestra la columna de acciones
   onEditar?: (parcela: Parcela) => void;
   onEliminar?: (parcela: Parcela) => void;
+  onBitacora?: (parcela: Parcela) => void;
   deletingId?: number | null;
 }
 
-export default function ParcelaTable({ parcelas, prediosPorId, onEditar, onEliminar, deletingId = null }: ParcelaTableProps) {
-  const conAcciones = Boolean(onEditar || onEliminar);
+export default function ParcelaTable({ parcelas, prediosPorId, onEditar, onEliminar, onBitacora, deletingId = null }: ParcelaTableProps) {
+  const conAcciones = Boolean(onEditar || onEliminar || onBitacora);
   const obtenerNombrePredio = (predioId: number) => prediosPorId.get(predioId)?.nombre ?? `Predio #${predioId}`;
 
   return (
@@ -41,6 +42,7 @@ export default function ParcelaTable({ parcelas, prediosPorId, onEditar, onElimi
                 {conAcciones && (
                   <td>
                     <div className="table-actions">
+                      {onBitacora && <Button variant="secondary" size="sm" onClick={() => onBitacora(parcela)}>Bitácora</Button>}
                       {onEditar && <Button variant="secondary" size="sm" onClick={() => onEditar(parcela)}>Editar</Button>}
                       {onEliminar && (
                         <Button

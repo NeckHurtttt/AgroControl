@@ -1,5 +1,6 @@
 package com.agrocontrol.campana.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.cultivo.domain.CultivoRepository;
@@ -38,6 +39,7 @@ public class CampanaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe la campaña con id: " + id));
     }
 
+    @Auditable(entidad = "CAMPANA", accion = "CREAR")
     @Transactional
     public Campana crear(Long parcelaId, Long cultivoId, LocalDate fechaInicio) {
         if (parcelaRepository.buscarPorId(parcelaId).isEmpty()) {
@@ -53,6 +55,7 @@ public class CampanaService {
         return campanaRepository.guardar(new Campana(null, parcelaId, cultivoId, fechaInicio));
     }
 
+    @Auditable(entidad = "CAMPANA", accion = "INICIAR")
     @Transactional
     public Campana iniciar(Long id) {
         Campana campana = obtener(id);
@@ -60,6 +63,7 @@ public class CampanaService {
         return campanaRepository.guardar(campana);
     }
 
+    @Auditable(entidad = "CAMPANA", accion = "FINALIZAR")
     @Transactional
     public Campana finalizar(Long id, LocalDate fechaFin) {
         Campana campana = obtener(id);

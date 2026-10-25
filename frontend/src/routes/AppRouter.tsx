@@ -13,6 +13,7 @@ import InsumosPage from '../features/insumos/pages/InsumosPage';
 import CosechasPage from '../features/cosechas/pages/CosechasPage';
 import IncidenciasPage from '../features/incidencias/pages/IncidenciasPage';
 import UsuariosPage from '../features/usuarios/pages/UsuariosPage';
+import AuditoriaPage from '../features/auditoria/pages/AuditoriaPage';
 
 export default function AppRouter() {
   return (
@@ -47,6 +48,9 @@ export default function AppRouter() {
           </Route>
           <Route element={<RequireSeccion seccion="usuarios" />}>
             <Route path="usuarios" element={<UsuariosPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="auditoria" />}>
+            <Route path="auditoria" element={<AuditoriaPage />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>

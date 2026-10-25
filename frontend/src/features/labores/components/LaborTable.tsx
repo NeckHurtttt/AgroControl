@@ -11,6 +11,7 @@ interface LaborTableProps {
   // Cada acción es opcional: la página solo pasa las que el rol puede usar
   onEjecutar?: (labor: Labor) => void;
   onInsumos: (labor: Labor) => void;
+  onBitacora: (labor: Labor) => void;
   onAsignar?: (labor: Labor) => void;
   // Nombres de los operarios por labor; si no viene, no se muestra la columna
   asignados?: Map<number, string[]>;
@@ -22,6 +23,7 @@ export default function LaborTable({
   catalogos,
   onEjecutar,
   onInsumos,
+  onBitacora,
   onAsignar,
   asignados,
 }: LaborTableProps) {
@@ -67,6 +69,7 @@ export default function LaborTable({
                         <button type="button" className="btn-link" onClick={() => onEjecutar(labor)}>Ejecutar</button>
                       )}
                       <button type="button" className="btn-link" onClick={() => onInsumos(labor)}>Insumos</button>
+                      <button type="button" className="btn-link" onClick={() => onBitacora(labor)}>Bitácora</button>
                     </div>
                   </td>
                 </tr>

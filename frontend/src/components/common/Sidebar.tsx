@@ -13,6 +13,7 @@ const menuItems: { to: string; label: string; seccion: Seccion; end?: boolean }[
   { to: '/cosechas', label: 'Cosechas', seccion: 'cosechas' },
   { to: '/incidencias', label: 'Incidencias', seccion: 'incidencias' },
   { to: '/usuarios', label: 'Usuarios', seccion: 'usuarios' },
+  { to: '/auditoria', label: 'Auditoría', seccion: 'auditoria' },
 ];
 
 export default function Sidebar() {

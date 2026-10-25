@@ -1,5 +1,6 @@
 package com.agrocontrol.cultivo.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.cultivo.domain.Cultivo;
 import com.agrocontrol.cultivo.domain.CultivoRepository;
 import com.agrocontrol.shared.domain.ConflictoException;
@@ -20,6 +21,7 @@ public class CultivoService {
         return cultivoRepository.listarTodos();
     }
 
+    @Auditable(entidad = "CULTIVO", accion = "CREAR")
     @Transactional
     public Cultivo crear(String nombre, Integer cicloDias) {
         String nombreLimpio = nombre.trim();

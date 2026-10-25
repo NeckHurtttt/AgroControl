@@ -14,6 +14,7 @@ import { paginar } from '../../../shared/utils/paginar';
 import { formatArea } from '../../../utils/area';
 import { useAuth } from '../../auth/context/useAuth';
 import ParcelaForm from '../components/ParcelaForm';
+import BitacoraParcelaPanel from '../../bitacora/components/BitacoraParcelaPanel';
 import ParcelaTable from '../components/ParcelaTable';
 import { useParcelas } from '../hooks/useParcelas';
 import { ESTADOS_PARCELA, type EstadoParcela, type Parcela } from '../models/Parcela';
@@ -27,7 +28,10 @@ const OPCIONES_ESTADO = [
 
 export default function ParcelasPage() {
   const { parcelas, predios, setParcelas, loading, error } = useParcelas();
-  const puedeEditar = useAuth().puede('parcelas.editar');
+  const { puede } = useAuth();
+  const puedeEditar = puede('parcelas.editar');
+  const puedeVerBitacora = puede('parcelas.verBitacora');
+  const [bitacoraDe, setBitacoraDe] = useState<Parcela | null>(null);
   const { successMessage, mostrarExito } = useMensajeExito();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editando, setEditando] = useState<Parcela | null>(null);
@@ -161,6 +165,15 @@ export default function ParcelasPage() {
         />
       </Modal>
 
+      {bitacoraDe && (
+        <BitacoraParcelaPanel
+          key={bitacoraDe.id}
+          parcela={bitacoraDe}
+          nombrePredio={prediosPorId.get(bitacoraDe.predioId)?.nombre ?? `Predio #${bitacoraDe.predioId}`}
+          onCerrar={() => setBitacoraDe(null)}
+        />
+      )}
+
       <ConfirmDialog
         open={pendingDelete !== null}
         title="Eliminar parcela"
@@ -205,6 +218,7 @@ export default function ParcelasPage() {
                 prediosPorId={prediosPorId}
                 onEditar={puedeEditar ? editar : undefined}
                 onEliminar={puedeEditar ? setPendingDelete : undefined}
+                onBitacora={puedeVerBitacora ? setBitacoraDe : undefined}
                 deletingId={deletingId}
               />
               <Pagination

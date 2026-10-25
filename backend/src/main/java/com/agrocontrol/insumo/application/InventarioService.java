@@ -1,5 +1,6 @@
 package com.agrocontrol.insumo.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.insumo.domain.ConsumoLabor;
 import com.agrocontrol.insumo.domain.ConsumoLaborRepository;
@@ -50,6 +51,7 @@ public class InventarioService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe el insumo con id: " + id));
     }
 
+    @Auditable(entidad = "INSUMO", accion = "CREAR")
     @Transactional
     public Insumo crearInsumo(String nombre, String unidadMedida) {
         // El stock nace en cero: solo cambia a través de movimientos, para que quede trazado
@@ -62,6 +64,7 @@ public class InventarioService {
         return movimientoRepository.listarPorInsumo(insumoId);
     }
 
+    @Auditable(entidad = "MOVIMIENTO_INSUMO", accion = "REGISTRAR")
     @Transactional
     public MovimientoInsumo registrarMovimiento(Long insumoId, TipoMovimiento tipo, BigDecimal cantidad,
                                                 String motivo, Long usuarioId) {
@@ -79,6 +82,7 @@ public class InventarioService {
     }
 
     // Una sola transacción: si falta stock no se guarda ni el consumo ni el movimiento.
+    @Auditable(entidad = "CONSUMO_LABOR", accion = "REGISTRAR")
     @Transactional
     public ConsumoLabor registrarConsumo(Long laborId, Long insumoId, BigDecimal cantidad, Long usuarioId) {
         Labor labor = obtenerLabor(laborId);

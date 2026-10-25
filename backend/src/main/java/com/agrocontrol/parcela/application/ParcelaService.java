@@ -1,5 +1,6 @@
 package com.agrocontrol.parcela.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.parcela.domain.EstadoParcela;
 import com.agrocontrol.parcela.domain.Parcela;
@@ -40,6 +41,7 @@ public class ParcelaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe la parcela con id: " + id));
     }
 
+    @Auditable(entidad = "PARCELA", accion = "CREAR")
     @Transactional
     public Parcela crear(Long predioId, String codigo, BigDecimal areaHa) {
         // El padre debe existir antes de crear el hijo: 404 aquí, no un error de FK
@@ -53,6 +55,7 @@ public class ParcelaService {
         return parcelaRepository.guardar(new Parcela(null, predioId, codigoNormalizado, areaHa));
     }
 
+    @Auditable(entidad = "PARCELA", accion = "ACTUALIZAR")
     @Transactional
     public Parcela actualizar(Long id, Long predioId, String codigo, BigDecimal areaHa, EstadoParcela estado) {
         Parcela parcela = obtener(id);
@@ -83,6 +86,7 @@ public class ParcelaService {
         return parcelaRepository.guardar(parcela);
     }
 
+    @Auditable(entidad = "PARCELA", accion = "ELIMINAR")
     @Transactional
     public void eliminar(Long id) {
         obtener(id);
