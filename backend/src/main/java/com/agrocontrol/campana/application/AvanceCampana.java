@@ -1,6 +1,7 @@
 package com.agrocontrol.campana.application;
 
 import com.agrocontrol.campana.domain.EstadoCampana;
+import com.agrocontrol.insumo.domain.CategoriaInsumo;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,7 +28,8 @@ public record AvanceCampana(
         int incidenciasAbiertas,
         int incidenciasTotal
 ) {
-    public record InsumoConsumido(Long insumoId, String nombre, String unidadMedida, BigDecimal cantidad) {
+    public record InsumoConsumido(Long insumoId, String nombre, CategoriaInsumo categoria, String unidadMedida,
+                                  BigDecimal cantidad) {
     }
 
     public record CosechaTotal(String unidadMedida, BigDecimal cantidad) {

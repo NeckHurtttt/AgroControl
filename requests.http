@@ -420,3 +420,32 @@ Content-Type: application/json
 ### Avance de una campaña (RF-15)
 GET http://localhost:8080/api/campanas/1/avance
 Authorization: Bearer {{token}}
+
+### ==== Almacén: combustibles y repuestos ====
+
+### Nuevo insumo con categoría y stock mínimo
+POST http://localhost:8080/api/insumos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombre": "Correa del ventilador",
+  "unidadMedida": "unidad",
+  "categoria": "REPUESTO",
+  "stockMinimo": 2
+}
+
+### Salida de diésel para un tractor
+POST http://localhost:8080/api/insumos/4/movimientos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "tipo": "SALIDA",
+  "cantidad": 60,
+  "motivo": "Tractor 1 · siembra lote norte"
+}
+
+### Lo que salió del almacén este mes (o con ?desde=2026-10-01&hasta=2026-10-31)
+GET http://localhost:8080/api/insumos/salidas
+Authorization: Bearer {{token}}

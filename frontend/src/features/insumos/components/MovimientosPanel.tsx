@@ -83,7 +83,7 @@ export default function MovimientosPanel({ insumo, usuarios, puedeRegistrar, onM
           </label>
           <label>
             Motivo
-            <input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ej.: Compra factura 0012" />
+            <input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder={tipo === 'ENTRADA' ? 'Ej.: Compra factura 0012' : 'Ej.: Tractor 1 · siembra lote norte'} />
           </label>
           <label>
             Registrado por

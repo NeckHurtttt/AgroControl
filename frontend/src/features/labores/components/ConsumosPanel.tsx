@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useCarga } from '../../../hooks/useCarga';
 import { formatCantidad, formatFecha, validarCantidadPositiva } from '../../../utils/formato';
-import type { Insumo } from '../../insumos/models/Insumo';
+import { CATEGORIAS, type Insumo } from '../../insumos/models/Insumo';
 import { useSesion } from '../../auth/context/useAuth';
 import type { ConsumoLabor, Labor } from '../models/Labor';
 import { laborService } from '../services/laborService';
@@ -91,10 +91,15 @@ export default function ConsumosPanel({ labor, insumos, puedeRegistrar, onConsum
             Insumo
             <select value={insumoId} onChange={(e) => setInsumoId(e.target.value)}>
               <option value="">Seleccione un insumo</option>
-              {insumos.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nombre} (stock: {formatCantidad(item.stockActual, item.unidadMedida)})
-                </option>
+              {/* Agrupado como en el almacén: el diésel del tractor no se mezcla con la semilla */}
+              {CATEGORIAS.filter((c) => insumos.some((item) => item.categoria === c.valor)).map((c) => (
+                <optgroup key={c.valor} label={`${c.icono} ${c.nombre}`}>
+                  {insumos.filter((item) => item.categoria === c.valor).map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.nombre} (stock: {formatCantidad(item.stockActual, item.unidadMedida)})
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>

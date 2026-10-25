@@ -1,5 +1,6 @@
 import { useCarga } from '../../../hooks/useCarga';
 import { formatCantidad } from '../../../utils/formato';
+import { categoria } from '../../insumos/models/Insumo';
 import type { AvanceCampana } from '../models/AvanceCampana';
 import type { Campana } from '../models/Campana';
 import { campanaService } from '../services/campanaService';
@@ -59,7 +60,9 @@ export default function AvancePanel({ campana, titulo, onCerrar }: AvancePanelPr
               ) : (
                 <ul>
                   {avance.insumos.map((insumo) => (
-                    <li key={insumo.insumoId}>{insumo.nombre}: {formatCantidad(insumo.cantidad, insumo.unidadMedida)}</li>
+                    <li key={insumo.insumoId}>
+                      {categoria(insumo.categoria).icono} {insumo.nombre}: {formatCantidad(insumo.cantidad, insumo.unidadMedida)}
+                    </li>
                   ))}
                 </ul>
               )}

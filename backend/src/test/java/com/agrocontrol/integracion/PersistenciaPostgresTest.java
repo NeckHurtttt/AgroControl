@@ -65,7 +65,20 @@ class PersistenciaPostgresTest {
         assertThat(parcelaRepository.listarTodas()).isNotEmpty();
         Integer version = jdbc.queryForObject(
                 "SELECT max(version::int) FROM flyway_schema_history WHERE success", Integer.class);
-        assertThat(version).isEqualTo(6);
+        assertThat(version).isEqualTo(7);
+    }
+
+    @Test
+    void elCombustibleYLosRepuestosDeLaCargaInicialCuadranConSusMovimientos() {
+        Integer descuadrados = jdbc.queryForObject("""
+                SELECT count(*) FROM agrocontrol.insumo i
+                WHERE i.categoria IN ('COMBUSTIBLE', 'LUBRICANTE', 'REPUESTO')
+                  AND i.stock_actual <> (SELECT coalesce(sum(CASE m.tipo WHEN 'ENTRADA' THEN m.cantidad ELSE -m.cantidad END), 0)
+                                         FROM agrocontrol.movimiento_insumo m WHERE m.id_insumo = i.id_insumo)""",
+                Integer.class);
+        assertThat(descuadrados).isZero();
+        assertThat(inventarioService.salidasEntre(LocalDate.now().minusDays(7), LocalDate.now()))
+                .extracting(salida -> salida.nombre()).contains("Diésel", "Filtro de combustible");
     }
 
     @Test
@@ -134,7 +147,7 @@ class PersistenciaPostgresTest {
     @Test
     void salidasSimultaneasNoPierdenStock() throws Exception {
         Long usuarioId = jdbc.queryForObject("SELECT min(id_usuario) FROM agrocontrol.usuario", Long.class);
-        Insumo insumo = inventarioService.crearInsumo("Prueba de concurrencia", "kg");
+        Insumo insumo = inventarioService.crearInsumo("Prueba de concurrencia", "kg", null, null);
         inventarioService.registrarMovimiento(insumo.getId(), TipoMovimiento.ENTRADA, new BigDecimal("100"), null, usuarioId);
 
         ExecutorService hilos = Executors.newFixedThreadPool(10);

@@ -1,9 +1,11 @@
 import { apiFetch } from '../../../api/apiClient';
-import type { Insumo, MovimientoInsumo, TipoMovimiento } from '../models/Insumo';
+import type { CategoriaInsumo, Insumo, MovimientoInsumo, SalidaDeAlmacen, TipoMovimiento } from '../models/Insumo';
 
 export interface InsumoCreateRequest {
   nombre: string;
   unidadMedida: string;
+  categoria: CategoriaInsumo;
+  stockMinimo: number;
 }
 
 export interface MovimientoRequest {
@@ -22,6 +24,19 @@ export const insumoService = {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  },
+
+  // Mismos campos que al crear; el stock no se edita a mano
+  actualizar(id: number, data: InsumoCreateRequest): Promise<Insumo> {
+    return apiFetch<Insumo>(`/insumos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Sin fechas: lo que va del mes
+  salidas(signal?: AbortSignal): Promise<SalidaDeAlmacen[]> {
+    return apiFetch<SalidaDeAlmacen[]>('/insumos/salidas', { signal });
   },
 
   listarMovimientos(insumoId: number, signal?: AbortSignal): Promise<MovimientoInsumo[]> {

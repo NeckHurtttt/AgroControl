@@ -8,7 +8,8 @@ import { usuarioService } from '../../usuarios/services/usuarioService';
 import { useAuth } from '../../auth/context/useAuth';
 import InsumoForm from '../components/InsumoForm';
 import MovimientosPanel from '../components/MovimientosPanel';
-import type { Insumo } from '../models/Insumo';
+import SalidasDelMes from '../components/SalidasDelMes';
+import { CATEGORIAS, categoria, type CategoriaInsumo, type Insumo } from '../models/Insumo';
 import { insumoService } from '../services/insumoService';
 
 const cargarDatos = async (signal: AbortSignal) => {
@@ -27,17 +28,36 @@ export default function InsumosPage() {
   const puedeGestionar = puede('insumos.gestionar');
   const puedeVerMovimientos = puede('insumos.verMovimientos');
   const [seleccionadoId, setSeleccionadoId] = useState<number | null>(null);
+  const [editando, setEditando] = useState<Insumo | null>(null);
+  const [filtro, setFiltro] = useState<CategoriaInsumo | 'TODOS' | 'POR_AGOTARSE'>('TODOS');
+  // Sube con cada movimiento para que el resumen del mes se vuelva a calcular
+  const [versionSalidas, setVersionSalidas] = useState(0);
 
   // Se busca por id para que el panel muestre el stock actualizado después de recargar.
   const seleccionado = insumos.find((insumo) => insumo.id === seleccionadoId) ?? null;
-  const sinStock = insumos.filter((insumo) => insumo.stockActual <= 0).length;
+  const porAgotarse = insumos.filter((insumo) => insumo.porAgotarse || insumo.stockActual <= 0).length;
+  const visibles = insumos.filter((insumo) =>
+    filtro === 'TODOS' ? true
+      : filtro === 'POR_AGOTARSE' ? insumo.porAgotarse || insumo.stockActual <= 0
+        : insumo.categoria === filtro);
+  const categoriasConInsumos = CATEGORIAS.filter((c) => insumos.some((insumo) => insumo.categoria === c.valor));
+
+  const abrirMovimientos = (insumo: Insumo) => {
+    setEditando(null);
+    setSeleccionadoId(insumo.id);
+  };
+
+  const abrirEdicion = (insumo: Insumo) => {
+    setSeleccionadoId(null);
+    setEditando(insumo);
+  };
 
   return (
     <section className="feature-page">
       <PageHeading
-        eyebrow="INVENTARIO"
+        eyebrow="ALMACÉN"
         titulo="Insumos"
-        descripcion="Semillas, fertilizantes y agroquímicos. El stock solo cambia mediante movimientos trazados."
+        descripcion="Todo lo que entra y sale del almacén: semillas, fertilizantes, agroquímicos, combustible, aceites y repuestos."
         accion={
           puedeGestionar ? (
             <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
@@ -48,7 +68,22 @@ export default function InsumosPage() {
       />
 
       {puedeGestionar && mostrarFormulario && (
-        <InsumoForm onCreated={(nuevo) => setDatos((prev) => ({ ...prev, insumos: [...prev.insumos, nuevo] }))} />
+        <InsumoForm onGuardado={(nuevo) => setDatos((prev) => ({ ...prev, insumos: [...prev.insumos, nuevo] }))} />
+      )}
+
+      {editando && (
+        <InsumoForm
+          key={editando.id}
+          insumo={editando}
+          onGuardado={(actualizado) => {
+            setDatos((prev) => ({
+              ...prev,
+              insumos: prev.insumos.map((item) => (item.id === actualizado.id ? actualizado : item)),
+            }));
+            setEditando(null);
+          }}
+          onCerrar={() => setEditando(null)}
+        />
       )}
 
       {seleccionado && (
@@ -56,7 +91,10 @@ export default function InsumosPage() {
           insumo={seleccionado}
           usuarios={usuarios}
           puedeRegistrar={puedeGestionar}
-          onMovimientoRegistrado={recargar}
+          onMovimientoRegistrado={() => {
+            recargar();
+            setVersionSalidas((v) => v + 1);
+          }}
           onCerrar={() => setSeleccionadoId(null)}
         />
       )}
@@ -68,36 +106,70 @@ export default function InsumosPage() {
           <StatsGrid
             stats={[
               { etiqueta: 'Insumos', valor: insumos.length },
-              { etiqueta: 'Con stock', valor: insumos.length - sinStock },
-              { etiqueta: 'Sin stock', valor: sinStock },
+              { etiqueta: 'Por agotarse o sin stock', valor: porAgotarse },
+              { etiqueta: 'Combustibles', valor: insumos.filter((i) => i.categoria === 'COMBUSTIBLE').length },
+              { etiqueta: 'Repuestos', valor: insumos.filter((i) => i.categoria === 'REPUESTO').length },
             ]}
           />
-          {insumos.length === 0 ? (
-            <div className="empty-state">No hay insumos registrados.</div>
+
+          {puedeVerMovimientos && <SalidasDelMes version={versionSalidas} />}
+
+          <div className="chips" role="tablist" aria-label="Filtrar por categoría">
+            <button type="button" className={`chip${filtro === 'TODOS' ? ' chip--activo' : ''}`} onClick={() => setFiltro('TODOS')}>
+              Todos ({insumos.length})
+            </button>
+            {porAgotarse > 0 && (
+              <button type="button" className={`chip chip--alerta${filtro === 'POR_AGOTARSE' ? ' chip--activo' : ''}`} onClick={() => setFiltro('POR_AGOTARSE')}>
+                ⚠ Por agotarse ({porAgotarse})
+              </button>
+            )}
+            {categoriasConInsumos.map((c) => (
+              <button key={c.valor} type="button" className={`chip${filtro === c.valor ? ' chip--activo' : ''}`} onClick={() => setFiltro(c.valor)}>
+                {c.icono} {c.nombre} ({insumos.filter((i) => i.categoria === c.valor).length})
+              </button>
+            ))}
+          </div>
+
+          {visibles.length === 0 ? (
+            <div className="empty-state">{insumos.length === 0 ? 'No hay insumos registrados.' : 'No hay insumos en este filtro.'}</div>
           ) : (
             <div className="table-card">
               <div className="table-responsive">
                 <table className="data-table">
                   <thead>
-                    <tr><th>Insumo</th><th>Unidad</th><th>Stock actual</th>{puedeVerMovimientos && <th>Acciones</th>}</tr>
+                    <tr>
+                      <th>Insumo</th><th>Categoría</th><th>Stock actual</th><th>Mínimo</th>
+                      {puedeVerMovimientos && <th>Acciones</th>}
+                    </tr>
                   </thead>
                   <tbody>
-                    {insumos.map((insumo) => (
-                      <tr key={insumo.id}>
-                        <td>{insumo.nombre}</td>
-                        <td>{insumo.unidadMedida}</td>
-                        <td className={insumo.stockActual <= 0 ? 'field-error' : ''}>
-                          {formatCantidad(insumo.stockActual, insumo.unidadMedida)}
-                        </td>
-                        {puedeVerMovimientos && (
-                          <td>
-                            <button type="button" className="btn-link" onClick={() => setSeleccionadoId(insumo.id)}>
-                              Movimientos
-                            </button>
+                    {visibles.map((insumo) => {
+                      const c = categoria(insumo.categoria);
+                      const alerta = insumo.stockActual <= 0 ? 'Sin stock' : insumo.porAgotarse ? 'Por agotarse' : '';
+                      return (
+                        <tr key={insumo.id}>
+                          <td>{insumo.nombre}</td>
+                          <td>{c.icono} {c.nombre}</td>
+                          <td className={alerta ? 'field-error' : ''}>
+                            {formatCantidad(insumo.stockActual, insumo.unidadMedida)}
+                            {alerta && <small className="celda-nota">⚠ {alerta}</small>}
                           </td>
-                        )}
-                      </tr>
-                    ))}
+                          <td className="muted">{insumo.stockMinimo > 0 ? formatCantidad(insumo.stockMinimo, insumo.unidadMedida) : '—'}</td>
+                          {puedeVerMovimientos && (
+                            <td>
+                              <div className="table-actions">
+                                <button type="button" className="btn-link" onClick={() => abrirMovimientos(insumo)}>
+                                  {puedeGestionar ? 'Entrada / salida' : 'Movimientos'}
+                                </button>
+                                {puedeGestionar && (
+                                  <button type="button" className="btn-link" onClick={() => abrirEdicion(insumo)}>Editar</button>
+                                )}
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

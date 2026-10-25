@@ -29,3 +29,4 @@ El esquema que usa la aplicación es el de **Flyway** (`backend/src/main/resourc
 | V4 | `CHECK` de estado en `campana`, `labor` y `parcela` |
 | V5 | Índices de `auditoria` (por entidad y por fecha) |
 | V6 | Estado `EN_CURSO` en labores; estado, resolución y fecha de resolución en incidencias |
+| V7 | Categoría y stock mínimo de insumos; carga de ejemplo de diésel, gasolina, aceite, grasa y repuestos (con sus movimientos) |

@@ -2,6 +2,7 @@ package com.agrocontrol.insumo.application;
 
 import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.campana.domain.CampanaRepository;
+import com.agrocontrol.insumo.domain.CategoriaInsumo;
 import com.agrocontrol.insumo.domain.ConsumoLabor;
 import com.agrocontrol.insumo.domain.ConsumoLaborRepository;
 import com.agrocontrol.insumo.domain.Insumo;
@@ -18,7 +19,11 @@ import com.agrocontrol.usuario.domain.exception.UsuarioNoEncontradoException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class InventarioService {
 
@@ -53,9 +58,41 @@ public class InventarioService {
 
     @Auditable(entidad = "INSUMO", accion = "CREAR")
     @Transactional
-    public Insumo crearInsumo(String nombre, String unidadMedida) {
+    public Insumo crearInsumo(String nombre, String unidadMedida, CategoriaInsumo categoria, BigDecimal stockMinimo) {
         // El stock nace en cero: solo cambia a través de movimientos, para que quede trazado
-        return insumoRepository.guardar(new Insumo(null, nombre.trim(), unidadMedida.trim()));
+        return insumoRepository.guardar(new Insumo(null, nombre.trim(), unidadMedida.trim(), categoria, stockMinimo));
+    }
+
+    // Nombre, unidad, categoría y mínimo; el stock no se edita a mano (solo con movimientos)
+    @Auditable(entidad = "INSUMO", accion = "ACTUALIZAR")
+    @Transactional
+    public Insumo actualizarInsumo(Long id, String nombre, String unidadMedida, CategoriaInsumo categoria,
+                                   BigDecimal stockMinimo) {
+        Insumo insumo = obtenerInsumo(id);
+        insumo.actualizar(nombre.trim(), unidadMedida.trim(), categoria, stockMinimo);
+        return insumoRepository.guardar(insumo);
+    }
+
+    // Lo que salió del almacén entre dos fechas, sumado por insumo y ordenado por categoría
+    @Transactional(readOnly = true)
+    public List<SalidaDeAlmacen> salidasEntre(LocalDate desde, LocalDate hasta) {
+        if (hasta.isBefore(desde)) {
+            throw new IllegalArgumentException("La fecha final no puede ser anterior a la inicial");
+        }
+        Map<Long, List<MovimientoInsumo>> porInsumo = movimientoRepository
+                .listarSalidasEntre(desde.atStartOfDay(), hasta.plusDays(1).atStartOfDay()).stream()
+                .collect(Collectors.groupingBy(MovimientoInsumo::getInsumoId));
+        return insumoRepository.listarTodos().stream()
+                .filter(insumo -> porInsumo.containsKey(insumo.getId()))
+                .map(insumo -> {
+                    List<MovimientoInsumo> salidas = porInsumo.get(insumo.getId());
+                    BigDecimal total = salidas.stream().map(MovimientoInsumo::getCantidad)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    return new SalidaDeAlmacen(insumo.getId(), insumo.getNombre(), insumo.getCategoria(),
+                            insumo.getUnidadMedida(), total, salidas.size());
+                })
+                .sorted(Comparator.comparing(SalidaDeAlmacen::categoria).thenComparing(SalidaDeAlmacen::nombre))
+                .toList();
     }
 
     @Transactional(readOnly = true)

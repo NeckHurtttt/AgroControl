@@ -2,11 +2,13 @@ package com.agrocontrol.insumo.infrastructure.adapter.in.web;
 
 import com.agrocontrol.auth.infrastructure.security.UsuarioAutenticado;
 import com.agrocontrol.insumo.application.InventarioService;
+import com.agrocontrol.insumo.application.SalidaDeAlmacen;
 import com.agrocontrol.insumo.infrastructure.adapter.in.web.dto.CrearInsumoRequest;
 import com.agrocontrol.insumo.infrastructure.adapter.in.web.dto.InsumoResponse;
 import com.agrocontrol.insumo.infrastructure.adapter.in.web.dto.MovimientoResponse;
 import com.agrocontrol.insumo.infrastructure.adapter.in.web.dto.RegistrarMovimientoRequest;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,10 +16,13 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -43,7 +48,23 @@ public class InsumoController {
     @PostMapping
     public ResponseEntity<InsumoResponse> crear(@Valid @RequestBody CrearInsumoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(InsumoResponse.desde(service.crearInsumo(request.nombre(), request.unidadMedida())));
+                .body(InsumoResponse.desde(service.crearInsumo(request.nombre(), request.unidadMedida(),
+                        request.categoria(), request.stockMinimo())));
+    }
+
+    @PutMapping("/{id}")
+    public InsumoResponse actualizar(@PathVariable Long id, @Valid @RequestBody CrearInsumoRequest request) {
+        return InsumoResponse.desde(service.actualizarInsumo(id, request.nombre(), request.unidadMedida(),
+                request.categoria(), request.stockMinimo()));
+    }
+
+    // Por defecto, lo que va del mes: cuánto combustible, repuestos, etc. salió del almacén
+    @GetMapping("/salidas")
+    public List<SalidaDeAlmacen> salidas(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        LocalDate hoy = LocalDate.now();
+        return service.salidasEntre(desde == null ? hoy.withDayOfMonth(1) : desde, hasta == null ? hoy : hasta);
     }
 
     @GetMapping("/{id}/movimientos")

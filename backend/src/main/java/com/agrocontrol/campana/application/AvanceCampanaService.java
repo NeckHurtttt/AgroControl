@@ -9,6 +9,7 @@ import com.agrocontrol.cultivo.domain.CultivoRepository;
 import com.agrocontrol.incidencia.domain.EstadoIncidencia;
 import com.agrocontrol.incidencia.domain.Incidencia;
 import com.agrocontrol.incidencia.domain.IncidenciaRepository;
+import com.agrocontrol.insumo.domain.CategoriaInsumo;
 import com.agrocontrol.insumo.domain.ConsumoLabor;
 import com.agrocontrol.insumo.domain.ConsumoLaborRepository;
 import com.agrocontrol.insumo.domain.Insumo;
@@ -108,6 +109,7 @@ public class AvanceCampanaService {
                     Insumo insumo = insumos.get(e.getKey());
                     return new AvanceCampana.InsumoConsumido(e.getKey(),
                             insumo == null ? "Insumo " + e.getKey() : insumo.getNombre(),
+                            insumo == null ? CategoriaInsumo.OTRO : insumo.getCategoria(),
                             insumo == null ? "" : insumo.getUnidadMedida(), e.getValue());
                 })
                 .toList();

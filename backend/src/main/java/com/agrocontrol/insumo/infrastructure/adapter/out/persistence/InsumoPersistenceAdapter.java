@@ -6,9 +6,11 @@ import com.agrocontrol.insumo.domain.Insumo;
 import com.agrocontrol.insumo.domain.InsumoRepository;
 import com.agrocontrol.insumo.domain.MovimientoInsumo;
 import com.agrocontrol.insumo.domain.MovimientoInsumoRepository;
+import com.agrocontrol.insumo.domain.TipoMovimiento;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,6 +59,12 @@ public class InsumoPersistenceAdapter implements InsumoRepository, MovimientoIns
     @Override
     public List<MovimientoInsumo> listarPorInsumo(Long insumoId) {
         return movimientoJpaRepository.findByInsumoIdOrderByFechaDesc(insumoId)
+                .stream().map(MovimientoInsumoPersistenceMapper::toDomain).toList();
+    }
+
+    @Override
+    public List<MovimientoInsumo> listarSalidasEntre(LocalDateTime desde, LocalDateTime hasta) {
+        return movimientoJpaRepository.findByTipoAndFechaGreaterThanEqualAndFechaLessThan(TipoMovimiento.SALIDA, desde, hasta)
                 .stream().map(MovimientoInsumoPersistenceMapper::toDomain).toList();
     }
 

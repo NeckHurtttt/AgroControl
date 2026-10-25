@@ -6,7 +6,9 @@ export function formatFecha(iso: string | null): string {
 }
 
 export function formatCantidad(cantidad: number, unidad: string): string {
-  return `${cantidad.toLocaleString('es-BO', { maximumFractionDigits: 2 })} ${unidad}`;
+  // "3 unidades" pero "1 unidad"; kg, L y t no cambian
+  const texto = unidad === 'unidad' && cantidad !== 1 ? 'unidades' : unidad;
+  return `${cantidad.toLocaleString('es-BO', { maximumFractionDigits: 2 })} ${texto}`;
 }
 
 // Fecha de hoy en formato yyyy-mm-dd (zona horaria local), lista para un <input type="date">.

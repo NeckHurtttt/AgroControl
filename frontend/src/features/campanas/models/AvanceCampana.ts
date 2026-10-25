@@ -1,3 +1,4 @@
+import type { CategoriaInsumo } from '../../insumos/models/Insumo';
 import type { EstadoCampana } from './Campana';
 
 // Respuesta de GET /api/campanas/{id}/avance (RF-15)
@@ -13,7 +14,7 @@ export interface AvanceCampana {
   diasTranscurridos: number;
   cicloDias: number | null;
   porcentajeCiclo: number | null;
-  insumos: { insumoId: number; nombre: string; unidadMedida: string; cantidad: number }[];
+  insumos: { insumoId: number; nombre: string; categoria: CategoriaInsumo; unidadMedida: string; cantidad: number }[];
   cosecha: { unidadMedida: string; cantidad: number }[];
   rendimientoToneladasPorHa: number | null;
   incidenciasAbiertas: number;
