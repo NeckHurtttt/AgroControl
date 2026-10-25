@@ -3,7 +3,20 @@
 App Expo + React Native + TypeScript (plantilla `blank-typescript`). Adapta ParkFlow360 Mobile al dominio de AgroControl:
 **Cliente → Predio** y **Vehículo → Parcela** (relación 1:N por `predioId`).
 
-> Alcance honesto: no hay API, ni navegación, ni login, ni PostgreSQL. Los datos son ficticios (`src/data/demoData.ts`).
+> Conectada al backend: la app pide login (`POST /api/auth/login`, usuarios semilla con contraseña `agro123`)
+> y carga predios, parcelas, cultivos, campañas, labores, incidencias y cosechas de la API con el token JWT
+> (`src/api/cliente.ts`). Deslizar hacia abajo recarga. Sin backend, el botón **Ver datos de demostración**
+> usa los datos ficticios de `src/data/demoData.ts` (los de las guías 01 y 02).
+
+## Conectar con el backend
+
+1. Levantar el backend: `./iniciar.sh` en la raíz del repo (Docker, puerto 8080).
+2. En el login, **Servidor**:
+   - Emulador de Android: `http://10.0.2.2:8080` (viene por defecto).
+   - Teléfono real con Expo Go: `http://<IP-de-la-PC>:8080` (misma red Wi-Fi). También se puede fijar
+     con `EXPO_PUBLIC_API_URL=http://<IP>:8080` en `agrocontrol-mobile/.env`.
+3. Entrar con `jefe@agrocontrol.com` / `agro123` (u otro usuario semilla). Lo que se ve depende del rol:
+   el operario solo recibe sus labores asignadas y no ve cosechas.
 
 ## Ejecutar
 

@@ -58,3 +58,14 @@ export const INCIDENCIAS: readonly Incidencia[] = [
   { id: 2, parcelaId: 103, descripcion: "Falla en la bomba de riego", fecha: "2026-10-15", estado: "EN_ATENCION" },
   { id: 3, parcelaId: 104, descripcion: "Erosión en la cabecera tras la lluvia", fecha: "2026-03-02", estado: "RESUELTA" },
 ];
+
+// Todo junto, con la misma forma que devuelve cargarDatos() del backend.
+export const DATOS_DEMO = {
+  predios: PREDIOS,
+  parcelas: PARCELAS,
+  cultivos: CULTIVOS,
+  campanas: CAMPANAS,
+  labores: LABORES,
+  cosechas: COSECHAS,
+  incidencias: INCIDENCIAS,
+} as const;
