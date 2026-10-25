@@ -2,6 +2,47 @@
 
 Sistema de gestión de lotes agrícolas: predios, parcelas, campañas, labores, insumos y cosechas.
 
+## Inicio rápido (sin instalar Java, Node ni PostgreSQL)
+
+Solo hace falta **Docker** ([Docker Desktop](https://www.docker.com/products/docker-desktop/) en Windows/Mac).
+
+| Sistema | Encender | Apagar |
+|---|---|---|
+| Windows | doble clic en **`iniciar.cmd`** | doble clic en `detener.cmd` |
+| Linux / Mac | `./iniciar.sh` | `./detener.sh` |
+
+Se abre solo en **http://localhost:8080**. La primera vez tarda unos minutos porque arma todo; después arranca en segundos y los datos quedan guardados.
+
+| Entrar como | Email | Contraseña |
+|---|---|---|
+| Administrador (ve todo) | `sergio@agrocontrol.com` | `agro123` |
+| Jefe de campo | `jefe@agrocontrol.com` | `agro123` |
+| Operario | `operario1@agrocontrol.com` | `agro123` |
+| Almacenero | `almacen@agrocontrol.com` | `agro123` |
+| Supervisor | `supervisor@agrocontrol.com` | `agro123` |
+
+En la pantalla de login también hay un botón por rol que completa el usuario. Para empezar con la base limpia: `docker compose down -v` y volver a iniciar.
+
+### ¿Algo no anda?
+
+| Mensaje | Qué hacer |
+|---|---|
+| "Falta Docker" / "Docker no está abierto" | Instalar o abrir Docker Desktop y esperar a que diga *running* |
+| "port is already allocated" (8080 o 5433) | Otra cosa usa ese puerto: cerrar el backend que esté corriendo con `mvn`/IntelliJ, o el otro Postgres |
+| "No respondió a tiempo" | Ver el error con `docker compose logs app` |
+| La web dice "Debe iniciar sesión" | La sesión venció (dura 8 h): volver a entrar |
+
+### Para programar
+
+```bash
+docker compose up -d db                          # 1. solo la base (puerto 5433)
+cd backend                                       # 2. API en http://localhost:8080
+AGROCONTROL_DB_URL=jdbc:postgresql://localhost:5433/agrocontrol ./mvnw spring-boot:run
+cd frontend && npm install && npm run dev        # 3. en otra terminal: web en http://localhost:5173
+```
+
+`./mvnw` (o `mvnw.cmd` en Windows) descarga Maven solo: no hace falta instalarlo. Las pruebas: `./mvnw test` en `backend/` y `npm run test:run` en `frontend/`; GitHub las corre en cada PR (`.github/workflows/ci.yml`).
+
 ## Capturas
 
 | Panel principal | Predios |
@@ -16,6 +57,8 @@ Sistema de gestión de lotes agrícolas: predios, parcelas, campañas, labores, 
 
 ```
 AgroControl/
+├── iniciar.sh / .cmd   Arranca todo con Docker (y detener.sh / .cmd lo apaga)
+├── compose.yaml        Base de datos + aplicación
 ├── backend/            API REST · Java 21 + Spring Boot + JPA + Flyway
 ├── frontend/           Web · React + TypeScript + Vite
 ├── agrocontrol-mobile/  App móvil de las guías · React Native + TypeScript (Expo)
@@ -102,11 +145,11 @@ Con el backend en marcha (`http://localhost:8080`). Swagger UI: `http://localhos
 | Predios | `GET/POST /api/predios`, `GET/PUT/DELETE /api/predios/{id}` | No se borra un predio con parcelas (409) |
 | Parcelas | `GET/POST /api/parcelas?predioId=`, `GET/PUT/DELETE /api/parcelas/{id}` | Código único por predio (409); no se borra con campañas (409) |
 | Cultivos | `GET/POST /api/cultivos` | Nombre único (409) |
-| Campañas | `GET/POST /api/campanas?parcelaId=`, `POST /{id}/iniciar`, `POST /{id}/finalizar` | Una campaña abierta por parcela (409); transiciones PLANIFICADA → EN_CURSO → FINALIZADA |
-| Labores | `GET/POST /api/labores?campanaId=`, `POST /{id}/ejecutar`, `GET/POST /{id}/consumos`, `GET /asignaciones`, `POST /{id}/asignaciones` | No se planifica, ejecuta ni consume en una campaña finalizada (409); el consumo descuenta stock y registra una SALIDA en la misma transacción; el operario solo toca sus labores asignadas (403) |
+| Campañas | `GET/POST /api/campanas?parcelaId=`, `POST /{id}/iniciar`, `POST /{id}/finalizar`, `GET /{id}/avance` | Una campaña abierta por parcela (409); transiciones PLANIFICADA → EN_CURSO → FINALIZADA |
+| Labores | `GET/POST /api/labores?campanaId=`, `POST /{id}/iniciar`, `POST /{id}/ejecutar`, `GET/POST /{id}/consumos`, `GET /asignaciones`, `POST /{id}/asignaciones` | No se planifica, ejecuta ni consume en una campaña finalizada (409); el consumo descuenta stock y registra una SALIDA en la misma transacción; el operario solo toca sus labores asignadas (403) |
 | Insumos | `GET/POST /api/insumos`, `GET/POST /api/insumos/{id}/movimientos` | El stock solo cambia por movimientos; no puede quedar negativo (409); la fila se bloquea (`SELECT … FOR UPDATE`) para que dos movimientos simultáneos no se pisen |
 | Cosechas | `GET/POST /api/cosechas?campanaId=` | Solo campañas EN_CURSO o FINALIZADA (409) |
-| Incidencias | `GET/POST /api/incidencias?parcelaId=` | Parcela, campaña o labor (al menos una) y coherentes entre sí |
+| Incidencias | `GET/POST /api/incidencias?parcelaId=`, `POST /{id}/atender`, `POST /{id}/resolver` | Parcela, campaña o labor (al menos una) y coherentes entre sí; ABIERTA → EN_ATENCION → RESUELTA (resolver pide cómo); las cierran administrador, jefe y supervisor |
 | Bitácora de campo | `GET/POST /api/labores/{id}/bitacora`, `GET /api/parcelas/{id}/bitacora` | RF-09 y RF-14. Se cierra cuando la campaña se finaliza (409); el operario solo anota en sus labores (403) |
 | Auditoría | `GET /api/auditoria?entidad=&idEntidad=` | RF-16, solo ADMINISTRADOR. Se llena sola: los casos de uso marcados con `@Auditable` (crear, editar o borrar predios y parcelas, transiciones de campaña y labor, stock, cosechas, usuarios y roles) dejan quién, qué y cuándo |
 
@@ -156,11 +199,11 @@ El perfil Maven `fullstack` compila el frontend y lo mete en el jar del backend,
 
 ```bash
 cd backend
-mvn -Pfullstack package
+./mvnw -Pfullstack package
 java -jar target/AgroControl-1.0-SNAPSHOT.jar   # web en http://localhost:8080, API en /api, Swagger en /swagger-ui.html
 ```
 
-El perfil descarga su propio Node en `backend/target/` (no hace falta tenerlo instalado) y construye con `npm run build:jar`, que usa `frontend/.env.jar` (`VITE_API_URL=/api`). Las rutas de React (`/predios`, `/parcelas`...) las resuelve `SpaConfig`, que responde `index.html`. Para desarrollar se siguen usando `mvn spring-boot:run` y `npm run dev` por separado.
+El perfil descarga su propio Node en `backend/target/` (no hace falta tenerlo instalado) y construye con `npm run build:jar`, que usa `frontend/.env.jar` (`VITE_API_URL=/api`). Las rutas de React (`/predios`, `/parcelas`...) las resuelve `SpaConfig`, que responde `index.html`. Para desarrollar se siguen usando `./mvnw spring-boot:run` y `npm run dev` por separado. El `Dockerfile` de la raíz hace exactamente esto dentro de un contenedor (lo usan `iniciar.sh` / `iniciar.cmd`).
 
 ## 13. App móvil
 Expo + React Native + TypeScript en `agrocontrol-mobile/`, la app de las guías móviles (01 y 02, más la vista de siembras). Adapta ParkFlow360 Mobile al dominio de AgroControl (Predio → Parcela, 1:N) y por ahora usa datos de demo, sin API ni login. Detalle de cada guía en [`agrocontrol-mobile/README.md`](agrocontrol-mobile/README.md).

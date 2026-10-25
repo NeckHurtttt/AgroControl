@@ -397,3 +397,26 @@ Authorization: Bearer {{token}}
 ### Auditoría filtrada por entidad
 GET http://localhost:8080/api/auditoria?entidad=CAMPANA
 Authorization: Bearer {{token}}
+
+### ==== Labor en curso, incidencias y avance ====
+
+### Iniciar una labor planificada -> 200 (EN_CURSO); repetirlo -> 409
+POST http://localhost:8080/api/labores/4/iniciar
+Authorization: Bearer {{token}}
+
+### Atender una incidencia (ABIERTA -> EN_ATENCION)
+POST http://localhost:8080/api/incidencias/1/atender
+Authorization: Bearer {{token}}
+
+### Resolver una incidencia (pide cómo se resolvió)
+POST http://localhost:8080/api/incidencias/1/resolver
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "resolucion": "Se fumigó el borde norte con insecticida"
+}
+
+### Avance de una campaña (RF-15)
+GET http://localhost:8080/api/campanas/1/avance
+Authorization: Bearer {{token}}

@@ -1,0 +1,9 @@
+.git
+.idea
+**/node_modules
+**/target
+**/dist
+agrocontrol-mobile
+docs
+database
+Laboratorios

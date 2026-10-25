@@ -1,7 +1,11 @@
-# Postgres para desarrollo: `docker compose up -d`
-# Usa el puerto 5433 para no chocar con el Postgres del sistema (5432).
-# Backend: AGROCONTROL_DB_URL=jdbc:postgresql://localhost:5433/agrocontrol mvn spring-boot:run
-# Flyway crea el esquema al arrancar el backend.
+# AgroControl con un solo comando (o con iniciar.sh / iniciar.cmd):
+#   docker compose up -d --build      → web y API en http://localhost:8080
+#   docker compose down               → lo apaga (los datos quedan guardados)
+#   docker compose down -v            → lo apaga y borra la base de datos
+#
+# Para programar con `mvn spring-boot:run` + `npm run dev`, levantar solo la base:
+#   docker compose up -d db
+#   AGROCONTROL_DB_URL=jdbc:postgresql://localhost:5433/agrocontrol ./mvnw spring-boot:run
 services:
   db:
     image: postgres:17
@@ -9,9 +13,31 @@ services:
       POSTGRES_DB: agrocontrol
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    # 5433 para no chocar con un Postgres instalado en la PC (5432)
     ports:
       - "5433:5432"
     volumes:
       - agrocontrol-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agrocontrol"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      AGROCONTROL_DB_URL: jdbc:postgresql://db:5432/agrocontrol
+      AGROCONTROL_DB_USER: postgres
+      AGROCONTROL_DB_PASSWORD: postgres
+      # Cambiar en un despliegue real (mínimo 32 caracteres)
+      AGROCONTROL_JWT_SECRET: agrocontrol-docker-clave-de-desarrollo-cambiar
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
 volumes:
   agrocontrol-db:

@@ -1,0 +1,4 @@
+# Scripts de Linux/Mac con LF y de Windows con CRLF, aunque se clone en otro sistema
+*.sh text eol=lf
+mvnw text eol=lf
+*.cmd text eol=crlf
