@@ -125,4 +125,23 @@ class LaborServiceTest {
 
         assertThatThrownBy(() -> service.verificarAsignacion(9L, 7L)).isInstanceOf(AccesoDenegadoException.class);
     }
+
+    @Test
+    void iniciarPasaAEnCursoYLuegoSePuedeEjecutar() {
+        laborPlanificada();
+        when(campanaRepository.buscarPorId(5L)).thenReturn(Optional.of(new Campana(5L, 3L, 1L, LocalDate.now())));
+        when(laborRepository.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        assertThat(service.iniciar(9L).getEstado()).isEqualTo(EstadoLabor.EN_CURSO);
+        assertThat(service.ejecutar(9L, LocalDate.now()).getEstado()).isEqualTo(EstadoLabor.EJECUTADA);
+    }
+
+    @Test
+    void noSeIniciaDosVeces() {
+        Labor labor = laborPlanificada();
+        labor.iniciar();
+        when(campanaRepository.buscarPorId(5L)).thenReturn(Optional.of(new Campana(5L, 3L, 1L, LocalDate.now())));
+
+        assertThatThrownBy(() -> service.iniciar(9L)).isInstanceOf(IllegalStateException.class);
+    }
 }

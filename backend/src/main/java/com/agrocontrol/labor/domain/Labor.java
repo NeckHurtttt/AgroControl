@@ -53,6 +53,14 @@ public class Labor {
         this.estado = EstadoLabor.PLANIFICADA;
     }
 
+    // El operario empezó el trabajo en el campo (paso opcional: también se puede ejecutar directo)
+    public void iniciar() {
+        if (estado != EstadoLabor.PLANIFICADA) {
+            throw new IllegalStateException("Solo se inicia una labor PLANIFICADA (estado actual: " + estado + ")");
+        }
+        this.estado = EstadoLabor.EN_CURSO;
+    }
+
     public void ejecutar(LocalDate fechaEjecucion) {
         if (estado == EstadoLabor.EJECUTADA) {
             throw new IllegalStateException("La labor ya fue ejecutada");

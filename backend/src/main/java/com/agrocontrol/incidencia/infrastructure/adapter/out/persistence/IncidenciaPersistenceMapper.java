@@ -9,11 +9,13 @@ public final class IncidenciaPersistenceMapper {
 
     public static Incidencia toDomain(IncidenciaJpaEntity entity) {
         return Incidencia.reconstruir(entity.getId(), entity.getParcelaId(), entity.getCampanaId(), entity.getLaborId(),
-                                      entity.getDescripcion(), entity.getUsuarioId(), entity.getFecha());
+                                      entity.getDescripcion(), entity.getUsuarioId(), entity.getFecha(),
+                                      entity.getEstado(), entity.getResolucion(), entity.getResueltaEn());
     }
 
     public static IncidenciaJpaEntity toEntity(Incidencia i) {
         return new IncidenciaJpaEntity(i.getId(), i.getParcelaId(), i.getCampanaId(), i.getLaborId(),
-                                       i.getDescripcion(), i.getUsuarioId(), i.getFecha());
+                                       i.getDescripcion(), i.getUsuarioId(), i.getFecha(), i.getEstado(),
+                                       i.getResolucion(), i.getResueltaEn());
     }
 }

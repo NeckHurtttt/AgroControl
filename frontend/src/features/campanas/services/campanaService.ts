@@ -1,9 +1,14 @@
 import { apiFetch } from '../../../api/apiClient';
+import type { AvanceCampana } from '../models/AvanceCampana';
 import type { Campana } from '../models/Campana';
 
 export type CampanaCreateRequest = Pick<Campana, 'parcelaId' | 'cultivoId' | 'fechaInicio'>;
 
 export const campanaService = {
+  avance(id: number, signal?: AbortSignal): Promise<AvanceCampana> {
+    return apiFetch<AvanceCampana>(`/campanas/${id}/avance`, { signal });
+  },
+
   listar(signal?: AbortSignal): Promise<Campana[]> {
     return apiFetch<Campana[]>('/campanas', { signal });
   },

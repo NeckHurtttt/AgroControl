@@ -1,3 +1,5 @@
+export type EstadoIncidencia = 'ABIERTA' | 'EN_ATENCION' | 'RESUELTA';
+
 export interface Incidencia {
   id: number;
   parcelaId: number | null;
@@ -6,4 +8,7 @@ export interface Incidencia {
   descripcion: string;
   usuarioId: number;
   fecha: string;
+  estado: EstadoIncidencia;
+  resolucion: string | null;
+  resueltaEn: string | null;
 }

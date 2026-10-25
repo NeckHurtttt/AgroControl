@@ -1,5 +1,6 @@
 package com.agrocontrol.incidencia.application;
 
+import com.agrocontrol.auditoria.application.Auditable;
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.incidencia.domain.Incidencia;
@@ -70,6 +71,28 @@ public class IncidenciaService {
             throw new UsuarioNoEncontradoException(usuarioId);
         }
         return incidenciaRepository.guardar(new Incidencia(null, parcelaId, campanaId, laborId, descripcion.trim(), usuarioId));
+    }
+
+    @Auditable(entidad = "INCIDENCIA", accion = "ATENDER")
+    @Transactional
+    public Incidencia atender(Long id) {
+        Incidencia incidencia = obtener(id);
+        incidencia.atender();
+        return incidenciaRepository.guardar(incidencia);
+    }
+
+    @Auditable(entidad = "INCIDENCIA", accion = "RESOLVER")
+    @Transactional
+    public Incidencia resolver(Long id, String resolucion) {
+        Incidencia incidencia = obtener(id);
+        incidencia.resolver(resolucion);
+        return incidenciaRepository.guardar(incidencia);
+    }
+
+    @Transactional(readOnly = true)
+    public Incidencia obtener(Long id) {
+        return incidenciaRepository.buscarPorId(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe la incidencia con id: " + id));
     }
 
     private static Long coincidir(Long enviado, Long deducido, String mensaje) {

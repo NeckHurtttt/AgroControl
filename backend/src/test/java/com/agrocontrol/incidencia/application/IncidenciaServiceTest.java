@@ -2,6 +2,7 @@ package com.agrocontrol.incidencia.application;
 
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
+import com.agrocontrol.incidencia.domain.EstadoIncidencia;
 import com.agrocontrol.incidencia.domain.Incidencia;
 import com.agrocontrol.incidencia.domain.IncidenciaRepository;
 import com.agrocontrol.labor.domain.Labor;
@@ -115,5 +116,34 @@ class IncidenciaServiceTest {
 
         assertThatThrownBy(() -> service.registrar(3L, null, null, "Algo pasó", 7L))
                 .isInstanceOf(UsuarioNoEncontradoException.class);
+    }
+
+    private Incidencia abierta() {
+        Incidencia incidencia = new Incidencia(4L, 3L, null, null, "Helada", 7L);
+        when(incidenciaRepository.buscarPorId(4L)).thenReturn(Optional.of(incidencia));
+        return incidencia;
+    }
+
+    @Test
+    void seAtiendeYLuegoSeResuelve() {
+        abierta();
+        guardaLoRecibido();
+
+        assertThat(service.atender(4L).getEstado()).isEqualTo(EstadoIncidencia.EN_ATENCION);
+        Incidencia resuelta = service.resolver(4L, "  Se cubrió con manta térmica ");
+
+        assertThat(resuelta.getEstado()).isEqualTo(EstadoIncidencia.RESUELTA);
+        assertThat(resuelta.getResolucion()).isEqualTo("Se cubrió con manta térmica");
+        assertThat(resuelta.getResueltaEn()).isNotNull();
+    }
+
+    @Test
+    void noSeResuelveSinDecirComoNiDosVeces() {
+        Incidencia incidencia = abierta();
+
+        assertThatThrownBy(() -> service.resolver(4L, " ")).isInstanceOf(IllegalArgumentException.class);
+        incidencia.resolver("Listo");
+        assertThatThrownBy(() -> service.resolver(4L, "Otra vez")).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> service.atender(4L)).isInstanceOf(IllegalStateException.class);
     }
 }

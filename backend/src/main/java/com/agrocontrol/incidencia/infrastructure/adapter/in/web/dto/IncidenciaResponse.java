@@ -1,5 +1,6 @@
 package com.agrocontrol.incidencia.infrastructure.adapter.in.web.dto;
 
+import com.agrocontrol.incidencia.domain.EstadoIncidencia;
 import com.agrocontrol.incidencia.domain.Incidencia;
 
 import java.time.LocalDateTime;
@@ -11,7 +12,10 @@ public record IncidenciaResponse(
         Long laborId,
         String descripcion,
         Long usuarioId,
-        LocalDateTime fecha
+        LocalDateTime fecha,
+        EstadoIncidencia estado,
+        String resolucion,
+        LocalDateTime resueltaEn
 ) {
     public static IncidenciaResponse desde(Incidencia incidencia) {
         return new IncidenciaResponse(
@@ -21,7 +25,10 @@ public record IncidenciaResponse(
                 incidencia.getLaborId(),
                 incidencia.getDescripcion(),
                 incidencia.getUsuarioId(),
-                incidencia.getFecha()
+                incidencia.getFecha(),
+                incidencia.getEstado(),
+                incidencia.getResolucion(),
+                incidencia.getResueltaEn()
         );
     }
 }

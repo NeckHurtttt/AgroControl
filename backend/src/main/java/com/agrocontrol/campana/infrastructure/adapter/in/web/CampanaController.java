@@ -1,5 +1,7 @@
 package com.agrocontrol.campana.infrastructure.adapter.in.web;
 
+import com.agrocontrol.campana.application.AvanceCampana;
+import com.agrocontrol.campana.application.AvanceCampanaService;
 import com.agrocontrol.campana.application.CampanaService;
 import com.agrocontrol.campana.infrastructure.adapter.in.web.dto.CampanaResponse;
 import com.agrocontrol.campana.infrastructure.adapter.in.web.dto.CrearCampanaRequest;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -22,9 +25,11 @@ import java.util.List;
 public class CampanaController {
 
     private final CampanaService service;
+    private final AvanceCampanaService avanceService;
 
-    public CampanaController(CampanaService service) {
+    public CampanaController(CampanaService service, AvanceCampanaService avanceService) {
         this.service = service;
+        this.avanceService = avanceService;
     }
 
     @GetMapping
@@ -52,5 +57,11 @@ public class CampanaController {
     @PostMapping("/{id}/finalizar")
     public CampanaResponse finalizar(@PathVariable Long id, @Valid @RequestBody FinalizarCampanaRequest request) {
         return CampanaResponse.desde(service.finalizar(id, request.fechaFin()));
+    }
+
+    // RF-15: labores hechas, insumos gastados, cosecha y problemas abiertos de la campaña
+    @GetMapping("/{id}/avance")
+    public AvanceCampana avance(@PathVariable Long id) {
+        return avanceService.calcular(id, LocalDate.now());
     }
 }

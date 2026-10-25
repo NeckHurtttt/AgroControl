@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
   const areaTotal = parcelas.reduce((suma, parcela) => suma + (parcela.areaHa ?? 0), 0);
   const campanasAbiertas = campanas.filter((campana) => campana.estado !== 'FINALIZADA');
-  const pendientes = labores.filter((labor) => labor.estado === 'PLANIFICADA');
+  const pendientes = labores.filter((labor) => labor.estado !== 'EJECUTADA');
   const proximasLabores = [...pendientes].sort((a, b) => a.fechaPlan.localeCompare(b.fechaPlan)).slice(0, 5);
   const sinAsignar = pendientes.filter((labor) => !asignaciones.some((a) => a.laborId === labor.id)).length;
   const insumosSinStock = insumos.filter((insumo) => insumo.stockActual <= 0).length;

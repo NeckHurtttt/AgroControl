@@ -11,13 +11,17 @@ public class Incidencia {
     private String descripcion;
     private Long usuarioId;
     private LocalDateTime fecha = LocalDateTime.now();
+    private EstadoIncidencia estado = EstadoIncidencia.ABIERTA;
+    private String resolucion;
+    private LocalDateTime resueltaEn;
 
     private Incidencia() {
     }
 
     // Rehidrata un registro ya guardado (lo usa el mapper de persistencia): no repite las validaciones de alta.
     public static Incidencia reconstruir(Long id, Long parcelaId, Long campanaId, Long laborId, String descripcion,
-                                         Long usuarioId, LocalDateTime fecha) {
+                                         Long usuarioId, LocalDateTime fecha, EstadoIncidencia estado,
+                                         String resolucion, LocalDateTime resueltaEn) {
         Incidencia i = new Incidencia();
         i.id = id;
         i.parcelaId = parcelaId;
@@ -26,6 +30,9 @@ public class Incidencia {
         i.descripcion = descripcion;
         i.usuarioId = usuarioId;
         i.fecha = fecha;
+        i.estado = estado;
+        i.resolucion = resolucion;
+        i.resueltaEn = resueltaEn;
         return i;
     }
 
@@ -44,6 +51,27 @@ public class Incidencia {
         this.usuarioId = usuarioId;
     }
 
+    // Alguien se hace cargo: ya no está sin atender
+    public void atender() {
+        if (estado != EstadoIncidencia.ABIERTA) {
+            throw new IllegalStateException("Solo se atiende una incidencia ABIERTA (estado actual: " + estado + ")");
+        }
+        this.estado = EstadoIncidencia.EN_ATENCION;
+    }
+
+    // Se cierra con lo que se hizo para solucionarla; puede resolverse sin pasar por EN_ATENCION
+    public void resolver(String resolucion) {
+        if (estado == EstadoIncidencia.RESUELTA) {
+            throw new IllegalStateException("La incidencia ya está resuelta");
+        }
+        if (resolucion == null || resolucion.isBlank()) {
+            throw new IllegalArgumentException("Indique cómo se resolvió la incidencia");
+        }
+        this.estado = EstadoIncidencia.RESUELTA;
+        this.resolucion = resolucion.trim();
+        this.resueltaEn = LocalDateTime.now();
+    }
+
     public Long getId() { return id; }
     public Long getParcelaId() { return parcelaId; }
     public Long getCampanaId() { return campanaId; }
@@ -51,4 +79,7 @@ public class Incidencia {
     public String getDescripcion() { return descripcion; }
     public Long getUsuarioId() { return usuarioId; }
     public LocalDateTime getFecha() { return fecha; }
+    public EstadoIncidencia getEstado() { return estado; }
+    public String getResolucion() { return resolucion; }
+    public LocalDateTime getResueltaEn() { return resueltaEn; }
 }

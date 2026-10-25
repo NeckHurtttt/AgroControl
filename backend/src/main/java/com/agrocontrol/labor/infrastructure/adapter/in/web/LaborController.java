@@ -70,6 +70,12 @@ public class LaborController {
                 .body(AsignacionResponse.desde(laborService.asignar(id, request.usuarioId())));
     }
 
+    @PostMapping("/{id}/iniciar")
+    public LaborResponse iniciar(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        verificarOperario(id, jwt);
+        return LaborResponse.desde(laborService.iniciar(id));
+    }
+
     @PostMapping("/{id}/ejecutar")
     public LaborResponse ejecutar(@PathVariable Long id, @Valid @RequestBody EjecutarLaborRequest request,
                                   @AuthenticationPrincipal Jwt jwt) {

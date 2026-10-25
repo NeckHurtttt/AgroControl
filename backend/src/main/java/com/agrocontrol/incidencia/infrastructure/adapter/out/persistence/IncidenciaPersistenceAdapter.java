@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class IncidenciaPersistenceAdapter implements IncidenciaRepository {
@@ -20,6 +21,11 @@ public class IncidenciaPersistenceAdapter implements IncidenciaRepository {
     public Incidencia guardar(Incidencia incidencia) {
         return IncidenciaPersistenceMapper.toDomain(
                        jpaRepository.save(IncidenciaPersistenceMapper.toEntity(incidencia)));
+    }
+
+    @Override
+    public Optional<Incidencia> buscarPorId(Long id) {
+        return jpaRepository.findById(id).map(IncidenciaPersistenceMapper::toDomain);
     }
 
     @Override

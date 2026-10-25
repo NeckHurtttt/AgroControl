@@ -86,7 +86,21 @@ export default function LaboresPage() {
     );
 
   const visibles = filtroCampana ? labores.filter((labor) => labor.campanaId === Number(filtroCampana)) : labores;
-  const pendientes = visibles.filter((labor) => labor.estado === 'PLANIFICADA').length;
+  const pendientes = visibles.filter((labor) => labor.estado !== 'EJECUTADA').length;
+  const [accionError, setAccionError] = useState('');
+
+  const iniciar = async (labor: Labor) => {
+    setAccionError('');
+    try {
+      const actualizada = await laborService.iniciar(labor.id);
+      setDatos((prev) => ({
+        ...prev,
+        labores: prev.labores.map((item) => (item.id === actualizada.id ? actualizada : item)),
+      }));
+    } catch (err) {
+      setAccionError(err instanceof Error ? err.message : 'No se pudo iniciar la labor');
+    }
+  };
 
   const abrirPanel = (panel: 'ejecutar' | 'insumos' | 'asignar' | 'bitacora', labor: Labor) => {
     setEjecutando(panel === 'ejecutar' ? labor : null);
@@ -173,6 +187,8 @@ export default function LaboresPage() {
         />
       )}
 
+      {accionError && <div className="form-error">{accionError}</div>}
+
       {loading && <div className="state-card">Cargando labores...</div>}
       {!loading && error && <div className="state-card error">{error}</div>}
       {!loading && !error && (
@@ -181,6 +197,7 @@ export default function LaboresPage() {
             stats={[
               { etiqueta: esOperario ? 'Asignadas a mí' : 'Labores', valor: visibles.length },
               { etiqueta: 'Pendientes', valor: pendientes },
+              { etiqueta: 'En curso', valor: visibles.filter((labor) => labor.estado === 'EN_CURSO').length },
               { etiqueta: 'Ejecutadas', valor: visibles.length - pendientes },
             ]}
           />
@@ -202,6 +219,7 @@ export default function LaboresPage() {
               catalogos={catalogos}
               asignados={puedePlanificar ? asignadosPorLabor : undefined}
               onAsignar={puedePlanificar ? (labor) => abrirPanel('asignar', labor) : undefined}
+              onIniciar={puedeEjecutar ? iniciar : undefined}
               onEjecutar={puedeEjecutar ? (labor) => abrirPanel('ejecutar', labor) : undefined}
               onInsumos={(labor) => abrirPanel('insumos', labor)}
               onBitacora={(labor) => abrirPanel('bitacora', labor)}

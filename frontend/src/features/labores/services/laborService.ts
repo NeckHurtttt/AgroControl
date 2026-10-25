@@ -20,6 +20,10 @@ export const laborService = {
     });
   },
 
+  iniciar(id: number): Promise<Labor> {
+    return apiFetch<Labor>(`/labores/${id}/iniciar`, { method: 'POST' });
+  },
+
   ejecutar(id: number, fechaEjecucion: string): Promise<Labor> {
     return apiFetch<Labor>(`/labores/${id}/ejecutar`, {
       method: 'POST',

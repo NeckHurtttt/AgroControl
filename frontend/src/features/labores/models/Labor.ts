@@ -1,4 +1,4 @@
-export type EstadoLabor = 'PLANIFICADA' | 'EJECUTADA';
+export type EstadoLabor = 'PLANIFICADA' | 'EN_CURSO' | 'EJECUTADA';
 
 export interface Labor {
   id: number;

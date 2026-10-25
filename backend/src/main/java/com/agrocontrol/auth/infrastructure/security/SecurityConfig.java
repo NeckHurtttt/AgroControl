@@ -79,7 +79,7 @@ public class SecurityConfig {
 
                         // Labores: el jefe planifica y asigna; el operario ejecuta y registra consumos
                         // (solo de sus labores asignadas, RN-05, se valida en LaborController)
-                        .requestMatchers(HttpMethod.POST, "/api/labores/*/ejecutar", "/api/labores/*/consumos")
+                        .requestMatchers(HttpMethod.POST, "/api/labores/*/iniciar", "/api/labores/*/ejecutar", "/api/labores/*/consumos")
                                 .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, OPERARIO)
                         // Observaciones de campo (RF-09): también el supervisor; el operario solo en sus labores
                         .requestMatchers(HttpMethod.POST, "/api/labores/*/bitacora")
@@ -99,7 +99,10 @@ public class SecurityConfig {
                                 .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, ALMACENERO, SUPERVISOR)
                         .requestMatchers("/api/cosechas/**").hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, ALMACENERO)
 
-                        // Incidencias (RF-12): las reportan quienes están o supervisan el campo
+                        // Incidencias (RF-12): las reportan quienes están o supervisan el campo;
+                        // atenderlas y cerrarlas es tarea de quien gestiona (el operario no las cierra)
+                        .requestMatchers(HttpMethod.POST, "/api/incidencias/*/atender", "/api/incidencias/*/resolver")
+                                .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, SUPERVISOR)
                         .requestMatchers("/api/incidencias/**")
                                 .hasAnyRole(ADMINISTRADOR, JEFE_DE_CAMPO, OPERARIO, SUPERVISOR)
 

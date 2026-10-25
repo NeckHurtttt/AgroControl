@@ -34,6 +34,7 @@ export type Accion =
   | 'cosechas.registrar'
   | 'incidencias.reportar'
   | 'bitacora.registrar'
+  | 'incidencias.gestionar'
   | 'parcelas.verBitacora'
   | 'usuarios.gestionar';
 
@@ -50,6 +51,8 @@ const ACCIONES: Record<Accion, Rol[]> = {
   // RF-12 y RF-09: las registran quienes están o supervisan el campo
   'incidencias.reportar': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'OPERARIO', 'SUPERVISOR'],
   'bitacora.registrar': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'OPERARIO', 'SUPERVISOR'],
+  // Atender y cerrar incidencias: quien gestiona, no el operario que la reportó
+  'incidencias.gestionar': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'SUPERVISOR'],
   'parcelas.verBitacora': ['ADMINISTRADOR', 'JEFE_DE_CAMPO', 'SUPERVISOR'],
   'usuarios.gestionar': ['ADMINISTRADOR'],
 };

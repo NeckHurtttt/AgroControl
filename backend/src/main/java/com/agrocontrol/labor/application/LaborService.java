@@ -63,6 +63,17 @@ public class LaborService {
                 new Labor(null, campanaId, campana.getParcelaId(), tipo.trim().toUpperCase(), fechaPlan));
     }
 
+    @Auditable(entidad = "LABOR", accion = "INICIAR")
+    @Transactional
+    public Labor iniciar(Long id) {
+        Labor labor = obtener(id);
+        if (campanaDe(labor).estaFinalizada()) {
+            throw new ConflictoException("No se pueden iniciar labores de una campaña finalizada");
+        }
+        labor.iniciar();
+        return laborRepository.guardar(labor);
+    }
+
     @Auditable(entidad = "LABOR", accion = "EJECUTAR")
     @Transactional
     public Labor ejecutar(Long id, LocalDate fechaEjecucion) {
@@ -95,8 +106,8 @@ public class LaborService {
     @Transactional
     public AsignacionLabor asignar(Long laborId, Long usuarioId) {
         Labor labor = obtener(laborId);
-        if (labor.getEstado() != EstadoLabor.PLANIFICADA) {
-            throw new ConflictoException("Solo se asignan operarios a labores planificadas");
+        if (labor.getEstado() == EstadoLabor.EJECUTADA) {
+            throw new ConflictoException("La labor ya fue ejecutada: no se le asignan operarios");
         }
         Usuario usuario = usuarioRepository.buscarPorId(usuarioId)
                 .orElseThrow(() -> new UsuarioNoEncontradoException(usuarioId));

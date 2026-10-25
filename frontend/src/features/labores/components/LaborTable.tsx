@@ -9,6 +9,7 @@ interface LaborTableProps {
   campanas: Campana[];
   catalogos: Catalogos;
   // Cada acción es opcional: la página solo pasa las que el rol puede usar
+  onIniciar?: (labor: Labor) => void;
   onEjecutar?: (labor: Labor) => void;
   onInsumos: (labor: Labor) => void;
   onBitacora: (labor: Labor) => void;
@@ -21,6 +22,7 @@ export default function LaborTable({
   labores,
   campanas,
   catalogos,
+  onIniciar,
   onEjecutar,
   onInsumos,
   onBitacora,
@@ -62,10 +64,13 @@ export default function LaborTable({
                   <td><StatusBadge estado={labor.estado} /></td>
                   <td>
                     <div className="table-actions">
-                      {onAsignar && labor.estado === 'PLANIFICADA' && (
+                      {onAsignar && labor.estado !== 'EJECUTADA' && (
                         <button type="button" className="btn-link" onClick={() => onAsignar(labor)}>Asignar</button>
                       )}
-                      {onEjecutar && labor.estado === 'PLANIFICADA' && (
+                      {onIniciar && labor.estado === 'PLANIFICADA' && (
+                        <button type="button" className="btn-link" onClick={() => onIniciar(labor)}>Iniciar</button>
+                      )}
+                      {onEjecutar && labor.estado !== 'EJECUTADA' && (
                         <button type="button" className="btn-link" onClick={() => onEjecutar(labor)}>Ejecutar</button>
                       )}
                       <button type="button" className="btn-link" onClick={() => onInsumos(labor)}>Insumos</button>

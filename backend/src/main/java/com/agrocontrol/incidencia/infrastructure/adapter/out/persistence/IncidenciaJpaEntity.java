@@ -1,7 +1,10 @@
 package com.agrocontrol.incidencia.infrastructure.adapter.out.persistence;
 
+import com.agrocontrol.incidencia.domain.EstadoIncidencia;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,11 +39,22 @@ public class IncidenciaJpaEntity {
     @Column(name = "fecha", nullable = false, updatable = false)
     private LocalDateTime fecha;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false, length = 20)
+    private EstadoIncidencia estado;
+
+    @Column(name = "resolucion", columnDefinition = "text")
+    private String resolucion;
+
+    @Column(name = "resuelta_en")
+    private LocalDateTime resueltaEn;
+
     protected IncidenciaJpaEntity() {
     }
 
     public IncidenciaJpaEntity(Long id, Long parcelaId, Long campanaId, Long laborId, String descripcion,
-                               Long usuarioId, LocalDateTime fecha) {
+                               Long usuarioId, LocalDateTime fecha, EstadoIncidencia estado, String resolucion,
+                               LocalDateTime resueltaEn) {
         this.id = id;
         this.parcelaId = parcelaId;
         this.campanaId = campanaId;
@@ -48,6 +62,9 @@ public class IncidenciaJpaEntity {
         this.descripcion = descripcion;
         this.usuarioId = usuarioId;
         this.fecha = fecha;
+        this.estado = estado;
+        this.resolucion = resolucion;
+        this.resueltaEn = resueltaEn;
     }
 
     public Long getId() { return id; }
@@ -57,4 +74,7 @@ public class IncidenciaJpaEntity {
     public String getDescripcion() { return descripcion; }
     public Long getUsuarioId() { return usuarioId; }
     public LocalDateTime getFecha() { return fecha; }
+    public EstadoIncidencia getEstado() { return estado; }
+    public String getResolucion() { return resolucion; }
+    public LocalDateTime getResueltaEn() { return resueltaEn; }
 }

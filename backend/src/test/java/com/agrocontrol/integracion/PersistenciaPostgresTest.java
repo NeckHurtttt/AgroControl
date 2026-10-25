@@ -3,9 +3,11 @@ package com.agrocontrol.integracion;
 import com.agrocontrol.auditoria.application.AuditoriaService;
 import com.agrocontrol.auditoria.domain.Auditoria;
 import com.agrocontrol.bitacora.application.BitacoraService;
+import com.agrocontrol.campana.application.AvanceCampanaService;
 import com.agrocontrol.campana.application.CampanaService;
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.EstadoCampana;
+import com.agrocontrol.incidencia.application.IncidenciaService;
 import com.agrocontrol.insumo.application.InventarioService;
 import com.agrocontrol.insumo.domain.Insumo;
 import com.agrocontrol.insumo.domain.TipoMovimiento;
@@ -52,6 +54,10 @@ class PersistenciaPostgresTest {
     @Autowired
     private AuditoriaService auditoriaService;
     @Autowired
+    private IncidenciaService incidenciaService;
+    @Autowired
+    private AvanceCampanaService avanceCampanaService;
+    @Autowired
     private JdbcTemplate jdbc;
 
     @Test
@@ -59,7 +65,7 @@ class PersistenciaPostgresTest {
         assertThat(parcelaRepository.listarTodas()).isNotEmpty();
         Integer version = jdbc.queryForObject(
                 "SELECT max(version::int) FROM flyway_schema_history WHERE success", Integer.class);
-        assertThat(version).isEqualTo(5);
+        assertThat(version).isEqualTo(6);
     }
 
     @Test
@@ -84,6 +90,30 @@ class PersistenciaPostgresTest {
         List<Auditoria> rastro = auditoriaService.listar("campana", creada.getId());
         assertThat(rastro).extracting(Auditoria::getAccion).containsExactly("INICIAR", "CREAR");
         assertThat(auditoriaService.listar(null, null)).isNotEmpty();
+    }
+
+    @Test
+    void laIncidenciaResueltaGuardaComoYCuando() {
+        Long usuarioId = jdbc.queryForObject("SELECT min(id_usuario) FROM agrocontrol.usuario", Long.class);
+        Long parcelaId = jdbc.queryForObject("SELECT min(id_parcela) FROM agrocontrol.parcela", Long.class);
+        Long id = incidenciaService.registrar(parcelaId, null, null, "Granizo en el lote norte", usuarioId).getId();
+
+        incidenciaService.resolver(id, "Se resembró 1 ha");
+
+        assertThat(jdbc.queryForObject(
+                "SELECT estado || '|' || resolucion FROM agrocontrol.incidencia WHERE id_incidencia = ?", String.class, id))
+                .isEqualTo("RESUELTA|Se resembró 1 ha");
+        assertThatThrownBy(() -> jdbc.update(
+                "UPDATE agrocontrol.incidencia SET resolucion = NULL WHERE id_incidencia = ?", id))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void elAvanceDeLaCampanaSaleDeLosDatosReales() {
+        Long campanaId = jdbc.queryForObject("SELECT min(id_campana) FROM agrocontrol.labor", Long.class);
+        int labores = jdbc.queryForObject("SELECT count(*) FROM agrocontrol.labor WHERE id_campana = ?", Integer.class, campanaId);
+
+        assertThat(avanceCampanaService.calcular(campanaId, LocalDate.now()).laboresTotal()).isEqualTo(labores);
     }
 
     @Test

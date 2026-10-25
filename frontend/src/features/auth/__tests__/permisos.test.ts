@@ -23,6 +23,12 @@ describe('permisos por rol', () => {
     expect(puede('ALMACENERO', 'bitacora.registrar')).toBe(false);
   });
 
+  it('el operario reporta incidencias pero no las cierra', () => {
+    expect(puede('OPERARIO', 'incidencias.reportar')).toBe(true);
+    expect(puede('OPERARIO', 'incidencias.gestionar')).toBe(false);
+    expect(puede('JEFE_DE_CAMPO', 'incidencias.gestionar')).toBe(true);
+  });
+
   it('solo el administrador ve la auditoría', () => {
     expect(puedeVer('ADMINISTRADOR', 'auditoria')).toBe(true);
     expect(puedeVer('SUPERVISOR', 'auditoria')).toBe(false);

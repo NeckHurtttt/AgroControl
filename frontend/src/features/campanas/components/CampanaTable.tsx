@@ -9,10 +9,11 @@ interface CampanaTableProps {
   // Sin handlers (rol de solo lectura) no se muestra la columna de acciones
   onIniciar?: (campana: Campana) => void;
   onFinalizar?: (campana: Campana) => void;
+  onAvance?: (campana: Campana) => void;
 }
 
-export default function CampanaTable({ campanas, catalogos, onIniciar, onFinalizar }: CampanaTableProps) {
-  const conAcciones = Boolean(onIniciar || onFinalizar);
+export default function CampanaTable({ campanas, catalogos, onIniciar, onFinalizar, onAvance }: CampanaTableProps) {
+  const conAcciones = Boolean(onIniciar || onFinalizar || onAvance);
 
   if (campanas.length === 0) {
     return <div className="empty-state">No hay campañas registradas.</div>;
@@ -51,7 +52,9 @@ export default function CampanaTable({ campanas, catalogos, onIniciar, onFinaliz
                     {onFinalizar && campana.estado !== 'FINALIZADA' && (
                       <button type="button" className="btn-link" onClick={() => onFinalizar(campana)}>Finalizar</button>
                     )}
-                    {campana.estado === 'FINALIZADA' && <span className="muted">—</span>}
+                    {onAvance && (
+                      <button type="button" className="btn-link" onClick={() => onAvance(campana)}>Avance</button>
+                    )}
                   </div>
                 </td>
                 )}

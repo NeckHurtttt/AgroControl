@@ -14,7 +14,9 @@ import { predioService } from '../../predios/services/predioService';
 import type { Usuario } from '../../usuarios/models/Usuario';
 import { nombreUsuario, usuarioService } from '../../usuarios/services/usuarioService';
 import { useAuth } from '../../auth/context/useAuth';
+import StatusBadge from '../../../components/ui/StatusBadge';
 import IncidenciaForm from '../components/IncidenciaForm';
+import ResolverPanel from '../components/ResolverPanel';
 import type { Incidencia } from '../models/Incidencia';
 import { incidenciaService } from '../services/incidenciaService';
 
@@ -41,7 +43,26 @@ export default function IncidenciasPage() {
   });
   const { incidencias, campanas, labores, usuarios, catalogos } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const puedeReportar = useAuth().puede('incidencias.reportar');
+  const { puede } = useAuth();
+  const puedeReportar = puede('incidencias.reportar');
+  const puedeGestionar = puede('incidencias.gestionar');
+  const [resolviendo, setResolviendo] = useState<Incidencia | null>(null);
+  const [accionError, setAccionError] = useState('');
+
+  const reemplazar = (actualizada: Incidencia) =>
+    setDatos((prev) => ({
+      ...prev,
+      incidencias: prev.incidencias.map((item) => (item.id === actualizada.id ? actualizada : item)),
+    }));
+
+  const atender = async (incidencia: Incidencia) => {
+    setAccionError('');
+    try {
+      reemplazar(await incidenciaService.atender(incidencia.id));
+    } catch (err) {
+      setAccionError(err instanceof Error ? err.message : 'No se pudo atender');
+    }
+  };
   // Se fija al montar la página para que el conteo no cambie entre renders.
   const [haceUnaSemana] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
 
@@ -51,6 +72,7 @@ export default function IncidenciasPage() {
   };
   const tipoLabor = (id: number | null) => labores.find((item) => item.id === id)?.tipo ?? '—';
   const parcelasAfectadas = new Set(incidencias.map((incidencia) => incidencia.parcelaId)).size;
+  const abiertas = incidencias.filter((incidencia) => incidencia.estado !== 'RESUELTA').length;
   const ultimaSemana = incidencias.filter((incidencia) => new Date(incidencia.fecha).getTime() >= haceUnaSemana).length;
 
   return (
@@ -77,12 +99,27 @@ export default function IncidenciasPage() {
         />
       )}
 
+      {resolviendo && (
+        <ResolverPanel
+          key={resolviendo.id}
+          incidencia={resolviendo}
+          onResuelta={(resuelta) => {
+            reemplazar(resuelta);
+            setResolviendo(null);
+          }}
+          onCerrar={() => setResolviendo(null)}
+        />
+      )}
+
+      {accionError && <div className="form-error">{accionError}</div>}
+
       {loading && <div className="state-card">Cargando incidencias...</div>}
       {!loading && error && <div className="state-card error">{error}</div>}
       {!loading && !error && (
         <>
           <StatsGrid
             stats={[
+              { etiqueta: 'Sin resolver', valor: abiertas },
               { etiqueta: 'Registradas', valor: incidencias.length },
               { etiqueta: 'Últimos 7 días', valor: ultimaSemana },
               { etiqueta: 'Parcelas afectadas', valor: parcelasAfectadas },
@@ -95,7 +132,7 @@ export default function IncidenciasPage() {
               <div className="table-responsive">
                 <table className="data-table">
                   <thead>
-                    <tr><th>Fecha</th><th>Parcela</th><th>Cultivo</th><th>Labor</th><th>Descripción</th><th>Reportado por</th></tr>
+                    <tr><th>Fecha</th><th>Parcela</th><th>Cultivo</th><th>Labor</th><th>Descripción</th><th>Reportado por</th><th>Estado</th>{puedeGestionar && <th>Acciones</th>}</tr>
                   </thead>
                   <tbody>
                     {incidencias.map((incidencia) => (
@@ -106,6 +143,24 @@ export default function IncidenciasPage() {
                         <td>{tipoLabor(incidencia.laborId)}</td>
                         <td>{incidencia.descripcion}</td>
                         <td>{nombreUsuario(usuarios, incidencia.usuarioId)}</td>
+                        <td>
+                          <StatusBadge estado={incidencia.estado} />
+                          {incidencia.resolucion && <small className="muted celda-nota">{incidencia.resolucion}</small>}
+                        </td>
+                        {puedeGestionar && (
+                          <td>
+                            <div className="table-actions">
+                              {incidencia.estado === 'ABIERTA' && (
+                                <button type="button" className="btn-link" onClick={() => atender(incidencia)}>Atender</button>
+                              )}
+                              {incidencia.estado !== 'RESUELTA' ? (
+                                <button type="button" className="btn-link" onClick={() => setResolviendo(incidencia)}>Resolver</button>
+                              ) : (
+                                <span className="muted">—</span>
+                              )}
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

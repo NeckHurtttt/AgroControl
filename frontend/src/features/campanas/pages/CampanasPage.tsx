@@ -8,10 +8,11 @@ import { parcelaService } from '../../parcelas/services/parcelaService';
 import { predioService } from '../../predios/services/predioService';
 import { useAuth } from '../../auth/context/useAuth';
 import CampanaForm from '../components/CampanaForm';
+import AvancePanel from '../components/AvancePanel';
 import CampanaTable from '../components/CampanaTable';
 import type { Campana } from '../models/Campana';
 import { campanaService } from '../services/campanaService';
-import { etiquetaCampana } from '../utils/etiquetas';
+import { etiquetaCampana, etiquetaParcela, nombreCultivo } from '../utils/etiquetas';
 
 const cargarDatos = async (signal: AbortSignal) => {
   const [campanas, predios, parcelas, cultivos] = await Promise.all([
@@ -32,6 +33,7 @@ export default function CampanasPage() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const puedeGestionar = useAuth().puede('campanas.gestionar');
   const [finalizando, setFinalizando] = useState<Campana | null>(null);
+  const [conAvance, setConAvance] = useState<Campana | null>(null);
   const [accionError, setAccionError] = useState('');
 
   const reemplazar = (actualizada: Campana) =>
@@ -100,9 +102,18 @@ export default function CampanasPage() {
               { etiqueta: 'Finalizadas', valor: contar('FINALIZADA') },
             ]}
           />
+          {conAvance && (
+            <AvancePanel
+              key={conAvance.id}
+              campana={conAvance}
+              titulo={`${nombreCultivo(conAvance.cultivoId, catalogos)} en ${etiquetaParcela(conAvance.parcelaId, catalogos)}`}
+              onCerrar={() => setConAvance(null)}
+            />
+          )}
           <CampanaTable
             campanas={campanas}
             catalogos={catalogos}
+            onAvance={setConAvance}
             onIniciar={puedeGestionar ? iniciar : undefined}
             onFinalizar={
               puedeGestionar
