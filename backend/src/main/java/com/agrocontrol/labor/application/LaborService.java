@@ -2,10 +2,18 @@ package com.agrocontrol.labor.application;
 
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
+import com.agrocontrol.auth.domain.Roles;
+import com.agrocontrol.labor.domain.AsignacionLabor;
 import com.agrocontrol.labor.domain.Labor;
 import com.agrocontrol.labor.domain.LaborRepository;
+import com.agrocontrol.rol.domain.Rol;
+import com.agrocontrol.rol.domain.RolRepository;
+import com.agrocontrol.shared.domain.AccesoDenegadoException;
 import com.agrocontrol.shared.domain.ConflictoException;
 import com.agrocontrol.shared.domain.RecursoNoEncontradoException;
+import com.agrocontrol.usuario.domain.Usuario;
+import com.agrocontrol.usuario.domain.UsuarioRepository;
+import com.agrocontrol.usuario.domain.exception.UsuarioNoEncontradoException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -15,10 +23,15 @@ public class LaborService {
 
     private final LaborRepository laborRepository;
     private final CampanaRepository campanaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
 
-    public LaborService(LaborRepository laborRepository, CampanaRepository campanaRepository) {
+    public LaborService(LaborRepository laborRepository, CampanaRepository campanaRepository,
+                        UsuarioRepository usuarioRepository, RolRepository rolRepository) {
         this.laborRepository = laborRepository;
         this.campanaRepository = campanaRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.rolRepository = rolRepository;
     }
 
     @Transactional(readOnly = true)
@@ -52,5 +65,48 @@ public class LaborService {
         Labor labor = obtener(id);
         labor.ejecutar(fechaEjecucion);
         return labor;
+    }
+
+    // RN-05: el operario solo ve y reporta las labores que tiene asignadas
+    @Transactional(readOnly = true)
+    public List<Labor> listarAsignadas(Long usuarioId, Long campanaId) {
+        return laborRepository.listarAsignadasA(usuarioId).stream()
+                .filter(labor -> campanaId == null || labor.getCampanaId().equals(campanaId))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public void verificarAsignacion(Long laborId, Long usuarioId) {
+        obtener(laborId);
+        if (!laborRepository.estaAsignada(laborId, usuarioId)) {
+            throw new AccesoDenegadoException("La labor " + laborId + " no está asignada a usted");
+        }
+    }
+
+    // RF-05: el jefe de campo asigna operarios activos a una labor que aún no se ejecutó
+    @Transactional
+    public AsignacionLabor asignar(Long laborId, Long usuarioId) {
+        Labor labor = obtener(laborId);
+        if (!"PLANIFICADA".equals(labor.getEstado())) {
+            throw new ConflictoException("Solo se asignan operarios a labores planificadas");
+        }
+        Usuario usuario = usuarioRepository.buscarPorId(usuarioId)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(usuarioId));
+        String rol = rolRepository.buscarPorId(usuario.getRolId()).map(Rol::getNombre).orElse("");
+        if (!Roles.OPERARIO.equals(rol)) {
+            throw new ConflictoException("Solo se pueden asignar usuarios con rol OPERARIO");
+        }
+        if (!usuario.isActivo()) {
+            throw new ConflictoException("El operario " + usuario.getNombreCompleto() + " está inactivo");
+        }
+        if (laborRepository.estaAsignada(laborId, usuarioId)) {
+            throw new ConflictoException("El operario ya está asignado a esta labor");
+        }
+        return laborRepository.asignar(new AsignacionLabor(null, laborId, usuarioId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AsignacionLabor> listarAsignaciones() {
+        return laborRepository.listarAsignaciones();
     }
 }

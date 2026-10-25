@@ -4,7 +4,7 @@ import { formatFecha } from '../../../utils/formato';
 import type { Campana } from '../../campanas/models/Campana';
 import { etiquetaCampana, etiquetaParcela, type Catalogos } from '../../campanas/utils/etiquetas';
 import type { Labor } from '../../labores/models/Labor';
-import type { Usuario } from '../../usuarios/models/Usuario';
+import { useSesion } from '../../auth/context/useAuth';
 import type { Incidencia } from '../models/Incidencia';
 import { incidenciaService } from '../services/incidenciaService';
 
@@ -12,20 +12,19 @@ interface IncidenciaFormProps {
   campanas: Campana[];
   labores: Labor[];
   catalogos: Catalogos;
-  usuarios: Usuario[];
   onCreated: (incidencia: Incidencia) => void;
 }
 
-type Errores = Partial<Record<'parcelaId' | 'descripcion' | 'usuarioId', string>>;
+type Errores = Partial<Record<'parcelaId' | 'descripcion', string>>;
 
 // Parcela, campaña y labor se eligen en cascada: cada lista se filtra por la anterior,
 // así el backend nunca recibe una combinación que no coincide.
-export default function IncidenciaForm({ campanas, labores, catalogos, usuarios, onCreated }: IncidenciaFormProps) {
+export default function IncidenciaForm({ campanas, labores, catalogos, onCreated }: IncidenciaFormProps) {
+  const sesion = useSesion();
   const [parcelaId, setParcelaId] = useState('');
   const [campanaId, setCampanaId] = useState('');
   const [laborId, setLaborId] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [usuarioId, setUsuarioId] = useState('');
   const [errors, setErrors] = useState<Errores>({});
   const [mensaje, setMensaje] = useState('');
   const [apiError, setApiError] = useState('');
@@ -53,7 +52,6 @@ export default function IncidenciaForm({ campanas, labores, catalogos, usuarios,
     if (!parcelaId) errores.parcelaId = 'Debe seleccionar la parcela afectada.';
     if (!descripcion.trim()) errores.descripcion = 'Describa lo ocurrido.';
     else if (descripcion.trim().length > 1000) errores.descripcion = 'Use como máximo 1000 caracteres.';
-    if (!usuarioId) errores.usuarioId = 'Debe indicar quién reporta la incidencia.';
     setErrors(errores);
     if (Object.keys(errores).length > 0) return;
 
@@ -64,7 +62,6 @@ export default function IncidenciaForm({ campanas, labores, catalogos, usuarios,
         campanaId: campanaId ? Number(campanaId) : null,
         laborId: laborId ? Number(laborId) : null,
         descripcion: descripcion.trim(),
-        usuarioId: Number(usuarioId),
       });
       onCreated(creada);
       setDescripcion('');
@@ -110,13 +107,7 @@ export default function IncidenciaForm({ campanas, labores, catalogos, usuarios,
         </label>
         <label>
           Reportado por
-          <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)}>
-            <option value="">Seleccione un usuario</option>
-            {usuarios.filter((u) => u.estado === 'ACTIVO').map((usuario) => (
-              <option key={usuario.id} value={usuario.id}>{usuario.nombreCompleto}</option>
-            ))}
-          </select>
-          {errors.usuarioId && <small className="field-error">{errors.usuarioId}</small>}
+          <input value={sesion.nombreCompleto} readOnly />
         </label>
         <label className="form-span-2">
           Descripción

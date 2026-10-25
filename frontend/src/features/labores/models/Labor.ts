@@ -10,6 +10,13 @@ export interface Labor {
   estado: EstadoLabor;
 }
 
+export interface AsignacionLabor {
+  id: number;
+  laborId: number;
+  usuarioId: number;
+  asignadoEn: string;
+}
+
 export interface ConsumoLabor {
   id: number;
   laborId: number;

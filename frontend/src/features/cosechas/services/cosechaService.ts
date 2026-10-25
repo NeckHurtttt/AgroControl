@@ -1,7 +1,8 @@
 import { apiFetch } from '../../../api/apiClient';
 import type { Cosecha } from '../models/Cosecha';
 
-export type CosechaCreateRequest = Omit<Cosecha, 'id' | 'fecha'>;
+// usuarioId no se envía: el backend lo toma del token
+export type CosechaCreateRequest = Omit<Cosecha, 'id' | 'fecha' | 'usuarioId'>;
 
 export const cosechaService = {
   listar(signal?: AbortSignal): Promise<Cosecha[]> {

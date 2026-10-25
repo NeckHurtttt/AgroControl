@@ -1,11 +1,14 @@
 package com.agrocontrol.incidencia.infrastructure.adapter.in.web;
 
+import com.agrocontrol.auth.infrastructure.security.UsuarioAutenticado;
 import com.agrocontrol.incidencia.application.IncidenciaService;
 import com.agrocontrol.incidencia.infrastructure.adapter.in.web.dto.IncidenciaResponse;
 import com.agrocontrol.incidencia.infrastructure.adapter.in.web.dto.RegistrarIncidenciaRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,8 +34,9 @@ public class IncidenciaController {
     }
 
     @PostMapping
-    public ResponseEntity<IncidenciaResponse> registrar(@Valid @RequestBody RegistrarIncidenciaRequest request) {
+    public ResponseEntity<IncidenciaResponse> registrar(@Valid @RequestBody RegistrarIncidenciaRequest request,
+                                                        @AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.status(HttpStatus.CREATED).body(IncidenciaResponse.desde(service.registrar(
-                request.parcelaId(), request.campanaId(), request.laborId(), request.descripcion(), request.usuarioId())));
+                request.parcelaId(), request.campanaId(), request.laborId(), request.descripcion(), UsuarioAutenticado.id(jwt))));
     }
 }

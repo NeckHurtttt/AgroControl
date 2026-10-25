@@ -10,7 +10,6 @@ export interface MovimientoRequest {
   tipo: TipoMovimiento;
   cantidad: number;
   motivo: string | null;
-  usuarioId: number;
 }
 
 export const insumoService = {

@@ -3,7 +3,7 @@ import { ApiError } from '../../../api/apiClient';
 import { validarCantidadPositiva } from '../../../utils/formato';
 import type { Campana } from '../../campanas/models/Campana';
 import { etiquetaCampana, type Catalogos } from '../../campanas/utils/etiquetas';
-import type { Usuario } from '../../usuarios/models/Usuario';
+import { useSesion } from '../../auth/context/useAuth';
 import type { Cosecha } from '../models/Cosecha';
 import { cosechaService } from '../services/cosechaService';
 
@@ -12,17 +12,16 @@ const UNIDADES = ['t', 'kg', 'qq'];
 interface CosechaFormProps {
   campanas: Campana[];
   catalogos: Catalogos;
-  usuarios: Usuario[];
   onCreated: (cosecha: Cosecha) => void;
 }
 
-type Errores = Partial<Record<'campanaId' | 'cantidad' | 'usuarioId', string>>;
+type Errores = Partial<Record<'campanaId' | 'cantidad', string>>;
 
-export default function CosechaForm({ campanas, catalogos, usuarios, onCreated }: CosechaFormProps) {
+export default function CosechaForm({ campanas, catalogos, onCreated }: CosechaFormProps) {
+  const sesion = useSesion();
   const [campanaId, setCampanaId] = useState('');
   const [cantidad, setCantidad] = useState('');
   const [unidadMedida, setUnidadMedida] = useState('t');
-  const [usuarioId, setUsuarioId] = useState('');
   const [errors, setErrors] = useState<Errores>({});
   const [mensaje, setMensaje] = useState('');
   const [apiError, setApiError] = useState('');
@@ -39,7 +38,6 @@ export default function CosechaForm({ campanas, catalogos, usuarios, onCreated }
     if (!campanaId) errores.campanaId = 'Debe seleccionar una campaña.';
     const errorCantidad = validarCantidadPositiva(cantidad);
     if (errorCantidad) errores.cantidad = errorCantidad;
-    if (!usuarioId) errores.usuarioId = 'Debe indicar quién registra la cosecha.';
     setErrors(errores);
     if (Object.keys(errores).length > 0) return;
 
@@ -49,7 +47,6 @@ export default function CosechaForm({ campanas, catalogos, usuarios, onCreated }
         campanaId: Number(campanaId),
         cantidad: Number(cantidad),
         unidadMedida,
-        usuarioId: Number(usuarioId),
       });
       onCreated(creada);
       setCantidad('');
@@ -88,13 +85,7 @@ export default function CosechaForm({ campanas, catalogos, usuarios, onCreated }
         </label>
         <label>
           Registrado por
-          <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)}>
-            <option value="">Seleccione un usuario</option>
-            {usuarios.filter((u) => u.estado === 'ACTIVO').map((usuario) => (
-              <option key={usuario.id} value={usuario.id}>{usuario.nombreCompleto}</option>
-            ))}
-          </select>
-          {errors.usuarioId && <small className="field-error">{errors.usuarioId}</small>}
+          <input value={sesion.nombreCompleto} readOnly />
         </label>
       </div>
       {mensaje && <div className="form-success">{mensaje}</div>}

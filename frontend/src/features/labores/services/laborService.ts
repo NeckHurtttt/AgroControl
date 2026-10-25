@@ -1,12 +1,11 @@
 import { apiFetch } from '../../../api/apiClient';
-import type { ConsumoLabor, Labor } from '../models/Labor';
+import type { AsignacionLabor, ConsumoLabor, Labor } from '../models/Labor';
 
 export type LaborCreateRequest = Pick<Labor, 'campanaId' | 'tipo' | 'fechaPlan'>;
 
 export interface ConsumoRequest {
   insumoId: number;
   cantidad: number;
-  usuarioId: number;
 }
 
 export const laborService = {
@@ -25,6 +24,17 @@ export const laborService = {
     return apiFetch<Labor>(`/labores/${id}/ejecutar`, {
       method: 'POST',
       body: JSON.stringify({ fechaEjecucion }),
+    });
+  },
+
+  listarAsignaciones(signal?: AbortSignal): Promise<AsignacionLabor[]> {
+    return apiFetch<AsignacionLabor[]>('/labores/asignaciones', { signal });
+  },
+
+  asignar(laborId: number, usuarioId: number): Promise<AsignacionLabor> {
+    return apiFetch<AsignacionLabor>(`/labores/${laborId}/asignaciones`, {
+      method: 'POST',
+      body: JSON.stringify({ usuarioId }),
     });
   },
 

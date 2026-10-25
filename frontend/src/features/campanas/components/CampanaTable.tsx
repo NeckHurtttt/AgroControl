@@ -6,11 +6,14 @@ import { etiquetaParcela, nombreCultivo, type Catalogos } from '../utils/etiquet
 interface CampanaTableProps {
   campanas: Campana[];
   catalogos: Catalogos;
-  onIniciar: (campana: Campana) => void;
-  onFinalizar: (campana: Campana) => void;
+  // Sin handlers (rol de solo lectura) no se muestra la columna de acciones
+  onIniciar?: (campana: Campana) => void;
+  onFinalizar?: (campana: Campana) => void;
 }
 
 export default function CampanaTable({ campanas, catalogos, onIniciar, onFinalizar }: CampanaTableProps) {
+  const conAcciones = Boolean(onIniciar || onFinalizar);
+
   if (campanas.length === 0) {
     return <div className="empty-state">No hay campañas registradas.</div>;
   }
@@ -27,7 +30,7 @@ export default function CampanaTable({ campanas, catalogos, onIniciar, onFinaliz
               <th>Inicio</th>
               <th>Fin</th>
               <th>Estado</th>
-              <th>Acciones</th>
+              {conAcciones && <th>Acciones</th>}
             </tr>
           </thead>
           <tbody>
@@ -39,17 +42,19 @@ export default function CampanaTable({ campanas, catalogos, onIniciar, onFinaliz
                 <td>{formatFecha(campana.fechaInicio)}</td>
                 <td>{formatFecha(campana.fechaFin)}</td>
                 <td><StatusBadge estado={campana.estado} /></td>
+                {conAcciones && (
                 <td>
                   <div className="table-actions">
-                    {campana.estado === 'PLANIFICADA' && (
+                    {onIniciar && campana.estado === 'PLANIFICADA' && (
                       <button type="button" className="btn-link" onClick={() => onIniciar(campana)}>Iniciar</button>
                     )}
-                    {campana.estado !== 'FINALIZADA' && (
+                    {onFinalizar && campana.estado !== 'FINALIZADA' && (
                       <button type="button" className="btn-link" onClick={() => onFinalizar(campana)}>Finalizar</button>
                     )}
                     {campana.estado === 'FINALIZADA' && <span className="muted">—</span>}
                   </div>
                 </td>
+                )}
               </tr>
             ))}
           </tbody>

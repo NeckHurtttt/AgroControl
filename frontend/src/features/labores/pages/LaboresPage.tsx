@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import FechaAccionPanel from '../../../components/common/FechaAccionPanel';
 import PageHeading from '../../../components/common/PageHeading';
 import StatsGrid from '../../../components/common/StatsGrid';
 import { useCarga } from '../../../hooks/useCarga';
+import { useAuth } from '../../auth/context/useAuth';
 import type { Campana } from '../../campanas/models/Campana';
 import { campanaService } from '../../campanas/services/campanaService';
 import { etiquetaCampana } from '../../campanas/utils/etiquetas';
@@ -11,62 +12,121 @@ import type { Insumo } from '../../insumos/models/Insumo';
 import { insumoService } from '../../insumos/services/insumoService';
 import { parcelaService } from '../../parcelas/services/parcelaService';
 import { predioService } from '../../predios/services/predioService';
+import type { RolCatalogo } from '../../usuarios/models/Rol';
 import type { Usuario } from '../../usuarios/models/Usuario';
+import { rolService } from '../../usuarios/services/rolService';
 import { usuarioService } from '../../usuarios/services/usuarioService';
+import AsignarPanel from '../components/AsignarPanel';
 import ConsumosPanel from '../components/ConsumosPanel';
 import LaborForm from '../components/LaborForm';
 import LaborTable from '../components/LaborTable';
-import type { Labor } from '../models/Labor';
+import type { AsignacionLabor, Labor } from '../models/Labor';
 import { laborService } from '../services/laborService';
 
-const cargarDatos = async (signal: AbortSignal) => {
-  const [labores, campanas, predios, parcelas, cultivos, insumos, usuarios] = await Promise.all([
+// Para el operario el backend ya devuelve solo sus labores asignadas (RN-05);
+// las asignaciones y los roles solo se piden si el rol planifica.
+const cargarDatos = (planifica: boolean) => async (signal: AbortSignal) => {
+  const [labores, campanas, predios, parcelas, cultivos, insumos, usuarios, roles, asignaciones] = await Promise.all([
     laborService.listar(signal),
     campanaService.listar(signal),
     predioService.listar(signal),
     parcelaService.listar(signal),
     cultivoService.listar(signal),
     insumoService.listar(signal),
-    usuarioService.listar(signal),
+    planifica ? usuarioService.listar(signal) : Promise.resolve<Usuario[]>([]),
+    planifica ? rolService.listar(signal) : Promise.resolve<RolCatalogo[]>([]),
+    planifica ? laborService.listarAsignaciones(signal) : Promise.resolve<AsignacionLabor[]>([]),
   ]);
-  return { labores, campanas, insumos, usuarios, catalogos: { predios, parcelas, cultivos } };
+  return { labores, campanas, insumos, usuarios, roles, asignaciones, catalogos: { predios, parcelas, cultivos } };
 };
 
 export default function LaboresPage() {
-  const { datos, setDatos, loading, error, recargar } = useCarga(cargarDatos, {
+  const { sesion, puede } = useAuth();
+  const esOperario = sesion?.rol === 'OPERARIO';
+  const puedePlanificar = puede('labores.planificar');
+  const puedeEjecutar = puede('labores.ejecutar');
+
+  const { datos, setDatos, loading, error, recargar } = useCarga(cargarDatos(puedePlanificar), {
     labores: [] as Labor[],
     campanas: [] as Campana[],
     insumos: [] as Insumo[],
     usuarios: [] as Usuario[],
+    roles: [] as RolCatalogo[],
+    asignaciones: [] as AsignacionLabor[],
     catalogos: { predios: [], parcelas: [], cultivos: [] },
   });
-  const { labores, campanas, insumos, usuarios, catalogos } = datos;
+  const { labores, campanas, insumos, usuarios, roles, asignaciones, catalogos } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [filtroCampana, setFiltroCampana] = useState('');
   const [ejecutando, setEjecutando] = useState<Labor | null>(null);
   const [conInsumos, setConInsumos] = useState<Labor | null>(null);
+  const [asignando, setAsignando] = useState<Labor | null>(null);
+
+  const rolOperarioId = roles.find((rol) => rol.nombre === 'OPERARIO')?.id;
+  const asignadosPorLabor = useMemo(() => {
+    const nombres = new Map(usuarios.map((usuario) => [usuario.id, usuario.nombreCompleto]));
+    const mapa = new Map<number, string[]>();
+    asignaciones.forEach((asignacion) => {
+      const lista = mapa.get(asignacion.laborId) ?? [];
+      lista.push(nombres.get(asignacion.usuarioId) ?? `Usuario ${asignacion.usuarioId}`);
+      mapa.set(asignacion.laborId, lista);
+    });
+    return mapa;
+  }, [usuarios, asignaciones]);
+
+  const operariosDisponibles = (labor: Labor) =>
+    usuarios.filter(
+      (usuario) =>
+        usuario.rolId === rolOperarioId &&
+        usuario.estado === 'ACTIVO' &&
+        !asignaciones.some((a) => a.laborId === labor.id && a.usuarioId === usuario.id),
+    );
 
   const visibles = filtroCampana ? labores.filter((labor) => labor.campanaId === Number(filtroCampana)) : labores;
   const pendientes = visibles.filter((labor) => labor.estado === 'PLANIFICADA').length;
 
+  const abrirPanel = (panel: 'ejecutar' | 'insumos' | 'asignar', labor: Labor) => {
+    setEjecutando(panel === 'ejecutar' ? labor : null);
+    setConInsumos(panel === 'insumos' ? labor : null);
+    setAsignando(panel === 'asignar' ? labor : null);
+  };
+
   return (
     <section className="feature-page">
       <PageHeading
-        eyebrow="TRABAJO DE CAMPO"
-        titulo="Labores"
-        descripcion="Tareas planificadas y ejecutadas en cada campaña, con los insumos que consumieron."
+        eyebrow={esOperario ? 'MI AGENDA DE CAMPO' : 'TRABAJO DE CAMPO'}
+        titulo={esOperario ? 'Mis labores' : 'Labores'}
+        descripcion={
+          esOperario
+            ? 'Labores que el jefe de campo le asignó: márquelas como ejecutadas y registre los insumos que usó.'
+            : puedePlanificar
+              ? 'Planifique labores por campaña, asigne operarios y controle los insumos consumidos.'
+              : 'Tareas planificadas y ejecutadas en cada campaña (solo lectura para su rol).'
+        }
         accion={
-          <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
-            {mostrarFormulario ? 'Cerrar formulario' : '+ Nueva labor'}
-          </button>
+          puedePlanificar ? (
+            <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
+              {mostrarFormulario ? 'Cerrar formulario' : '+ Nueva labor'}
+            </button>
+          ) : undefined
         }
       />
 
-      {mostrarFormulario && (
+      {puedePlanificar && mostrarFormulario && (
         <LaborForm
           campanas={campanas}
           catalogos={catalogos}
           onCreated={(nueva) => setDatos((prev) => ({ ...prev, labores: [nueva, ...prev.labores] }))}
+        />
+      )}
+
+      {asignando && (
+        <AsignarPanel
+          key={asignando.id}
+          labor={asignando}
+          disponibles={operariosDisponibles(asignando)}
+          onAsignado={(nueva) => setDatos((prev) => ({ ...prev, asignaciones: [...prev.asignaciones, nueva] }))}
+          onCerrar={() => setAsignando(null)}
         />
       )}
 
@@ -92,7 +152,7 @@ export default function LaboresPage() {
         <ConsumosPanel
           labor={conInsumos}
           insumos={insumos}
-          usuarios={usuarios}
+          puedeRegistrar={puedeEjecutar}
           onConsumoRegistrado={recargar}
           onCerrar={() => setConInsumos(null)}
         />
@@ -104,7 +164,7 @@ export default function LaboresPage() {
         <>
           <StatsGrid
             stats={[
-              { etiqueta: 'Labores', valor: visibles.length },
+              { etiqueta: esOperario ? 'Asignadas a mí' : 'Labores', valor: visibles.length },
               { etiqueta: 'Pendientes', valor: pendientes },
               { etiqueta: 'Ejecutadas', valor: visibles.length - pendientes },
             ]}
@@ -118,19 +178,19 @@ export default function LaboresPage() {
               ))}
             </select>
           </div>
-          <LaborTable
-            labores={visibles}
-            campanas={campanas}
-            catalogos={catalogos}
-            onEjecutar={(labor) => {
-              setConInsumos(null);
-              setEjecutando(labor);
-            }}
-            onInsumos={(labor) => {
-              setEjecutando(null);
-              setConInsumos(labor);
-            }}
-          />
+          {esOperario && labores.length === 0 ? (
+            <div className="empty-state">Todavía no tiene labores asignadas.</div>
+          ) : (
+            <LaborTable
+              labores={visibles}
+              campanas={campanas}
+              catalogos={catalogos}
+              asignados={puedePlanificar ? asignadosPorLabor : undefined}
+              onAsignar={puedePlanificar ? (labor) => abrirPanel('asignar', labor) : undefined}
+              onEjecutar={puedeEjecutar ? (labor) => abrirPanel('ejecutar', labor) : undefined}
+              onInsumos={(labor) => abrirPanel('insumos', labor)}
+            />
+          )}
         </>
       )}
     </section>

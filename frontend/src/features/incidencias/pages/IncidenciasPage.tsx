@@ -13,6 +13,7 @@ import { parcelaService } from '../../parcelas/services/parcelaService';
 import { predioService } from '../../predios/services/predioService';
 import type { Usuario } from '../../usuarios/models/Usuario';
 import { nombreUsuario, usuarioService } from '../../usuarios/services/usuarioService';
+import { useAuth } from '../../auth/context/useAuth';
 import IncidenciaForm from '../components/IncidenciaForm';
 import type { Incidencia } from '../models/Incidencia';
 import { incidenciaService } from '../services/incidenciaService';
@@ -40,6 +41,7 @@ export default function IncidenciasPage() {
   });
   const { incidencias, campanas, labores, usuarios, catalogos } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const puedeReportar = useAuth().puede('incidencias.reportar');
   // Se fija al montar la página para que el conteo no cambie entre renders.
   const [haceUnaSemana] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
 
@@ -58,18 +60,19 @@ export default function IncidenciasPage() {
         titulo="Incidencias"
         descripcion="Problemas reportados en campo: plagas, clima, fallas de equipo."
         accion={
-          <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
-            {mostrarFormulario ? 'Cerrar formulario' : '+ Reportar incidencia'}
-          </button>
+          puedeReportar ? (
+            <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
+              {mostrarFormulario ? 'Cerrar formulario' : '+ Reportar incidencia'}
+            </button>
+          ) : undefined
         }
       />
 
-      {mostrarFormulario && (
+      {puedeReportar && mostrarFormulario && (
         <IncidenciaForm
           campanas={campanas}
           labores={labores}
           catalogos={catalogos}
-          usuarios={usuarios}
           onCreated={(nueva) => setDatos((prev) => ({ ...prev, incidencias: [nueva, ...prev.incidencias] }))}
         />
       )}

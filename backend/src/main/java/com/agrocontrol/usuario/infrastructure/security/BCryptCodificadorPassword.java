@@ -13,4 +13,9 @@ public class BCryptCodificadorPassword implements CodificadorPassword {
     public String codificar(String passwordPlano) {
         return encoder.encode(passwordPlano);
     }
+
+    @Override
+    public boolean coincide(String passwordPlano, String passwordHash) {
+        return encoder.matches(passwordPlano, passwordHash);
+    }
 }

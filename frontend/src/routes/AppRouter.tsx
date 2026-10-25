@@ -2,6 +2,8 @@ import { Route, Routes } from 'react-router';
 import MainLayout from '../layouts/MainLayout';
 import DashboardPage from '../pages/DashboardPage';
 import NotFoundPage from '../pages/NotFoundPage';
+import { RequireAuth, RequireSeccion } from '../features/auth/components/RequireAuth';
+import LoginPage from '../features/auth/pages/LoginPage';
 import PrediosPage from '../features/predios/pages/PrediosPage';
 import ParcelasPage from '../features/parcelas/pages/ParcelasPage';
 import CultivosPage from '../features/cultivos/pages/CultivosPage';
@@ -10,21 +12,44 @@ import LaboresPage from '../features/labores/pages/LaboresPage';
 import InsumosPage from '../features/insumos/pages/InsumosPage';
 import CosechasPage from '../features/cosechas/pages/CosechasPage';
 import IncidenciasPage from '../features/incidencias/pages/IncidenciasPage';
+import UsuariosPage from '../features/usuarios/pages/UsuariosPage';
 
 export default function AppRouter() {
   return (
     <Routes>
-      <Route element={<MainLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="predios" element={<PrediosPage />} />
-        <Route path="parcelas" element={<ParcelasPage />} />
-        <Route path="cultivos" element={<CultivosPage />} />
-        <Route path="campanas" element={<CampanasPage />} />
-        <Route path="labores" element={<LaboresPage />} />
-        <Route path="insumos" element={<InsumosPage />} />
-        <Route path="cosechas" element={<CosechasPage />} />
-        <Route path="incidencias" element={<IncidenciasPage />} />
-        <Route path="*" element={<NotFoundPage />} />
+      <Route path="login" element={<LoginPage />} />
+      <Route element={<RequireAuth />}>
+        <Route element={<MainLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route element={<RequireSeccion seccion="predios" />}>
+            <Route path="predios" element={<PrediosPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="parcelas" />}>
+            <Route path="parcelas" element={<ParcelasPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="cultivos" />}>
+            <Route path="cultivos" element={<CultivosPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="campanas" />}>
+            <Route path="campanas" element={<CampanasPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="labores" />}>
+            <Route path="labores" element={<LaboresPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="insumos" />}>
+            <Route path="insumos" element={<InsumosPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="cosechas" />}>
+            <Route path="cosechas" element={<CosechasPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="incidencias" />}>
+            <Route path="incidencias" element={<IncidenciasPage />} />
+          </Route>
+          <Route element={<RequireSeccion seccion="usuarios" />}>
+            <Route path="usuarios" element={<UsuariosPage />} />
+          </Route>
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
       </Route>
     </Routes>
   );

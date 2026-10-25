@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PageHeading from '../../../components/common/PageHeading';
 import { useCarga } from '../../../hooks/useCarga';
+import { useAuth } from '../../auth/context/useAuth';
 import CultivoForm from '../components/CultivoForm';
 import type { Cultivo } from '../models/Cultivo';
 import { cultivoService } from '../services/cultivoService';
@@ -10,6 +11,7 @@ const cargarCultivos = (signal: AbortSignal) => cultivoService.listar(signal);
 export default function CultivosPage() {
   const { datos: cultivos, setDatos: setCultivos, loading, error } = useCarga<Cultivo[]>(cargarCultivos, []);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const puedeCrear = useAuth().puede('cultivos.crear');
 
   return (
     <section className="feature-page">
@@ -18,13 +20,15 @@ export default function CultivosPage() {
         titulo="Cultivos"
         descripcion="Especies que se pueden sembrar en una campaña."
         accion={
-          <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
-            {mostrarFormulario ? 'Cerrar formulario' : '+ Nuevo cultivo'}
-          </button>
+          puedeCrear ? (
+            <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
+              {mostrarFormulario ? 'Cerrar formulario' : '+ Nuevo cultivo'}
+            </button>
+          ) : undefined
         }
       />
 
-      {mostrarFormulario && (
+      {puedeCrear && mostrarFormulario && (
         <CultivoForm
           onCreated={(nuevo) =>
             setCultivos((prev) => [...prev, nuevo].sort((a, b) => a.nombre.localeCompare(b.nombre)))

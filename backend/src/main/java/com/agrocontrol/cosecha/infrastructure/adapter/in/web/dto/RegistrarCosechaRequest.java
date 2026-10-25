@@ -19,9 +19,6 @@ public record RegistrarCosechaRequest(
 
         @NotBlank(message = "La unidad de medida es obligatoria.")
         @Size(max = 20, message = "La unidad admite como máximo 20 caracteres.")
-        String unidadMedida,
-
-        @NotNull(message = "Debe indicar quién registra la cosecha.")
-        Long usuarioId
+        String unidadMedida
 ) {
 }

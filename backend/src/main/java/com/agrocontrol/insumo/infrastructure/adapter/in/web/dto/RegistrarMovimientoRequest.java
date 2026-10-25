@@ -18,9 +18,6 @@ public record RegistrarMovimientoRequest(
         BigDecimal cantidad,
 
         @Size(max = 150, message = "El motivo admite como máximo 150 caracteres.")
-        String motivo,
-
-        @NotNull(message = "Debe indicar quién registra el movimiento.")
-        Long usuarioId
+        String motivo
 ) {
 }

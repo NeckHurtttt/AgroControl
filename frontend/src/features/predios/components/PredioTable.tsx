@@ -5,12 +5,14 @@ import type { Predio } from '../models/Predio';
 
 interface PredioTableProps {
   predios: Predio[];
-  onEditar: (predio: Predio) => void;
-  onEliminar: (predio: Predio) => void;
+  // Sin handlers (rol de solo lectura) no se muestra la columna de acciones
+  onEditar?: (predio: Predio) => void;
+  onEliminar?: (predio: Predio) => void;
   deletingId?: number | null;
 }
 
 export default function PredioTable({ predios, onEditar, onEliminar, deletingId = null }: PredioTableProps) {
+  const conAcciones = Boolean(onEditar || onEliminar);
   return (
     <div className="table-card">
       <div className="table-responsive">
@@ -22,7 +24,7 @@ export default function PredioTable({ predios, onEditar, onEliminar, deletingId 
               <th>Ubicación</th>
               <th>Área</th>
               <th>Estado</th>
-              <th>Acciones</th>
+              {conAcciones && <th>Acciones</th>}
             </tr>
           </thead>
           <tbody>
@@ -33,20 +35,24 @@ export default function PredioTable({ predios, onEditar, onEliminar, deletingId 
                 <td>{predio.ubicacion ?? 'Sin ubicación'}</td>
                 <td>{formatArea(predio.areaHa)}</td>
                 <td><StatusBadge estado={predio.activo ? 'ACTIVO' : 'INACTIVO'} /></td>
-                <td>
-                  <div className="table-actions">
-                    <Button variant="secondary" size="sm" onClick={() => onEditar(predio)}>Editar</Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => onEliminar(predio)}
-                      loading={deletingId === predio.id}
-                      loadingText="Eliminando..."
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                </td>
+                {conAcciones && (
+                  <td>
+                    <div className="table-actions">
+                      {onEditar && <Button variant="secondary" size="sm" onClick={() => onEditar(predio)}>Editar</Button>}
+                      {onEliminar && (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => onEliminar(predio)}
+                          loading={deletingId === predio.id}
+                          loadingText="Eliminando..."
+                        >
+                          Eliminar
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

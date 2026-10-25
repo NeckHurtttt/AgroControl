@@ -34,6 +34,11 @@ public class UsuarioPersistenceAdapter implements UsuarioRepository {
     }
 
     @Override
+    public Optional<Usuario> buscarPorEmail(String email) {
+        return jpaRepository.findByEmailIgnoreCase(email).map(UsuarioPersistenceMapper::toDomain);
+    }
+
+    @Override
     public List<Usuario> listarTodos() {
         return jpaRepository.findAll().stream()
                 .map(UsuarioPersistenceMapper::toDomain)

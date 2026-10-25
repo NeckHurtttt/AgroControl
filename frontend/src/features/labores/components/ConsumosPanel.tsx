@@ -2,19 +2,21 @@ import { useState, type FormEvent } from 'react';
 import { useCarga } from '../../../hooks/useCarga';
 import { formatCantidad, formatFecha, validarCantidadPositiva } from '../../../utils/formato';
 import type { Insumo } from '../../insumos/models/Insumo';
-import type { Usuario } from '../../usuarios/models/Usuario';
+import { useSesion } from '../../auth/context/useAuth';
 import type { ConsumoLabor, Labor } from '../models/Labor';
 import { laborService } from '../services/laborService';
 
 interface ConsumosPanelProps {
   labor: Labor;
   insumos: Insumo[];
-  usuarios: Usuario[];
+  // Supervisor y almacenero ven los consumos pero no registran
+  puedeRegistrar: boolean;
   onConsumoRegistrado: () => void;
   onCerrar: () => void;
 }
 
-export default function ConsumosPanel({ labor, insumos, usuarios, onConsumoRegistrado, onCerrar }: ConsumosPanelProps) {
+export default function ConsumosPanel({ labor, insumos, puedeRegistrar, onConsumoRegistrado, onCerrar }: ConsumosPanelProps) {
+  const sesion = useSesion();
   const { datos: consumos, setDatos: setConsumos, loading, error } = useCarga<ConsumoLabor[]>(
     (signal) => laborService.listarConsumos(labor.id, signal),
     [],
@@ -22,7 +24,6 @@ export default function ConsumosPanel({ labor, insumos, usuarios, onConsumoRegis
   );
   const [insumoId, setInsumoId] = useState('');
   const [cantidad, setCantidad] = useState('');
-  const [usuarioId, setUsuarioId] = useState('');
   const [errorForm, setErrorForm] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,8 +32,8 @@ export default function ConsumosPanel({ labor, insumos, usuarios, onConsumoRegis
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errorCantidad = validarCantidadPositiva(cantidad);
-    if (!insumoId || !usuarioId || errorCantidad) {
-      setErrorForm(errorCantidad ?? 'Seleccione el insumo y quién registra el consumo.');
+    if (!insumoId || errorCantidad) {
+      setErrorForm(errorCantidad ?? 'Seleccione el insumo.');
       return;
     }
     try {
@@ -41,7 +42,6 @@ export default function ConsumosPanel({ labor, insumos, usuarios, onConsumoRegis
       const nuevo = await laborService.registrarConsumo(labor.id, {
         insumoId: Number(insumoId),
         cantidad: Number(cantidad),
-        usuarioId: Number(usuarioId),
       });
       setConsumos((prev) => [...prev, nuevo]);
       setCantidad('');
@@ -79,6 +79,12 @@ export default function ConsumosPanel({ labor, insumos, usuarios, onConsumoRegis
         </div>
       )}
 
+      {!puedeRegistrar && (
+        <div className="form-actions">
+          <button type="button" className="btn-secondary" onClick={onCerrar}>Cerrar</button>
+        </div>
+      )}
+      {puedeRegistrar && (
       <form onSubmit={handleSubmit} noValidate>
         <div className="form-grid panel-form">
           <label>
@@ -98,12 +104,7 @@ export default function ConsumosPanel({ labor, insumos, usuarios, onConsumoRegis
           </label>
           <label>
             Registrado por
-            <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)}>
-              <option value="">Seleccione un usuario</option>
-              {usuarios.filter((u) => u.estado === 'ACTIVO').map((usuario) => (
-                <option key={usuario.id} value={usuario.id}>{usuario.nombreCompleto}</option>
-              ))}
-            </select>
+            <input value={sesion.nombreCompleto} readOnly />
           </label>
         </div>
         {errorForm && <div className="form-error">{errorForm}</div>}
@@ -114,6 +115,8 @@ export default function ConsumosPanel({ labor, insumos, usuarios, onConsumoRegis
           </button>
         </div>
       </form>
+      )}
+
     </div>
   );
 }

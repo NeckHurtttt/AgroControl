@@ -109,6 +109,19 @@ Con el backend en marcha (`http://localhost:8080`). Swagger UI: `http://localhos
 - Errores con formato `ProblemDetail` (`type`, `title`, `status`, `detail`, `instance` y `errores` por campo en los 400), desde `GlobalExceptionHandler`.
 - CORS autoriza `http://localhost:5173` (web) y `http://localhost:8081` (Expo web) por defecto; se cambia con `AGROCONTROL_CORS_ORIGINS`.
 
+### Login y permisos por rol
+Toda la API (salvo `POST /api/auth/login`, `/api/health` y Swagger) exige `Authorization: Bearer <token>`. El token es un JWT HS256 que dura 8 h; su `sub` es el id del usuario, y el backend lo usa como "quién registra" en cosechas, consumos, movimientos e incidencias (el cliente ya no manda `usuarioId`). `SecurityConfig` aplica la matriz de permisos: **401** sin token y **403** si el rol no puede hacer la operación. La web oculta además lo que el rol no puede usar.
+
+| Rol | Email | Ve / puede |
+| --- | --- | --- |
+| Administrador | sergio@agrocontrol.com | Todo, incluida la pantalla Usuarios; único que edita predios y parcelas |
+| Jefe de campo | jefe@agrocontrol.com | Cultivos, campañas, planificar labores y asignar operarios, cosechas, incidencias |
+| Operario | operario1@agrocontrol.com | "Mis labores" (solo las asignadas): ejecutar, registrar insumos usados y reportar incidencias |
+| Almacenero | almacen@agrocontrol.com | Insumos y movimientos, registrar cosechas |
+| Supervisor | supervisor@agrocontrol.com | Todo en solo lectura e indicadores |
+
+Contraseña de demo de todos: `agro123` (migración `V3__usuarios_login.sql`). La clave de firma se cambia con `AGROCONTROL_JWT_SECRET` (mínimo 32 caracteres) y la duración con `AGROCONTROL_JWT_HORAS`.
+
 ### Arquitectura por módulo
 ```
 <modulo>/

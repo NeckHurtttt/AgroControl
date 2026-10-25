@@ -11,6 +11,7 @@ import SelectFilter from '../../../components/ui/SelectFilter';
 import { useMensajeExito } from '../../../hooks/useMensajeExito';
 import { isAbortError } from '../../../shared/utils/isAbortError';
 import { paginar } from '../../../shared/utils/paginar';
+import { useAuth } from '../../auth/context/useAuth';
 import PredioForm from '../components/PredioForm';
 import PredioTable from '../components/PredioTable';
 import { usePredios } from '../hooks/usePredios';
@@ -26,6 +27,7 @@ const OPCIONES_ESTADO = [
 
 export default function PrediosPage() {
   const { predios, setPredios, loading, error } = usePredios();
+  const puedeEditar = useAuth().puede('predios.editar');
   const { successMessage, mostrarExito } = useMensajeExito();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editando, setEditando] = useState<Predio | null>(null);
@@ -117,8 +119,8 @@ export default function PrediosPage() {
       <PageHeading
         eyebrow="GESTIÓN DE PREDIOS"
         titulo="Predios"
-        descripcion="Fundos y terrenos registrados en la API REST de AgroControl."
-        accion={<Button onClick={abrirNuevo}>+ Nuevo predio</Button>}
+        descripcion={puedeEditar ? 'Fundos y terrenos registrados en la API REST de AgroControl.' : 'Fundos y terrenos registrados (solo lectura para su rol).'}
+        accion={puedeEditar ? <Button onClick={abrirNuevo}>+ Nuevo predio</Button> : undefined}
       />
 
       <Modal
@@ -173,15 +175,15 @@ export default function PrediosPage() {
             <SelectFilter label="Estado" value={estadoFiltro} onChange={cambiarEstadoFiltro} options={OPCIONES_ESTADO} />
           </div>
           {total === 0 ? (
-            <EmptyState title="No hay predios registrados." description="Crea el primero con «+ Nuevo predio»." />
+            <EmptyState title="No hay predios registrados." description={puedeEditar ? 'Crea el primero con «+ Nuevo predio».' : 'El administrador aún no registró predios.'} />
           ) : pagina.totalItems === 0 ? (
             <EmptyState title="Sin resultados." description="Ningún predio coincide con la búsqueda o el filtro." />
           ) : (
             <>
               <PredioTable
                 predios={pagina.items}
-                onEditar={editar}
-                onEliminar={setPendingDelete}
+                onEditar={puedeEditar ? editar : undefined}
+                onEliminar={puedeEditar ? setPendingDelete : undefined}
                 deletingId={deletingId}
               />
               <Pagination

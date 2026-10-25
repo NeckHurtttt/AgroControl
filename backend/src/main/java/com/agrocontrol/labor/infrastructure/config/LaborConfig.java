@@ -3,6 +3,8 @@ package com.agrocontrol.labor.infrastructure.config;
 import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.labor.application.LaborService;
 import com.agrocontrol.labor.domain.LaborRepository;
+import com.agrocontrol.rol.domain.RolRepository;
+import com.agrocontrol.usuario.domain.UsuarioRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,7 +12,8 @@ import org.springframework.context.annotation.Configuration;
 public class LaborConfig {
 
     @Bean
-    public LaborService laborService(LaborRepository laborRepository, CampanaRepository campanaRepository) {
-        return new LaborService(laborRepository, campanaRepository);
+    public LaborService laborService(LaborRepository laborRepository, CampanaRepository campanaRepository,
+                                     UsuarioRepository usuarioRepository, RolRepository rolRepository) {
+        return new LaborService(laborRepository, campanaRepository, usuarioRepository, rolRepository);
     }
 }

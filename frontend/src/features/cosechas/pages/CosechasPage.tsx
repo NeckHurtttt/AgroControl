@@ -11,6 +11,7 @@ import { parcelaService } from '../../parcelas/services/parcelaService';
 import { predioService } from '../../predios/services/predioService';
 import type { Usuario } from '../../usuarios/models/Usuario';
 import { nombreUsuario, usuarioService } from '../../usuarios/services/usuarioService';
+import { useAuth } from '../../auth/context/useAuth';
 import CosechaForm from '../components/CosechaForm';
 import type { Cosecha } from '../models/Cosecha';
 import { cosechaService } from '../services/cosechaService';
@@ -36,6 +37,7 @@ export default function CosechasPage() {
   });
   const { cosechas, campanas, usuarios, catalogos } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const puedeRegistrar = useAuth().puede('cosechas.registrar');
 
   const campana = (id: number) => campanas.find((item) => item.id === id);
   const toneladas = cosechas.filter((c) => c.unidadMedida === 't').reduce((suma, c) => suma + c.cantidad, 0);
@@ -48,17 +50,18 @@ export default function CosechasPage() {
         titulo="Cosechas"
         descripcion="Producción obtenida por campaña y quién la registró."
         accion={
-          <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
-            {mostrarFormulario ? 'Cerrar formulario' : '+ Registrar cosecha'}
-          </button>
+          puedeRegistrar ? (
+            <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
+              {mostrarFormulario ? 'Cerrar formulario' : '+ Registrar cosecha'}
+            </button>
+          ) : undefined
         }
       />
 
-      {mostrarFormulario && (
+      {puedeRegistrar && mostrarFormulario && (
         <CosechaForm
           campanas={campanas}
           catalogos={catalogos}
-          usuarios={usuarios}
           onCreated={(nueva) => setDatos((prev) => ({ ...prev, cosechas: [nueva, ...prev.cosechas] }))}
         />
       )}

@@ -2,4 +2,5 @@ package com.agrocontrol.usuario.domain;
 
 public interface CodificadorPassword {
     String codificar(String passwordPlano);
+    boolean coincide(String passwordPlano, String passwordHash);
 }

@@ -1,4 +1,15 @@
 import { API_URL } from '../config/env';
+import { leerSesion } from '../features/auth/services/sesionStorage';
+
+// AuthContext se suscribe para volver al login cuando el backend responde 401 (token vencido).
+let manejarSesionExpirada: (() => void) | null = null;
+
+export function alExpirarSesion(handler: () => void) {
+  manejarSesionExpirada = handler;
+  return () => {
+    if (manejarSesionExpirada === handler) manejarSesionExpirada = null;
+  };
+}
 
 export class ApiError extends Error {
   status: number;
@@ -27,11 +38,19 @@ export async function apiFetch<T>(
   if (options.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
+  const token = leerSesion()?.token;
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers,
   });
+
+  if (response.status === 401 && token) {
+    manejarSesionExpirada?.();
+  }
 
   if (!response.ok) {
     const detail = await response.text();

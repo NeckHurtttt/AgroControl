@@ -1,8 +1,10 @@
 package com.agrocontrol.shared.web;
 
+import com.agrocontrol.auth.domain.exception.CredencialesInvalidasException;
 import com.agrocontrol.rol.domain.exception.NombreRolDuplicadoException;
 import com.agrocontrol.rol.domain.exception.RolConUsuariosException;
 import com.agrocontrol.rol.domain.exception.RolNoEncontradoException;
+import com.agrocontrol.shared.domain.AccesoDenegadoException;
 import com.agrocontrol.shared.domain.ConflictoException;
 import com.agrocontrol.shared.domain.RecursoNoEncontradoException;
 import com.agrocontrol.usuario.domain.exception.EmailUsuarioDuplicadoException;
@@ -25,6 +27,16 @@ public class GlobalExceptionHandler {
             RecursoNoEncontradoException.class})
     public ProblemDetail noEncontrado(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ProblemDetail credencialesInvalidas(CredencialesInvalidasException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ProblemDetail accesoDenegado(AccesoDenegadoException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     @ExceptionHandler({NombreRolDuplicadoException.class, EmailUsuarioDuplicadoException.class,

@@ -1,5 +1,6 @@
 package com.agrocontrol.insumo.infrastructure.adapter.in.web;
 
+import com.agrocontrol.auth.infrastructure.security.UsuarioAutenticado;
 import com.agrocontrol.insumo.application.InventarioService;
 import com.agrocontrol.insumo.infrastructure.adapter.in.web.dto.CrearInsumoRequest;
 import com.agrocontrol.insumo.infrastructure.adapter.in.web.dto.InsumoResponse;
@@ -8,6 +9,8 @@ import com.agrocontrol.insumo.infrastructure.adapter.in.web.dto.RegistrarMovimie
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,8 +53,9 @@ public class InsumoController {
 
     @PostMapping("/{id}/movimientos")
     public ResponseEntity<MovimientoResponse> registrarMovimiento(@PathVariable Long id,
-                                                                  @Valid @RequestBody RegistrarMovimientoRequest request) {
+                                                                  @Valid @RequestBody RegistrarMovimientoRequest request,
+                                                                  @AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.status(HttpStatus.CREATED).body(MovimientoResponse.desde(service.registrarMovimiento(
-                id, request.tipo(), request.cantidad(), request.motivo(), request.usuarioId())));
+                id, request.tipo(), request.cantidad(), request.motivo(), UsuarioAutenticado.id(jwt))));
     }
 }

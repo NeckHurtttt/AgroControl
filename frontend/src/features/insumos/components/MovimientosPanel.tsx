@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import StatusBadge from '../../../components/ui/StatusBadge';
 import { useCarga } from '../../../hooks/useCarga';
+import { useSesion } from '../../auth/context/useAuth';
 import { formatCantidad, formatFecha, validarCantidadPositiva } from '../../../utils/formato';
 import type { Usuario } from '../../usuarios/models/Usuario';
 import { nombreUsuario } from '../../usuarios/services/usuarioService';
@@ -10,11 +11,14 @@ import { insumoService } from '../services/insumoService';
 interface MovimientosPanelProps {
   insumo: Insumo;
   usuarios: Usuario[];
+  // Solo administrador y almacenero registran movimientos; el resto ve el historial
+  puedeRegistrar: boolean;
   onMovimientoRegistrado: () => void;
   onCerrar: () => void;
 }
 
-export default function MovimientosPanel({ insumo, usuarios, onMovimientoRegistrado, onCerrar }: MovimientosPanelProps) {
+export default function MovimientosPanel({ insumo, usuarios, puedeRegistrar, onMovimientoRegistrado, onCerrar }: MovimientosPanelProps) {
+  const sesion = useSesion();
   const { datos: movimientos, setDatos: setMovimientos, loading, error } = useCarga<MovimientoInsumo[]>(
     (signal) => insumoService.listarMovimientos(insumo.id, signal),
     [],
@@ -23,15 +27,14 @@ export default function MovimientosPanel({ insumo, usuarios, onMovimientoRegistr
   const [tipo, setTipo] = useState<TipoMovimiento>('ENTRADA');
   const [cantidad, setCantidad] = useState('');
   const [motivo, setMotivo] = useState('');
-  const [usuarioId, setUsuarioId] = useState('');
   const [errorForm, setErrorForm] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errorCantidad = validarCantidadPositiva(cantidad);
-    if (!usuarioId || errorCantidad) {
-      setErrorForm(errorCantidad ?? 'Seleccione quién registra el movimiento.');
+    if (errorCantidad) {
+      setErrorForm(errorCantidad);
       return;
     }
     try {
@@ -41,7 +44,6 @@ export default function MovimientosPanel({ insumo, usuarios, onMovimientoRegistr
         tipo,
         cantidad: Number(cantidad),
         motivo: motivo.trim() || null,
-        usuarioId: Number(usuarioId),
       });
       setMovimientos((prev) => [nuevo, ...prev]);
       setCantidad('');
@@ -60,6 +62,12 @@ export default function MovimientosPanel({ insumo, usuarios, onMovimientoRegistr
         Movimientos de {insumo.nombre} · stock actual {formatCantidad(insumo.stockActual, insumo.unidadMedida)}
       </h3>
 
+      {!puedeRegistrar && (
+        <div className="form-actions">
+          <button type="button" className="btn-secondary" onClick={onCerrar}>Cerrar</button>
+        </div>
+      )}
+      {puedeRegistrar && (
       <form onSubmit={handleSubmit} noValidate>
         <div className="form-grid">
           <label>
@@ -79,12 +87,7 @@ export default function MovimientosPanel({ insumo, usuarios, onMovimientoRegistr
           </label>
           <label>
             Registrado por
-            <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)}>
-              <option value="">Seleccione un usuario</option>
-              {usuarios.filter((u) => u.estado === 'ACTIVO').map((usuario) => (
-                <option key={usuario.id} value={usuario.id}>{usuario.nombreCompleto}</option>
-              ))}
-            </select>
+            <input value={sesion.nombreCompleto} readOnly />
           </label>
         </div>
         {errorForm && <div className="form-error">{errorForm}</div>}
@@ -95,6 +98,7 @@ export default function MovimientosPanel({ insumo, usuarios, onMovimientoRegistr
           </button>
         </div>
       </form>
+      )}
 
       {loading && <p className="muted">Cargando historial...</p>}
       {error && <div className="form-error">{error}</div>}

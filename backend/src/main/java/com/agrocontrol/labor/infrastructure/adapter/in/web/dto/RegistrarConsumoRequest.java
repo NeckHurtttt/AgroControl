@@ -13,9 +13,6 @@ public record RegistrarConsumoRequest(
         @NotNull(message = "La cantidad es obligatoria.")
         @DecimalMin(value = "0.01", message = "La cantidad debe ser mayor que cero.")
         @Digits(integer = 10, fraction = 2, message = "La cantidad admite 10 enteros y 2 decimales.")
-        BigDecimal cantidad,
-
-        @NotNull(message = "Debe indicar quién registra el consumo.")
-        Long usuarioId
+        BigDecimal cantidad
 ) {
 }

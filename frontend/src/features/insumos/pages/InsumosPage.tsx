@@ -5,6 +5,7 @@ import { useCarga } from '../../../hooks/useCarga';
 import { formatCantidad } from '../../../utils/formato';
 import type { Usuario } from '../../usuarios/models/Usuario';
 import { usuarioService } from '../../usuarios/services/usuarioService';
+import { useAuth } from '../../auth/context/useAuth';
 import InsumoForm from '../components/InsumoForm';
 import MovimientosPanel from '../components/MovimientosPanel';
 import type { Insumo } from '../models/Insumo';
@@ -22,6 +23,9 @@ export default function InsumosPage() {
   });
   const { insumos, usuarios } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const { puede } = useAuth();
+  const puedeGestionar = puede('insumos.gestionar');
+  const puedeVerMovimientos = puede('insumos.verMovimientos');
   const [seleccionadoId, setSeleccionadoId] = useState<number | null>(null);
 
   // Se busca por id para que el panel muestre el stock actualizado después de recargar.
@@ -35,13 +39,15 @@ export default function InsumosPage() {
         titulo="Insumos"
         descripcion="Semillas, fertilizantes y agroquímicos. El stock solo cambia mediante movimientos trazados."
         accion={
-          <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
-            {mostrarFormulario ? 'Cerrar formulario' : '+ Nuevo insumo'}
-          </button>
+          puedeGestionar ? (
+            <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
+              {mostrarFormulario ? 'Cerrar formulario' : '+ Nuevo insumo'}
+            </button>
+          ) : undefined
         }
       />
 
-      {mostrarFormulario && (
+      {puedeGestionar && mostrarFormulario && (
         <InsumoForm onCreated={(nuevo) => setDatos((prev) => ({ ...prev, insumos: [...prev.insumos, nuevo] }))} />
       )}
 
@@ -49,6 +55,7 @@ export default function InsumosPage() {
         <MovimientosPanel
           insumo={seleccionado}
           usuarios={usuarios}
+          puedeRegistrar={puedeGestionar}
           onMovimientoRegistrado={recargar}
           onCerrar={() => setSeleccionadoId(null)}
         />
@@ -72,7 +79,7 @@ export default function InsumosPage() {
               <div className="table-responsive">
                 <table className="data-table">
                   <thead>
-                    <tr><th>Insumo</th><th>Unidad</th><th>Stock actual</th><th>Acciones</th></tr>
+                    <tr><th>Insumo</th><th>Unidad</th><th>Stock actual</th>{puedeVerMovimientos && <th>Acciones</th>}</tr>
                   </thead>
                   <tbody>
                     {insumos.map((insumo) => (
@@ -82,11 +89,13 @@ export default function InsumosPage() {
                         <td className={insumo.stockActual <= 0 ? 'field-error' : ''}>
                           {formatCantidad(insumo.stockActual, insumo.unidadMedida)}
                         </td>
-                        <td>
-                          <button type="button" className="btn-link" onClick={() => setSeleccionadoId(insumo.id)}>
-                            Movimientos
-                          </button>
-                        </td>
+                        {puedeVerMovimientos && (
+                          <td>
+                            <button type="button" className="btn-link" onClick={() => setSeleccionadoId(insumo.id)}>
+                              Movimientos
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

@@ -12,6 +12,7 @@ import { useMensajeExito } from '../../../hooks/useMensajeExito';
 import { isAbortError } from '../../../shared/utils/isAbortError';
 import { paginar } from '../../../shared/utils/paginar';
 import { formatArea } from '../../../utils/area';
+import { useAuth } from '../../auth/context/useAuth';
 import ParcelaForm from '../components/ParcelaForm';
 import ParcelaTable from '../components/ParcelaTable';
 import { useParcelas } from '../hooks/useParcelas';
@@ -26,6 +27,7 @@ const OPCIONES_ESTADO = [
 
 export default function ParcelasPage() {
   const { parcelas, predios, setParcelas, loading, error } = useParcelas();
+  const puedeEditar = useAuth().puede('parcelas.editar');
   const { successMessage, mostrarExito } = useMensajeExito();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editando, setEditando] = useState<Parcela | null>(null);
@@ -135,8 +137,8 @@ export default function ParcelasPage() {
       <PageHeading
         eyebrow="GESTIÓN DE PARCELAS"
         titulo="Parcelas"
-        descripcion="Parcelas asociadas a cada predio mediante predioId."
-        accion={<Button onClick={abrirNueva}>+ Nueva parcela</Button>}
+        descripcion={puedeEditar ? 'Parcelas asociadas a cada predio mediante predioId.' : 'Parcelas de cada predio (solo lectura para su rol).'}
+        accion={puedeEditar ? <Button onClick={abrirNueva}>+ Nueva parcela</Button> : undefined}
       />
 
       <Modal
@@ -193,7 +195,7 @@ export default function ParcelasPage() {
             <SelectFilter label="Estado" value={estadoFiltro} onChange={cambiarEstadoFiltro} options={OPCIONES_ESTADO} />
           </div>
           {total === 0 ? (
-            <EmptyState title="No hay parcelas registradas." description="Crea la primera con «+ Nueva parcela»." />
+            <EmptyState title="No hay parcelas registradas." description={puedeEditar ? 'Crea la primera con «+ Nueva parcela».' : 'El administrador aún no registró parcelas.'} />
           ) : pagina.totalItems === 0 ? (
             <EmptyState title="Sin resultados." description="Ninguna parcela coincide con la búsqueda o los filtros." />
           ) : (
@@ -201,8 +203,8 @@ export default function ParcelasPage() {
               <ParcelaTable
                 parcelas={pagina.items}
                 prediosPorId={prediosPorId}
-                onEditar={editar}
-                onEliminar={setPendingDelete}
+                onEditar={puedeEditar ? editar : undefined}
+                onEliminar={puedeEditar ? setPendingDelete : undefined}
                 deletingId={deletingId}
               />
               <Pagination

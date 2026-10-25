@@ -8,12 +8,14 @@ interface ParcelaTableProps {
   parcelas: Parcela[];
   // Map construido una vez en la página (useMemo): nombre del predio sin find ni request por fila.
   prediosPorId: Map<number, Predio>;
-  onEditar: (parcela: Parcela) => void;
-  onEliminar: (parcela: Parcela) => void;
+  // Sin handlers (rol de solo lectura) no se muestra la columna de acciones
+  onEditar?: (parcela: Parcela) => void;
+  onEliminar?: (parcela: Parcela) => void;
   deletingId?: number | null;
 }
 
 export default function ParcelaTable({ parcelas, prediosPorId, onEditar, onEliminar, deletingId = null }: ParcelaTableProps) {
+  const conAcciones = Boolean(onEditar || onEliminar);
   const obtenerNombrePredio = (predioId: number) => prediosPorId.get(predioId)?.nombre ?? `Predio #${predioId}`;
 
   return (
@@ -26,7 +28,7 @@ export default function ParcelaTable({ parcelas, prediosPorId, onEditar, onElimi
               <th>Predio</th>
               <th>Área</th>
               <th>Estado</th>
-              <th>Acciones</th>
+              {conAcciones && <th>Acciones</th>}
             </tr>
           </thead>
           <tbody>
@@ -36,20 +38,24 @@ export default function ParcelaTable({ parcelas, prediosPorId, onEditar, onElimi
                 <td>{obtenerNombrePredio(parcela.predioId)}</td>
                 <td>{formatArea(parcela.areaHa)}</td>
                 <td><StatusBadge estado={parcela.estado} /></td>
-                <td>
-                  <div className="table-actions">
-                    <Button variant="secondary" size="sm" onClick={() => onEditar(parcela)}>Editar</Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => onEliminar(parcela)}
-                      loading={deletingId === parcela.id}
-                      loadingText="Eliminando..."
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                </td>
+                {conAcciones && (
+                  <td>
+                    <div className="table-actions">
+                      {onEditar && <Button variant="secondary" size="sm" onClick={() => onEditar(parcela)}>Editar</Button>}
+                      {onEliminar && (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => onEliminar(parcela)}
+                          loading={deletingId === parcela.id}
+                          loadingText="Eliminando..."
+                        >
+                          Eliminar
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

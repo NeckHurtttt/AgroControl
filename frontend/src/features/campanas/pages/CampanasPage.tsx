@@ -6,6 +6,7 @@ import { useCarga } from '../../../hooks/useCarga';
 import { cultivoService } from '../../cultivos/services/cultivoService';
 import { parcelaService } from '../../parcelas/services/parcelaService';
 import { predioService } from '../../predios/services/predioService';
+import { useAuth } from '../../auth/context/useAuth';
 import CampanaForm from '../components/CampanaForm';
 import CampanaTable from '../components/CampanaTable';
 import type { Campana } from '../models/Campana';
@@ -29,6 +30,7 @@ export default function CampanasPage() {
   });
   const { campanas, catalogos } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const puedeGestionar = useAuth().puede('campanas.gestionar');
   const [finalizando, setFinalizando] = useState<Campana | null>(null);
   const [accionError, setAccionError] = useState('');
 
@@ -56,13 +58,15 @@ export default function CampanasPage() {
         titulo="Campañas"
         descripcion="Ciclos de cultivo por parcela: se planifican, se inician y se finalizan."
         accion={
-          <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
-            {mostrarFormulario ? 'Cerrar formulario' : '+ Nueva campaña'}
-          </button>
+          puedeGestionar ? (
+            <button type="button" className="btn-primary" onClick={() => setMostrarFormulario((prev) => !prev)}>
+              {mostrarFormulario ? 'Cerrar formulario' : '+ Nueva campaña'}
+            </button>
+          ) : undefined
         }
       />
 
-      {mostrarFormulario && (
+      {puedeGestionar && mostrarFormulario && (
         <CampanaForm
           catalogos={catalogos}
           campanas={campanas}
@@ -99,11 +103,15 @@ export default function CampanasPage() {
           <CampanaTable
             campanas={campanas}
             catalogos={catalogos}
-            onIniciar={iniciar}
-            onFinalizar={(campana) => {
-              setAccionError('');
-              setFinalizando(campana);
-            }}
+            onIniciar={puedeGestionar ? iniciar : undefined}
+            onFinalizar={
+              puedeGestionar
+                ? (campana) => {
+                    setAccionError('');
+                    setFinalizando(campana);
+                  }
+                : undefined
+            }
           />
         </>
       )}
