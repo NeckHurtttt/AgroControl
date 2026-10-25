@@ -1,0 +1,17 @@
+# Postgres para desarrollo: `docker compose up -d`
+# Usa el puerto 5433 para no chocar con el Postgres del sistema (5432).
+# Backend: AGROCONTROL_DB_URL=jdbc:postgresql://localhost:5433/agrocontrol mvn spring-boot:run
+# Flyway crea el esquema al arrancar el backend.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: agrocontrol
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - agrocontrol-db:/var/lib/postgresql/data
+volumes:
+  agrocontrol-db:
