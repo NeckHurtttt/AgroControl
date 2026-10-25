@@ -2,6 +2,7 @@ package com.agrocontrol.campana.infrastructure.adapter.out.persistence;
 
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
+import com.agrocontrol.campana.domain.EstadoCampana;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
@@ -19,22 +20,24 @@ public class CampanaPersistenceAdapter implements CampanaRepository {
 
     @Override
     public Campana guardar(Campana campana) {
-        return jpaRepository.save(campana);
+        return CampanaPersistenceMapper.toDomain(jpaRepository.save(CampanaPersistenceMapper.toEntity(campana)));
     }
 
     @Override
     public Optional<Campana> buscarPorId(Long id) {
-        return jpaRepository.findById(id);
+        return jpaRepository.findById(id).map(CampanaPersistenceMapper::toDomain);
     }
 
     @Override
     public List<Campana> listarTodas() {
-        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fechaInicio"));
+        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fechaInicio"))
+                .stream().map(CampanaPersistenceMapper::toDomain).toList();
     }
 
     @Override
     public List<Campana> listarPorParcela(Long parcelaId) {
-        return jpaRepository.findByParcelaIdOrderByFechaInicioDesc(parcelaId);
+        return jpaRepository.findByParcelaIdOrderByFechaInicioDesc(parcelaId)
+                .stream().map(CampanaPersistenceMapper::toDomain).toList();
     }
 
     @Override
@@ -44,6 +47,6 @@ public class CampanaPersistenceAdapter implements CampanaRepository {
 
     @Override
     public boolean existeAbiertaEnParcela(Long parcelaId) {
-        return jpaRepository.existsByParcelaIdAndEstadoNot(parcelaId, "FINALIZADA");
+        return jpaRepository.existsByParcelaIdAndEstadoNot(parcelaId, EstadoCampana.FINALIZADA);
     }
 }

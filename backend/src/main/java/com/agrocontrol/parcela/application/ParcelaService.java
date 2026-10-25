@@ -1,6 +1,7 @@
 package com.agrocontrol.parcela.application;
 
 import com.agrocontrol.campana.domain.CampanaRepository;
+import com.agrocontrol.parcela.domain.EstadoParcela;
 import com.agrocontrol.parcela.domain.Parcela;
 import com.agrocontrol.parcela.domain.ParcelaRepository;
 import com.agrocontrol.predio.domain.Predio;
@@ -53,7 +54,7 @@ public class ParcelaService {
     }
 
     @Transactional
-    public Parcela actualizar(Long id, Long predioId, String codigo, BigDecimal areaHa, String estado) {
+    public Parcela actualizar(Long id, Long predioId, String codigo, BigDecimal areaHa, EstadoParcela estado) {
         Parcela parcela = obtener(id);
         boolean cambiaDePredio = !parcela.getPredioId().equals(predioId);
         if (cambiaDePredio) {
@@ -79,7 +80,7 @@ public class ParcelaService {
         if (estado != null) {
             parcela.cambiarEstado(estado);
         }
-        return parcela;
+        return parcelaRepository.guardar(parcela);
     }
 
     @Transactional

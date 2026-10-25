@@ -42,7 +42,6 @@ public class PredioService {
 
     @Transactional
     public Predio actualizar(Long id, String nombre, String ubicacion, BigDecimal areaHa, boolean activo) {
-        // Entidad gestionada: los cambios se escriben con UPDATE por dirty checking al cerrar la transacción
         Predio predio = obtener(id);
         predio.renombrar(nombre.trim());
         predio.actualizarUbicacion(ubicacion);
@@ -52,7 +51,7 @@ public class PredioService {
         } else {
             predio.desactivar();
         }
-        return predio;
+        return predioRepository.guardar(predio);
     }
 
     @Transactional

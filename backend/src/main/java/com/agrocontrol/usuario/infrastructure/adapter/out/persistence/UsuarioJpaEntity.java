@@ -1,6 +1,7 @@
 package com.agrocontrol.usuario.infrastructure.adapter.out.persistence;
 
 import com.agrocontrol.rol.infrastructure.adapter.out.persistence.RolJpaEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

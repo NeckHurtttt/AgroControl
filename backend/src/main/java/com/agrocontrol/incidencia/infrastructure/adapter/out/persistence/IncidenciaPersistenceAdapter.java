@@ -18,16 +18,19 @@ public class IncidenciaPersistenceAdapter implements IncidenciaRepository {
 
     @Override
     public Incidencia guardar(Incidencia incidencia) {
-        return jpaRepository.save(incidencia);
+        return IncidenciaPersistenceMapper.toDomain(
+                       jpaRepository.save(IncidenciaPersistenceMapper.toEntity(incidencia)));
     }
 
     @Override
     public List<Incidencia> listarTodas() {
-        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
+        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"))
+                .stream().map(IncidenciaPersistenceMapper::toDomain).toList();
     }
 
     @Override
     public List<Incidencia> listarPorParcela(Long parcelaId) {
-        return jpaRepository.findByParcelaIdOrderByFechaDesc(parcelaId);
+        return jpaRepository.findByParcelaIdOrderByFechaDesc(parcelaId)
+                .stream().map(IncidenciaPersistenceMapper::toDomain).toList();
     }
 }

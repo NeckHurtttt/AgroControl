@@ -14,10 +14,10 @@ class CampanaTest {
     @Test
     void cicloPlanificadaEnCursoFinalizada() {
         Campana campana = new Campana(null, 1L, 2L, inicio);
-        assertThat(campana.getEstado()).isEqualTo("PLANIFICADA");
+        assertThat(campana.getEstado()).isEqualTo(EstadoCampana.PLANIFICADA);
 
         campana.iniciar();
-        assertThat(campana.getEstado()).isEqualTo("EN_CURSO");
+        assertThat(campana.getEstado()).isEqualTo(EstadoCampana.EN_CURSO);
 
         campana.finalizar(inicio.plusMonths(4));
         assertThat(campana.estaFinalizada()).isTrue();

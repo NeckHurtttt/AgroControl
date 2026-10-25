@@ -1,28 +1,21 @@
 package com.agrocontrol.cultivo.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "cultivo", schema = "agrocontrol")
 public class Cultivo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_cultivo")
     private Long id;
-
-    @Column(name = "nombre", nullable = false, unique = true, length = 80)
     private String nombre;
-
-    @Column(name = "ciclo_dias")
     private Integer cicloDias;
 
-    protected Cultivo() {
+    private Cultivo() {
+    }
+
+    // Rehidrata un registro ya guardado (lo usa el mapper de persistencia): no repite las validaciones de alta.
+    public static Cultivo reconstruir(Long id, String nombre, Integer cicloDias) {
+        Cultivo c = new Cultivo();
+        c.id = id;
+        c.nombre = nombre;
+        c.cicloDias = cicloDias;
+        return c;
     }
 
     public Cultivo(Long id, String nombre, Integer cicloDias) {

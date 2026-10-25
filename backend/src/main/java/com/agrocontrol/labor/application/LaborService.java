@@ -4,6 +4,7 @@ import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.auth.domain.Roles;
 import com.agrocontrol.labor.domain.AsignacionLabor;
+import com.agrocontrol.labor.domain.EstadoLabor;
 import com.agrocontrol.labor.domain.Labor;
 import com.agrocontrol.labor.domain.LaborRepository;
 import com.agrocontrol.rol.domain.Rol;
@@ -63,8 +64,11 @@ public class LaborService {
     @Transactional
     public Labor ejecutar(Long id, LocalDate fechaEjecucion) {
         Labor labor = obtener(id);
+        if (campanaDe(labor).estaFinalizada()) {
+            throw new ConflictoException("No se pueden ejecutar labores de una campaña finalizada");
+        }
         labor.ejecutar(fechaEjecucion);
-        return labor;
+        return laborRepository.guardar(labor);
     }
 
     // RN-05: el operario solo ve y reporta las labores que tiene asignadas
@@ -87,7 +91,7 @@ public class LaborService {
     @Transactional
     public AsignacionLabor asignar(Long laborId, Long usuarioId) {
         Labor labor = obtener(laborId);
-        if (!"PLANIFICADA".equals(labor.getEstado())) {
+        if (labor.getEstado() != EstadoLabor.PLANIFICADA) {
             throw new ConflictoException("Solo se asignan operarios a labores planificadas");
         }
         Usuario usuario = usuarioRepository.buscarPorId(usuarioId)
@@ -108,5 +112,10 @@ public class LaborService {
     @Transactional(readOnly = true)
     public List<AsignacionLabor> listarAsignaciones() {
         return laborRepository.listarAsignaciones();
+    }
+
+    private Campana campanaDe(Labor labor) {
+        return campanaRepository.buscarPorId(labor.getCampanaId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe la campaña con id: " + labor.getCampanaId()));
     }
 }

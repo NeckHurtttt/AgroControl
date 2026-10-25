@@ -1,5 +1,6 @@
 package com.agrocontrol.campana.infrastructure.adapter.in.web.dto;
 
+import com.agrocontrol.campana.domain.EstadoCampana;
 import com.agrocontrol.campana.domain.Campana;
 
 import java.time.LocalDate;
@@ -10,7 +11,7 @@ public record CampanaResponse(
         Long cultivoId,
         LocalDate fechaInicio,
         LocalDate fechaFin,
-        String estado
+        EstadoCampana estado
 ) {
     public static CampanaResponse desde(Campana campana) {
         return new CampanaResponse(

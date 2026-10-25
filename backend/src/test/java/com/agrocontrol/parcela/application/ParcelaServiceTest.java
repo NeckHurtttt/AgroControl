@@ -1,6 +1,7 @@
 package com.agrocontrol.parcela.application;
 
 import com.agrocontrol.campana.domain.CampanaRepository;
+import com.agrocontrol.parcela.domain.EstadoParcela;
 import com.agrocontrol.parcela.domain.Parcela;
 import com.agrocontrol.parcela.domain.ParcelaRepository;
 import com.agrocontrol.predio.domain.Predio;
@@ -82,11 +83,12 @@ class ParcelaServiceTest {
         when(parcelaRepository.buscarPorId(10L)).thenReturn(Optional.of(parcela));
         when(predioRepository.buscarPorId(2L)).thenReturn(Optional.of(predio(2L, true)));
         when(parcelaRepository.existeCodigoEnPredioEnOtraParcela(2L, "P-01", 10L)).thenReturn(false);
+        when(parcelaRepository.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        Parcela actualizada = service.actualizar(10L, 2L, "P-01", null, "EN_DESCANSO");
+        Parcela actualizada = service.actualizar(10L, 2L, "P-01", null, EstadoParcela.EN_DESCANSO);
 
         assertThat(actualizada.getPredioId()).isEqualTo(2L);
-        assertThat(actualizada.getEstado()).isEqualTo("EN_DESCANSO");
+        assertThat(actualizada.getEstado()).isEqualTo(EstadoParcela.EN_DESCANSO);
     }
 
     @Test

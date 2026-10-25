@@ -1,5 +1,6 @@
 package com.agrocontrol.insumo.application;
 
+import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.insumo.domain.ConsumoLabor;
 import com.agrocontrol.insumo.domain.ConsumoLaborRepository;
 import com.agrocontrol.insumo.domain.Insumo;
@@ -9,6 +10,7 @@ import com.agrocontrol.insumo.domain.MovimientoInsumoRepository;
 import com.agrocontrol.insumo.domain.TipoMovimiento;
 import com.agrocontrol.labor.domain.Labor;
 import com.agrocontrol.labor.domain.LaborRepository;
+import com.agrocontrol.shared.domain.ConflictoException;
 import com.agrocontrol.shared.domain.RecursoNoEncontradoException;
 import com.agrocontrol.usuario.domain.UsuarioRepository;
 import com.agrocontrol.usuario.domain.exception.UsuarioNoEncontradoException;
@@ -24,15 +26,17 @@ public class InventarioService {
     private final ConsumoLaborRepository consumoRepository;
     private final LaborRepository laborRepository;
     private final UsuarioRepository usuarioRepository;
+    private final CampanaRepository campanaRepository;
 
     public InventarioService(InsumoRepository insumoRepository, MovimientoInsumoRepository movimientoRepository,
                              ConsumoLaborRepository consumoRepository, LaborRepository laborRepository,
-                             UsuarioRepository usuarioRepository) {
+                             UsuarioRepository usuarioRepository, CampanaRepository campanaRepository) {
         this.insumoRepository = insumoRepository;
         this.movimientoRepository = movimientoRepository;
         this.consumoRepository = consumoRepository;
         this.laborRepository = laborRepository;
         this.usuarioRepository = usuarioRepository;
+        this.campanaRepository = campanaRepository;
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +68,7 @@ public class InventarioService {
         Insumo insumo = obtenerInsumoParaActualizar(insumoId);
         verificarUsuario(usuarioId);
         aplicar(insumo, tipo, cantidad);
+        insumoRepository.guardar(insumo);
         return movimientoRepository.guardar(new MovimientoInsumo(null, insumoId, tipo, cantidad, motivo, usuarioId));
     }
 
@@ -77,9 +82,15 @@ public class InventarioService {
     @Transactional
     public ConsumoLabor registrarConsumo(Long laborId, Long insumoId, BigDecimal cantidad, Long usuarioId) {
         Labor labor = obtenerLabor(laborId);
+        boolean campanaFinalizada = campanaRepository.buscarPorId(labor.getCampanaId())
+                .map(campana -> campana.estaFinalizada()).orElse(false);
+        if (campanaFinalizada) {
+            throw new ConflictoException("No se registran consumos en labores de una campaña finalizada");
+        }
         Insumo insumo = obtenerInsumoParaActualizar(insumoId);
         verificarUsuario(usuarioId);
         insumo.registrarSalida(cantidad);
+        insumoRepository.guardar(insumo);
         String motivo = "Consumo en labor " + labor.getId() + " (" + labor.getTipo() + ")";
         movimientoRepository.guardar(new MovimientoInsumo(null, insumoId, TipoMovimiento.SALIDA, cantidad, motivo, usuarioId));
         return consumoRepository.guardar(new ConsumoLabor(null, laborId, insumoId, cantidad));

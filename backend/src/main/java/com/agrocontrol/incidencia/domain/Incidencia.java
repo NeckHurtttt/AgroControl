@@ -1,42 +1,32 @@
 package com.agrocontrol.incidencia.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "incidencia", schema = "agrocontrol")
 public class Incidencia {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_incidencia")
     private Long id;
-
-    @Column(name = "id_parcela")
     private Long parcelaId;
-
-    @Column(name = "id_campana")
     private Long campanaId;
-
-    @Column(name = "id_labor")
     private Long laborId;
-
-    @Column(name = "descripcion", nullable = false, columnDefinition = "text")
     private String descripcion;
-
-    @Column(name = "id_usuario", nullable = false)
     private Long usuarioId;
-
-    @Column(name = "fecha", nullable = false, updatable = false)
     private LocalDateTime fecha = LocalDateTime.now();
 
-    protected Incidencia() {
+    private Incidencia() {
+    }
+
+    // Rehidrata un registro ya guardado (lo usa el mapper de persistencia): no repite las validaciones de alta.
+    public static Incidencia reconstruir(Long id, Long parcelaId, Long campanaId, Long laborId, String descripcion,
+                                         Long usuarioId, LocalDateTime fecha) {
+        Incidencia i = new Incidencia();
+        i.id = id;
+        i.parcelaId = parcelaId;
+        i.campanaId = campanaId;
+        i.laborId = laborId;
+        i.descripcion = descripcion;
+        i.usuarioId = usuarioId;
+        i.fecha = fecha;
+        return i;
     }
 
     public Incidencia(Long id, Long parcelaId, Long campanaId, Long laborId, String descripcion, Long usuarioId) {

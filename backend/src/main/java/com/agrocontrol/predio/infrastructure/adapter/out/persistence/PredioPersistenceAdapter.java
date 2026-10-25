@@ -19,17 +19,17 @@ public class PredioPersistenceAdapter implements PredioRepository {
 
     @Override
     public Predio guardar(Predio predio) {
-        return jpaRepository.save(predio);
+        return PredioPersistenceMapper.toDomain(jpaRepository.save(PredioPersistenceMapper.toEntity(predio)));
     }
 
     @Override
     public Optional<Predio> buscarPorId(Long id) {
-        return jpaRepository.findById(id);
+        return jpaRepository.findById(id).map(PredioPersistenceMapper::toDomain);
     }
 
     @Override
     public List<Predio> listarTodos() {
-        return jpaRepository.findAll(Sort.by("id"));
+        return jpaRepository.findAll(Sort.by("id")).stream().map(PredioPersistenceMapper::toDomain).toList();
     }
 
     @Override

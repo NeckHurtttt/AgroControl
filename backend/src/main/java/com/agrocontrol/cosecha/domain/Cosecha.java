@@ -1,40 +1,31 @@
 package com.agrocontrol.cosecha.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "cosecha", schema = "agrocontrol")
 public class Cosecha {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_cosecha")
     private Long id;
-
-    @Column(name = "id_campana", nullable = false)
     private Long campanaId;
-
-    @Column(name = "cantidad", nullable = false, precision = 12, scale = 2)
     private BigDecimal cantidad;
-
-    @Column(name = "unidad_medida", nullable = false, length = 20)
     private String unidadMedida;
-
-    @Column(name = "fecha", nullable = false, updatable = false)
     private LocalDate fecha = LocalDate.now();
-
-    @Column(name = "id_usuario", nullable = false)
     private Long usuarioId;
 
-    protected Cosecha() {
+    private Cosecha() {
+    }
+
+    // Rehidrata un registro ya guardado (lo usa el mapper de persistencia): no repite las validaciones de alta.
+    public static Cosecha reconstruir(Long id, Long campanaId, BigDecimal cantidad, String unidadMedida,
+                                      LocalDate fecha, Long usuarioId) {
+        Cosecha c = new Cosecha();
+        c.id = id;
+        c.campanaId = campanaId;
+        c.cantidad = cantidad;
+        c.unidadMedida = unidadMedida;
+        c.fecha = fecha;
+        c.usuarioId = usuarioId;
+        return c;
     }
 
     public Cosecha(Long id, Long campanaId, BigDecimal cantidad, String unidadMedida, Long usuarioId) {

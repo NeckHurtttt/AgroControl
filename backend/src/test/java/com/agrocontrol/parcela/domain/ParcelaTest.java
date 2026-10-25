@@ -13,7 +13,7 @@ class ParcelaTest {
     void nuevaParcelaQuedaDisponible() {
         Parcela parcela = new Parcela(null, 1L, "P-01", new BigDecimal("2.50"));
 
-        assertThat(parcela.getEstado()).isEqualTo("DISPONIBLE");
+        assertThat(parcela.getEstado()).isEqualTo(EstadoParcela.DISPONIBLE);
     }
 
     @Test

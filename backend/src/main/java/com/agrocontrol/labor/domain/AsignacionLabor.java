@@ -1,38 +1,25 @@
 package com.agrocontrol.labor.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-
 import java.time.LocalDateTime;
 
-@Entity
-@Table(
-        name = "asignacion_labor",
-        schema = "agrocontrol",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"id_labor", "id_usuario"})
-)
 public class AsignacionLabor {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_asignacion")
     private Long id;
-
-    @Column(name = "id_labor", nullable = false)
     private Long laborId;
-
-    @Column(name = "id_usuario", nullable = false)
     private Long usuarioId;
-
-    @Column(name = "asignado_en", nullable = false, updatable = false)
     private LocalDateTime asignadoEn = LocalDateTime.now();
 
-    protected AsignacionLabor() {
+    private AsignacionLabor() {
+    }
+
+    // Rehidrata un registro ya guardado (lo usa el mapper de persistencia): no repite las validaciones de alta.
+    public static AsignacionLabor reconstruir(Long id, Long laborId, Long usuarioId, LocalDateTime asignadoEn) {
+        AsignacionLabor a = new AsignacionLabor();
+        a.id = id;
+        a.laborId = laborId;
+        a.usuarioId = usuarioId;
+        a.asignadoEn = asignadoEn;
+        return a;
     }
 
     public AsignacionLabor(Long id, Long laborId, Long usuarioId) {

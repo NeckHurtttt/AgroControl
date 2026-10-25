@@ -1,6 +1,7 @@
 package com.agrocontrol.parcela.infrastructure.adapter.in.web;
 
 import com.agrocontrol.parcela.application.ParcelaService;
+import com.agrocontrol.parcela.domain.EstadoParcela;
 import com.agrocontrol.parcela.domain.Parcela;
 import com.agrocontrol.parcela.infrastructure.adapter.in.web.dto.ActualizarParcelaRequest;
 import com.agrocontrol.parcela.infrastructure.adapter.in.web.dto.CrearParcelaRequest;
@@ -49,7 +50,8 @@ public class ParcelaController {
     @PutMapping("/{id}")
     public ParcelaResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarParcelaRequest request) {
         return ParcelaResponse.desde(service.actualizar(
-                id, request.predioId(), request.codigo(), request.areaHa(), request.estado()));
+                id, request.predioId(), request.codigo(), request.areaHa(),
+                request.estado() == null ? null : EstadoParcela.valueOf(request.estado())));
     }
 
     @DeleteMapping("/{id}")

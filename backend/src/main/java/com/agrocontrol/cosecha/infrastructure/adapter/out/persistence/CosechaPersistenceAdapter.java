@@ -18,16 +18,18 @@ public class CosechaPersistenceAdapter implements CosechaRepository {
 
     @Override
     public Cosecha guardar(Cosecha cosecha) {
-        return jpaRepository.save(cosecha);
+        return CosechaPersistenceMapper.toDomain(jpaRepository.save(CosechaPersistenceMapper.toEntity(cosecha)));
     }
 
     @Override
     public List<Cosecha> listarTodas() {
-        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
+        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"))
+                .stream().map(CosechaPersistenceMapper::toDomain).toList();
     }
 
     @Override
     public List<Cosecha> listarPorCampana(Long campanaId) {
-        return jpaRepository.findByCampanaIdOrderByFechaDesc(campanaId);
+        return jpaRepository.findByCampanaIdOrderByFechaDesc(campanaId)
+                .stream().map(CosechaPersistenceMapper::toDomain).toList();
     }
 }

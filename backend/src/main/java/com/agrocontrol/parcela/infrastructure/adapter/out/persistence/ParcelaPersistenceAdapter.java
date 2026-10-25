@@ -19,22 +19,23 @@ public class ParcelaPersistenceAdapter implements ParcelaRepository {
 
     @Override
     public Parcela guardar(Parcela parcela) {
-        return jpaRepository.save(parcela);
+        return ParcelaPersistenceMapper.toDomain(jpaRepository.save(ParcelaPersistenceMapper.toEntity(parcela)));
     }
 
     @Override
     public Optional<Parcela> buscarPorId(Long id) {
-        return jpaRepository.findById(id);
+        return jpaRepository.findById(id).map(ParcelaPersistenceMapper::toDomain);
     }
 
     @Override
     public List<Parcela> listarTodas() {
-        return jpaRepository.findAll(Sort.by("id"));
+        return jpaRepository.findAll(Sort.by("id")).stream().map(ParcelaPersistenceMapper::toDomain).toList();
     }
 
     @Override
     public List<Parcela> listarPorPredio(Long predioId) {
-        return jpaRepository.findByPredioIdOrderByIdAsc(predioId);
+        return jpaRepository.findByPredioIdOrderByIdAsc(predioId)
+                .stream().map(ParcelaPersistenceMapper::toDomain).toList();
     }
 
     @Override

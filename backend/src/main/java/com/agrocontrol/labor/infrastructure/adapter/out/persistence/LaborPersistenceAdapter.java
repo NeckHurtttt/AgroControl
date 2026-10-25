@@ -23,27 +23,29 @@ public class LaborPersistenceAdapter implements LaborRepository {
 
     @Override
     public Labor guardar(Labor labor) {
-        return jpaRepository.save(labor);
+        return LaborPersistenceMapper.toDomain(jpaRepository.save(LaborPersistenceMapper.toEntity(labor)));
     }
 
     @Override
     public Optional<Labor> buscarPorId(Long id) {
-        return jpaRepository.findById(id);
+        return jpaRepository.findById(id).map(LaborPersistenceMapper::toDomain);
     }
 
     @Override
     public List<Labor> listarTodas() {
-        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fechaPlan"));
+        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fechaPlan"))
+                .stream().map(LaborPersistenceMapper::toDomain).toList();
     }
 
     @Override
     public List<Labor> listarPorCampana(Long campanaId) {
-        return jpaRepository.findByCampanaIdOrderByFechaPlanAsc(campanaId);
+        return jpaRepository.findByCampanaIdOrderByFechaPlanAsc(campanaId)
+                .stream().map(LaborPersistenceMapper::toDomain).toList();
     }
 
     @Override
     public List<Labor> listarAsignadasA(Long usuarioId) {
-        return jpaRepository.findAsignadasA(usuarioId);
+        return jpaRepository.findAsignadasA(usuarioId).stream().map(LaborPersistenceMapper::toDomain).toList();
     }
 
     @Override
@@ -53,11 +55,12 @@ public class LaborPersistenceAdapter implements LaborRepository {
 
     @Override
     public AsignacionLabor asignar(AsignacionLabor asignacion) {
-        return asignacionJpaRepository.save(asignacion);
+        return AsignacionLaborPersistenceMapper.toDomain(
+                       asignacionJpaRepository.save(AsignacionLaborPersistenceMapper.toEntity(asignacion)));
     }
 
     @Override
     public List<AsignacionLabor> listarAsignaciones() {
-        return asignacionJpaRepository.findAll();
+        return asignacionJpaRepository.findAll().stream().map(AsignacionLaborPersistenceMapper::toDomain).toList();
     }
 }

@@ -2,6 +2,7 @@ package com.agrocontrol.cosecha.application;
 
 import com.agrocontrol.campana.domain.Campana;
 import com.agrocontrol.campana.domain.CampanaRepository;
+import com.agrocontrol.campana.domain.EstadoCampana;
 import com.agrocontrol.cosecha.domain.Cosecha;
 import com.agrocontrol.cosecha.domain.CosechaRepository;
 import com.agrocontrol.shared.domain.ConflictoException;
@@ -38,7 +39,7 @@ public class CosechaService {
     public Cosecha registrar(Long campanaId, BigDecimal cantidad, String unidadMedida, Long usuarioId) {
         Campana campana = campanaRepository.buscarPorId(campanaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe la campaña con id: " + campanaId));
-        if ("PLANIFICADA".equals(campana.getEstado())) {
+        if (campana.getEstado() == EstadoCampana.PLANIFICADA) {
             throw new ConflictoException("No se puede cosechar una campaña que todavía no se inició");
         }
         if (usuarioRepository.buscarPorId(usuarioId).isEmpty()) {

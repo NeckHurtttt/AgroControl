@@ -1,5 +1,6 @@
 package com.agrocontrol.insumo.infrastructure.config;
 
+import com.agrocontrol.campana.domain.CampanaRepository;
 import com.agrocontrol.insumo.application.InventarioService;
 import com.agrocontrol.insumo.domain.ConsumoLaborRepository;
 import com.agrocontrol.insumo.domain.InsumoRepository;
@@ -17,8 +18,9 @@ public class InsumoConfig {
                                                MovimientoInsumoRepository movimientoRepository,
                                                ConsumoLaborRepository consumoRepository,
                                                LaborRepository laborRepository,
-                                               UsuarioRepository usuarioRepository) {
+                                               UsuarioRepository usuarioRepository,
+                                               CampanaRepository campanaRepository) {
         return new InventarioService(insumoRepository, movimientoRepository, consumoRepository,
-                laborRepository, usuarioRepository);
+                laborRepository, usuarioRepository, campanaRepository);
     }
 }

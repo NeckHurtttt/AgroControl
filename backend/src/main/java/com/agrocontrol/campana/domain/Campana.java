@@ -1,39 +1,30 @@
 package com.agrocontrol.campana.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "campana", schema = "agrocontrol")
 public class Campana {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_campana")
     private Long id;
-
-    @Column(name = "id_parcela", nullable = false)
     private Long parcelaId;
-
-    @Column(name = "id_cultivo", nullable = false)
     private Long cultivoId;
-
-    @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
-
-    @Column(name = "fecha_fin")
     private LocalDate fechaFin;
+    private EstadoCampana estado;
 
-    @Column(name = "estado", nullable = false, length = 20)
-    private String estado;
+    private Campana() {
+    }
 
-    protected Campana() {
+    // Rehidrata un registro ya guardado (lo usa el mapper de persistencia): no repite las validaciones de alta.
+    public static Campana reconstruir(Long id, Long parcelaId, Long cultivoId, LocalDate fechaInicio,
+                                      LocalDate fechaFin, EstadoCampana estado) {
+        Campana c = new Campana();
+        c.id = id;
+        c.parcelaId = parcelaId;
+        c.cultivoId = cultivoId;
+        c.fechaInicio = fechaInicio;
+        c.fechaFin = fechaFin;
+        c.estado = estado;
+        return c;
     }
 
     public Campana(Long id, Long parcelaId, Long cultivoId, LocalDate fechaInicio) {
@@ -50,18 +41,18 @@ public class Campana {
         this.parcelaId = parcelaId;
         this.cultivoId = cultivoId;
         this.fechaInicio = fechaInicio;
-        this.estado = "PLANIFICADA";
+        this.estado = EstadoCampana.PLANIFICADA;
     }
 
     public void iniciar() {
-        if (!"PLANIFICADA".equals(estado)) {
+        if (estado != EstadoCampana.PLANIFICADA) {
             throw new IllegalStateException("Solo se puede iniciar una campaña PLANIFICADA (estado actual: " + estado + ")");
         }
-        this.estado = "EN_CURSO";
+        this.estado = EstadoCampana.EN_CURSO;
     }
 
     public boolean estaFinalizada() {
-        return "FINALIZADA".equals(estado);
+        return estado == EstadoCampana.FINALIZADA;
     }
 
     public void finalizar(LocalDate fechaFin) {
@@ -75,14 +66,7 @@ public class Campana {
             throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio");
         }
         this.fechaFin = fechaFin;
-        this.estado = "FINALIZADA";
-    }
-
-    public void cambiarEstado(String estado) {
-        if (estado == null || estado.isBlank()) {
-            throw new IllegalArgumentException("El estado de la campaña no puede estar vacío");
-        }
-        this.estado = estado;
+        this.estado = EstadoCampana.FINALIZADA;
     }
 
     public Long getId() { return id; }
@@ -90,5 +74,5 @@ public class Campana {
     public Long getCultivoId() { return cultivoId; }
     public LocalDate getFechaInicio() { return fechaInicio; }
     public LocalDate getFechaFin() { return fechaFin; }
-    public String getEstado() { return estado; }
+    public EstadoCampana getEstado() { return estado; }
 }

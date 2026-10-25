@@ -1,5 +1,6 @@
 package com.agrocontrol.labor.infrastructure.adapter.in.web.dto;
 
+import com.agrocontrol.labor.domain.EstadoLabor;
 import com.agrocontrol.labor.domain.Labor;
 
 import java.time.LocalDate;
@@ -11,7 +12,7 @@ public record LaborResponse(
         String tipo,
         LocalDate fechaPlan,
         LocalDate fechaEjecucion,
-        String estado
+        EstadoLabor estado
 ) {
     public static LaborResponse desde(Labor labor) {
         return new LaborResponse(

@@ -19,17 +19,17 @@ public class CultivoPersistenceAdapter implements CultivoRepository {
 
     @Override
     public Cultivo guardar(Cultivo cultivo) {
-        return jpaRepository.save(cultivo);
+        return CultivoPersistenceMapper.toDomain(jpaRepository.save(CultivoPersistenceMapper.toEntity(cultivo)));
     }
 
     @Override
     public Optional<Cultivo> buscarPorId(Long id) {
-        return jpaRepository.findById(id);
+        return jpaRepository.findById(id).map(CultivoPersistenceMapper::toDomain);
     }
 
     @Override
     public List<Cultivo> listarTodos() {
-        return jpaRepository.findAll(Sort.by("nombre"));
+        return jpaRepository.findAll(Sort.by("nombre")).stream().map(CultivoPersistenceMapper::toDomain).toList();
     }
 
     @Override

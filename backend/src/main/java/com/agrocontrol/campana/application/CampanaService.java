@@ -57,13 +57,13 @@ public class CampanaService {
     public Campana iniciar(Long id) {
         Campana campana = obtener(id);
         campana.iniciar();
-        return campana;
+        return campanaRepository.guardar(campana);
     }
 
     @Transactional
     public Campana finalizar(Long id, LocalDate fechaFin) {
         Campana campana = obtener(id);
         campana.finalizar(fechaFin);
-        return campana;
+        return campanaRepository.guardar(campana);
     }
 }

@@ -30,41 +30,45 @@ public class InsumoPersistenceAdapter implements InsumoRepository, MovimientoIns
 
     @Override
     public Insumo guardar(Insumo insumo) {
-        return insumoJpaRepository.save(insumo);
+        return InsumoPersistenceMapper.toDomain(insumoJpaRepository.save(InsumoPersistenceMapper.toEntity(insumo)));
     }
 
     @Override
     public Optional<Insumo> buscarPorId(Long id) {
-        return insumoJpaRepository.findById(id);
+        return insumoJpaRepository.findById(id).map(InsumoPersistenceMapper::toDomain);
     }
 
     @Override
     public Optional<Insumo> buscarPorIdParaActualizar(Long id) {
-        return insumoJpaRepository.findByIdParaActualizar(id);
+        return insumoJpaRepository.findByIdParaActualizar(id).map(InsumoPersistenceMapper::toDomain);
     }
 
     @Override
     public List<Insumo> listarTodos() {
-        return insumoJpaRepository.findAll(Sort.by("nombre"));
+        return insumoJpaRepository.findAll(Sort.by("nombre")).stream().map(InsumoPersistenceMapper::toDomain).toList();
     }
 
     @Override
     public MovimientoInsumo guardar(MovimientoInsumo movimiento) {
-        return movimientoJpaRepository.save(movimiento);
+        return MovimientoInsumoPersistenceMapper.toDomain(
+                       movimientoJpaRepository.save(MovimientoInsumoPersistenceMapper.toEntity(movimiento)));
     }
 
     @Override
     public List<MovimientoInsumo> listarPorInsumo(Long insumoId) {
-        return movimientoJpaRepository.findByInsumoIdOrderByFechaDesc(insumoId);
+        return movimientoJpaRepository.findByInsumoIdOrderByFechaDesc(insumoId)
+                .stream().map(MovimientoInsumoPersistenceMapper::toDomain).toList();
     }
 
     @Override
     public ConsumoLabor guardar(ConsumoLabor consumo) {
-        return consumoJpaRepository.save(consumo);
+        return ConsumoLaborPersistenceMapper.toDomain(
+                       consumoJpaRepository.save(ConsumoLaborPersistenceMapper.toEntity(consumo)));
     }
 
     @Override
     public List<ConsumoLabor> listarPorLabor(Long laborId) {
-        return consumoJpaRepository.findByLaborIdOrderByFechaAsc(laborId);
+        return consumoJpaRepository.findByLaborIdOrderByFechaAsc(laborId)
+                .stream().map(ConsumoLaborPersistenceMapper::toDomain).toList();
     }
 }

@@ -1,36 +1,27 @@
 package com.agrocontrol.predio.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "predio", schema = "agrocontrol")
 public class Predio {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_predio")
     private Long id;
-
-    @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
-
-    @Column(name = "ubicacion", length = 200)
     private String ubicacion;
-
-    @Column(name = "area_ha", precision = 10, scale = 2)
     private BigDecimal areaHa;
-
-    @Column(name = "activo", nullable = false)
     private boolean activo;
 
-    protected Predio() {
+    private Predio() {
+    }
+
+    // Rehidrata un registro ya guardado (lo usa el mapper de persistencia): no repite las validaciones de alta.
+    public static Predio reconstruir(Long id, String nombre, String ubicacion, BigDecimal areaHa, boolean activo) {
+        Predio p = new Predio();
+        p.id = id;
+        p.nombre = nombre;
+        p.ubicacion = ubicacion;
+        p.areaHa = areaHa;
+        p.activo = activo;
+        return p;
     }
 
     public Predio(Long id, String nombre, String ubicacion, BigDecimal areaHa) {
