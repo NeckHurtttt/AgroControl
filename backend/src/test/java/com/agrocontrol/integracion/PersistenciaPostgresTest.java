@@ -1,0 +1,98 @@
+package com.agrocontrol.integracion;
+
+import com.agrocontrol.campana.application.CampanaService;
+import com.agrocontrol.campana.domain.Campana;
+import com.agrocontrol.campana.domain.EstadoCampana;
+import com.agrocontrol.insumo.application.InventarioService;
+import com.agrocontrol.insumo.domain.Insumo;
+import com.agrocontrol.insumo.domain.TipoMovimiento;
+import com.agrocontrol.parcela.domain.ParcelaRepository;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+// Levanta la aplicación completa contra un PostgreSQL 17 real: Flyway aplica V1–V4 y se prueban
+// los mapeos JPA, los CHECK de la base y el bloqueo de stock. Sin Docker, se salta.
+@SpringBootTest
+@Testcontainers(disabledWithoutDocker = true)
+class PersistenciaPostgresTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
+
+    @Autowired
+    private ParcelaRepository parcelaRepository;
+    @Autowired
+    private CampanaService campanaService;
+    @Autowired
+    private InventarioService inventarioService;
+    @Autowired
+    private JdbcTemplate jdbc;
+
+    @Test
+    void lasMigracionesCreanElEsquemaYCarganLaSemilla() {
+        assertThat(parcelaRepository.listarTodas()).isNotEmpty();
+        Integer version = jdbc.queryForObject(
+                "SELECT max(version::int) FROM flyway_schema_history WHERE success", Integer.class);
+        assertThat(version).isEqualTo(4);
+    }
+
+    @Test
+    void laBaseRechazaUnEstadoQueNoExiste() {
+        assertThatThrownBy(() -> jdbc.update("UPDATE agrocontrol.labor SET estado = 'CUALQUIERA'"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void elCambioDeEstadoSeGuardaEnLaBase() {
+        Long parcelaId = jdbc.queryForObject(
+                "SELECT min(id_parcela) FROM agrocontrol.parcela p WHERE NOT EXISTS "
+                        + "(SELECT 1 FROM agrocontrol.campana c WHERE c.id_parcela = p.id_parcela AND c.estado <> 'FINALIZADA')",
+                Long.class);
+        Long cultivoId = jdbc.queryForObject("SELECT min(id_cultivo) FROM agrocontrol.cultivo", Long.class);
+        Campana creada = campanaService.crear(parcelaId, cultivoId, LocalDate.now());
+
+        campanaService.iniciar(creada.getId());
+
+        assertThat(campanaService.obtener(creada.getId()).getEstado()).isEqualTo(EstadoCampana.EN_CURSO);
+    }
+
+    @Test
+    void salidasSimultaneasNoPierdenStock() throws Exception {
+        Long usuarioId = jdbc.queryForObject("SELECT min(id_usuario) FROM agrocontrol.usuario", Long.class);
+        Insumo insumo = inventarioService.crearInsumo("Prueba de concurrencia", "kg");
+        inventarioService.registrarMovimiento(insumo.getId(), TipoMovimiento.ENTRADA, new BigDecimal("100"), null, usuarioId);
+
+        ExecutorService hilos = Executors.newFixedThreadPool(10);
+        List<Future<?>> salidas = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            salidas.add(hilos.submit(() -> inventarioService.registrarMovimiento(
+                    insumo.getId(), TipoMovimiento.SALIDA, new BigDecimal("5"), null, usuarioId)));
+        }
+        for (Future<?> salida : salidas) {
+            salida.get();
+        }
+        hilos.shutdown();
+
+        assertThat(inventarioService.obtenerInsumo(insumo.getId()).getStockActual()).isEqualByComparingTo("0");
+        assertThat(inventarioService.listarMovimientos(insumo.getId())).hasSize(21);
+    }
+}
