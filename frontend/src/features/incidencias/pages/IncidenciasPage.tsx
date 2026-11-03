@@ -67,7 +67,7 @@ export default function IncidenciasPage() {
     labores: [] as Labor[],
     usuarios: [] as Usuario[],
     catalogos: { predios: [], parcelas: [], cultivos: [] },
-  });
+  }, undefined, 'incidencias');
   const { incidencias, campanas, labores, usuarios, catalogos } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const { puede } = useAuth();

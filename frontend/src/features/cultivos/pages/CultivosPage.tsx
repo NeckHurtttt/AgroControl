@@ -36,7 +36,7 @@ export default function CultivosPage() {
     campanas: [] as Campana[],
     cosechas: [] as Cosecha[],
     parcelas: [] as Parcela[],
-  });
+  }, undefined, 'cultivos');
   const { cultivos, campanas, cosechas, parcelas } = datos;
   const setCultivos = (cambiar: (prev: Cultivo[]) => Cultivo[]) =>
     setDatos((prev) => ({ ...prev, cultivos: cambiar(prev.cultivos) }));

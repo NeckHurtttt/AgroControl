@@ -1,22 +1,26 @@
+import { lazy } from 'react';
 import { Route, Routes } from 'react-router';
 import MainLayout from '../layouts/MainLayout';
-import DashboardPage from '../pages/DashboardPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import { RequireAuth, RequireSeccion } from '../features/auth/components/RequireAuth';
 import CambiarPasswordPage from '../features/auth/pages/CambiarPasswordPage';
 import LoginPage from '../features/auth/pages/LoginPage';
-import PrediosPage from '../features/predios/pages/PrediosPage';
-import ParcelasPage from '../features/parcelas/pages/ParcelasPage';
-import CultivosPage from '../features/cultivos/pages/CultivosPage';
-import CampanasPage from '../features/campanas/pages/CampanasPage';
-import FichaCampanaPage from '../features/campanas/pages/FichaCampanaPage';
-import FichaParcelaPage from '../features/parcelas/pages/FichaParcelaPage';
-import LaboresPage from '../features/labores/pages/LaboresPage';
-import InsumosPage from '../features/insumos/pages/InsumosPage';
-import CosechasPage from '../features/cosechas/pages/CosechasPage';
-import IncidenciasPage from '../features/incidencias/pages/IncidenciasPage';
-import UsuariosPage from '../features/usuarios/pages/UsuariosPage';
-import AuditoriaPage from '../features/auditoria/pages/AuditoriaPage';
+import { PAGINAS } from './paginas';
+
+const DashboardPage = lazy(PAGINAS.inicio);
+const PrediosPage = lazy(PAGINAS.predios);
+const FichaPredioPage = lazy(PAGINAS.fichaPredio);
+const ParcelasPage = lazy(PAGINAS.parcelas);
+const FichaParcelaPage = lazy(PAGINAS.fichaParcela);
+const CultivosPage = lazy(PAGINAS.cultivos);
+const CampanasPage = lazy(PAGINAS.campanas);
+const FichaCampanaPage = lazy(PAGINAS.fichaCampana);
+const LaboresPage = lazy(PAGINAS.labores);
+const InsumosPage = lazy(PAGINAS.insumos);
+const CosechasPage = lazy(PAGINAS.cosechas);
+const IncidenciasPage = lazy(PAGINAS.incidencias);
+const UsuariosPage = lazy(PAGINAS.usuarios);
+const AuditoriaPage = lazy(PAGINAS.auditoria);
 
 export default function AppRouter() {
   return (
@@ -28,6 +32,7 @@ export default function AppRouter() {
           <Route index element={<DashboardPage />} />
           <Route element={<RequireSeccion seccion="predios" />}>
             <Route path="predios" element={<PrediosPage />} />
+            <Route path="predios/:id" element={<FichaPredioPage />} />
           </Route>
           <Route element={<RequireSeccion seccion="parcelas" />}>
             <Route path="parcelas" element={<ParcelasPage />} />

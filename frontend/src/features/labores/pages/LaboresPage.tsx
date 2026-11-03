@@ -80,7 +80,7 @@ export default function LaboresPage() {
     roles: [] as RolCatalogo[],
     asignaciones: [] as AsignacionLabor[],
     catalogos: { predios: [], parcelas: [], cultivos: [] },
-  });
+  }, undefined, 'labores');
   const { labores, campanas, insumos, usuarios, roles, asignaciones, catalogos } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [filtroCampana, setFiltroCampana] = useState('');

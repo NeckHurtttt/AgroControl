@@ -54,7 +54,7 @@ AGROCONTROL_DB_URL=jdbc:postgresql://localhost:5433/agrocontrol ./mvnw spring-bo
 cd frontend && npm install && npm run dev        # 3. en otra terminal: web en http://localhost:5173
 ```
 
-`./mvnw` (o `mvnw.cmd` en Windows) descarga Maven solo: no hace falta instalarlo. Las pruebas: `./mvnw test` en `backend/` y `npm run test:run` en `frontend/`; GitHub las corre en cada PR (`.github/workflows/ci.yml`).
+`./mvnw` (o `mvnw.cmd` en Windows) descarga Maven solo: no hace falta instalarlo. Las pruebas: `./mvnw test` en `backend/` y `npm run test:run` en `frontend/`, y los recorridos en navegador con `npm run test:e2e` (la primera vez, `npx playwright install chromium`; necesitan la app arriba); GitHub las corre en cada PR (`.github/workflows/ci.yml`).
 
 ## Capturas
 

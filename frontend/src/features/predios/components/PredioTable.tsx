@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import Button from '../../../components/ui/Button';
 import StatusBadge from '../../../components/ui/StatusBadge';
 import { formatArea } from '../../../utils/area';
@@ -31,7 +32,7 @@ export default function PredioTable({ predios, onEditar, onEliminar, deletingId 
             {predios.map((predio) => (
               <tr key={predio.id}>
                 <td>{predio.id}</td>
-                <td>{predio.nombre}</td>
+                <td><Link to={`/predios/${predio.id}`}>{predio.nombre}</Link></td>
                 <td>{predio.ubicacion ?? 'Sin ubicación'}</td>
                 <td>{formatArea(predio.areaHa)}</td>
                 <td><StatusBadge estado={predio.activo ? 'ACTIVO' : 'INACTIVO'} /></td>

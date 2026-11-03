@@ -53,7 +53,7 @@ export default function UsuariosPage() {
   const { datos, setDatos, loading, error } = useCarga(cargarDatos, {
     usuarios: [] as Usuario[],
     roles: [] as RolCatalogo[],
-  });
+  }, undefined, 'usuarios');
   const { usuarios, roles } = datos;
   const sesion = useSesion();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);

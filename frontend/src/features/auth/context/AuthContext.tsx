@@ -1,3 +1,4 @@
+import { limpiarCache } from '../../../shared/utils/cacheDatos';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { alExpirarSesion } from '../../../api/apiClient';
 import type { Sesion } from '../models/Sesion';
@@ -11,6 +12,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const cerrarSesion = useCallback(() => {
     guardarSesion(null);
+    limpiarCache();
     setSesion(null);
   }, []);
 

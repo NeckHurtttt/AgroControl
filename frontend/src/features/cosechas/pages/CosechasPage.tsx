@@ -48,7 +48,7 @@ export default function CosechasPage() {
     campanas: [] as Campana[],
     usuarios: [] as Usuario[],
     catalogos: { predios: [], parcelas: [], cultivos: [] },
-  });
+  }, undefined, 'cosechas');
   const { cosechas, campanas, usuarios, catalogos } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const puedeRegistrar = useAuth().puede('cosechas.registrar');

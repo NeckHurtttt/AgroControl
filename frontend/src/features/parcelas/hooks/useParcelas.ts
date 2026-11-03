@@ -14,7 +14,7 @@ const cargarParcelasYPredios = async (signal: AbortSignal) => {
 };
 
 export function useParcelas() {
-  const { datos, setDatos, loading, error, recargar } = useCarga(cargarParcelasYPredios, { parcelas: [], predios: [] });
+  const { datos, setDatos, loading, error, recargar } = useCarga(cargarParcelasYPredios, { parcelas: [], predios: [] }, undefined, 'parcelas');
 
   const setParcelas = useCallback(
     (actualizar: (prev: Parcela[]) => Parcela[]) =>

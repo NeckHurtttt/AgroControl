@@ -30,7 +30,7 @@ export default function InsumosPage() {
   const { datos, setDatos, loading, error, recargar } = useCarga(cargarDatos, {
     insumos: [] as Insumo[],
     usuarios: [] as Usuario[],
-  });
+  }, undefined, 'insumos');
   const { insumos, usuarios } = datos;
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const { puede } = useAuth();

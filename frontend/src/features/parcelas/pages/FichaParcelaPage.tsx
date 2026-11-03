@@ -1,11 +1,12 @@
 import { Link, useParams } from 'react-router';
 import PageHeading from '../../../components/common/PageHeading';
 import StatsGrid from '../../../components/common/StatsGrid';
+import Barras from '../../../components/ui/Barras';
 import EmptyState from '../../../components/ui/EmptyState';
 import ExportarBotones from '../../../components/ui/ExportarBotones';
 import StatusBadge from '../../../components/ui/StatusBadge';
 import { useCarga } from '../../../hooks/useCarga';
-import { campanaAbierta, incidenciaAbierta } from '../../../shared/utils/estados';
+import { incidenciaAbierta } from '../../../shared/utils/estados';
 import { formatArea } from '../../../utils/area';
 import { formatFecha } from '../../../utils/formato';
 import { campanaService } from '../../campanas/services/campanaService';
@@ -39,7 +40,7 @@ export default function FichaParcelaPage() {
     cosechas: [],
     incidencias: [],
     catalogos: { predios: [], parcelas: [], cultivos: [] } as Catalogos,
-  } as Awaited<ReturnType<typeof cargar>>);
+  } as Awaited<ReturnType<typeof cargar>>, undefined, 'ficha-parcela');
   const parcela = datos.catalogos.parcelas.find((item) => item.id === id);
 
   if (loading) return <div className="state-card">Cargando ficha...</div>;
@@ -48,7 +49,7 @@ export default function FichaParcelaPage() {
 
   const { catalogos } = datos;
   const campanas = datos.campanas.filter((c) => c.parcelaId === id).sort((a, b) => b.fechaInicio.localeCompare(a.fechaInicio));
-  const actual = campanas.find(campanaAbierta);
+  const actual = campanas.find((campana) => campana.estado === 'EN_CURSO');
   const porCampana = rendimientos(campanas, datos.cosechas, catalogos.parcelas, catalogos.cultivos);
   const abiertas = datos.incidencias.filter((i) => i.parcelaId === id && incidenciaAbierta(i)).length;
   const conRendimiento = Object.values(porCampana);
@@ -66,6 +67,20 @@ export default function FichaParcelaPage() {
           { etiqueta: 'Incidencias abiertas', valor: abiertas },
         ]}
       />
+      {campanas.some((campana) => porCampana[campana.id]) && (
+        <article className="list-card">
+          <h3>Rendimiento por campaña, de la más reciente a la más antigua</h3>
+          <Barras
+            nombre="Rendimiento por campaña"
+            filas={campanas.filter((campana) => porCampana[campana.id]).map((campana) => ({
+              clave: campana.id,
+              etiqueta: <Link to={`/campanas/${campana.id}`}>{nombreCultivo(campana.cultivoId, catalogos)} · {formatFecha(campana.fechaInicio)}</Link>,
+              valor: porCampana[campana.id],
+              texto: t(porCampana[campana.id]),
+            }))}
+          />
+        </article>
+      )}
       <div className="barra-resultados">
         <h2 className="ficha-seccion">Historial de campañas</h2>
         <ExportarBotones

@@ -46,7 +46,7 @@ export default function FichaCampanaPage() {
     cosechas: [],
     incidencias: [],
     catalogos: { predios: [], parcelas: [], cultivos: [] } as Catalogos,
-  } as Awaited<ReturnType<typeof cargar>>);
+  } as Awaited<ReturnType<typeof cargar>>, undefined, 'ficha-campana');
   const campana = datos.campanas.find((item) => item.id === id);
 
   if (loading) return <div className="state-card">Cargando ficha...</div>;

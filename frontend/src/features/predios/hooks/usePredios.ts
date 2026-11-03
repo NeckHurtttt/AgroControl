@@ -6,6 +6,6 @@ import { predioService } from '../services/predioService';
 const cargarPredios = (signal: AbortSignal) => predioService.listar(signal);
 
 export function usePredios() {
-  const { datos: predios, setDatos: setPredios, loading, error, recargar } = useCarga<Predio[]>(cargarPredios, []);
+  const { datos: predios, setDatos: setPredios, loading, error, recargar } = useCarga<Predio[]>(cargarPredios, [], undefined, 'predios');
   return { predios, setPredios, loading, error, recargar };
 }

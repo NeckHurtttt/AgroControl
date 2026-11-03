@@ -63,7 +63,7 @@ export default function CampanasPage() {
     campanas: [] as Campana[],
     catalogos: { predios: [], parcelas: [], cultivos: [] },
     cosechas: [] as Cosecha[],
-  });
+  }, undefined, 'campanas');
   const { campanas, catalogos, cosechas } = datos;
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoCampana | ''>('');
