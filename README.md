@@ -1,5 +1,11 @@
 # AgroControl
 
+[![CI](https://github.com/NeckHurtttt/AgroControl/actions/workflows/ci.yml/badge.svg)](https://github.com/NeckHurtttt/AgroControl/actions/workflows/ci.yml)
+![Java 21](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-6DB33F)
+![React](https://img.shields.io/badge/React-TypeScript-3178C6)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-336791)
+
 Sistema de gestión de lotes agrícolas: predios, parcelas, campañas, labores, insumos y cosechas.
 
 ## Inicio rápido (sin instalar Java, Node ni PostgreSQL)
@@ -270,7 +276,7 @@ Expo encuentra el emulador con `ANDROID_HOME` (normalmente `~/Android/Sdk`). Si 
 
 ## 14. Estrategia Git
 - `main` es la rama estable: siempre compila y arranca.
-- Cada tema se trabaja en una rama propia (`feat/...`, `fix/...`, `docs/...`, `defensa/...`) y entra a `main` con un pull request revisado por otro integrante, por ejemplo `defensa/cierre-gaps`.
+- Cada tema se trabaja en una rama propia (`feat/...`, `fix/...`, `docs/...`, `defensa/...`) y entra a `main` con un pull request revisado por otro integrante; una vez unida, la rama se borra.
 - Los commits siguen Conventional Commits (`feat(api): ...`, `fix: ...`, `docs: ...`, `chore: ...`), un cambio coherente por commit.
 - Remotos del equipo: `origin` (SalinasMiguel/AgroControl) y el fork `NeckHurtttt/AgroControl`.
 
