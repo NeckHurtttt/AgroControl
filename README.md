@@ -1,3 +1,5 @@
+<p align="center"><img src=".github/banner.svg" width="100%" alt="Banner de AgroControl"/></p>
+
 # AgroControl
 
 [![CI](https://github.com/NeckHurtttt/AgroControl/actions/workflows/ci.yml/badge.svg)](https://github.com/NeckHurtttt/AgroControl/actions/workflows/ci.yml)
